@@ -3,10 +3,12 @@ package com.ultimate.generator;
 import com.ultimate.component.TableInfo;
 import com.ultimate.component.info.ComponentInfo;
 import com.ultimate.core.Condition;
+import com.ultimate.util.DateUtils;
 import com.ultimate.util.Log;
 import com.ultimate.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -14,32 +16,45 @@ import java.util.stream.IntStream;
 public abstract class BaseSqlGenerator implements SqlGenerator{
 
     @Override
-    public <T> String generateInsertSql(T component){
+    public String generateInsertSql(Object component, boolean selective){
 
         ComponentInfo componentInfo = TableInfo.getComponent(component.getClass());
         StringBuilder values = new StringBuilder();
         List<String> fieldNameList = componentInfo.getFieldNameList();
+        String columns = componentInfo.getAllColumns();
+        StringBuilder columnsBuild = new StringBuilder();
         IntStream.range(0, fieldNameList.size()).forEach(index->{
             try{
                 Field field = componentInfo.getComponentClass().getDeclaredField(fieldNameList.get(index));
-                // TODO 需要增加空值判断,已经selectiveInsert
                 field.setAccessible(true);
                 Object fieldValue = field.get(component);
-                if(field.getType().getSimpleName().equals("String")){
+                if(selective && fieldValue == null){
+                    return;
+                }
+                if(selective){
+                    columnsBuild.append(componentInfo.getColumnInfoByFieldName(field.getName()).getJdbcName());
+                }
+                if(String.class.equals(field.getType()) || field.getType().getName().equals("chat") || Character.class.equals(field.getType())){
                     values.append("'").append(fieldValue).append("'");
+                } else if(Date.class.equals(field.getType())){
+                    String date = DateUtils.formatDate((Date) fieldValue);
+                    values.append("'").append(date).append("'");
                 } else{
                     values.append(fieldValue);
                 }
                 if(index != fieldNameList.size() - 1){
                     values.append(",");
+                    columnsBuild.append(",");
                 }
             } catch(NoSuchFieldException | IllegalAccessException e){
                 Log.getLogger().error(e.getMessage(), e);
             }
         });
+        if(selective){
+            columns = columnsBuild.toString();
+        }
 
-        String sql = "insert into " + componentInfo.getTableName() + "(" + componentInfo.getAllColumns() + ") values(" + values.toString() + ");";
-        return sql;
+        return "insert into " + componentInfo.getTableName() + "(" + columns + ") values(" + values.toString() + ");";
     }
 
     @Override
@@ -62,9 +77,7 @@ public abstract class BaseSqlGenerator implements SqlGenerator{
 
         StringBuilder sql = new StringBuilder("UPDATE " + componentInfo.getTableName() + " a set ");
 
-        condition.getUpdateList().forEach((key, value)->{
-            sql.append(key).append("='").append(value).append("',");
-        });
+        condition.getUpdateList().forEach((key, value)->sql.append(key).append("='").append(value).append("',"));
         String updateSql;
         if(sql.lastIndexOf(",") != -1){
             updateSql = sql.substring(0, sql.lastIndexOf(","));

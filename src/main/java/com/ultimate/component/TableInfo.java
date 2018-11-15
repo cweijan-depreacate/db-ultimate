@@ -20,10 +20,6 @@ public class TableInfo{
 
     public static ComponentInfo getComponent(Class clazz){
 
-        if(clazz == null){
-            throw new NullPointerException("param clazz must not null!");
-        }
-
         ComponentInfo componentInfo = getTypeMapInstance().get(clazz.getName());
         if(componentInfo==null){
             throw new ComponentNotExistsException(clazz+" component is not exists!");

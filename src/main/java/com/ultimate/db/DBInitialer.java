@@ -22,13 +22,14 @@ public class DBInitialer{
     public DBInitialer(DbConfig dbConfig){
 
         this.dbConfig = dbConfig;
-        createComponentTable();
+
     }
+
 
     /**
      创建Bean所对应的表
      */
-    private void createComponentTable(){
+    public void initalerTable(){
 
         Objects.requireNonNull(dbConfig);
         Objects.requireNonNull(TableInfo.getComponentList());
@@ -43,7 +44,7 @@ public class DBInitialer{
 
     public void createTable(ComponentInfo componentInfo){
 
-        createTable(componentInfo.getComponentClass(), componentInfo.getTableName(), componentInfo.getPrimaryKey(), dbConfig.getConnection());
+        createTable(componentInfo.getComponentClass(), componentInfo.getTableName(), componentInfo.getPrimaryKey(), dbConfig.openConnection());
     }
 
     /**
@@ -53,7 +54,7 @@ public class DBInitialer{
      */
     public boolean tableExists(String tableName){
 
-        Connection connection = dbConfig.getConnection();
+        Connection connection = dbConfig.openConnection();
 
         try{
             DatabaseMetaData metaData = connection.getMetaData();
@@ -78,23 +79,23 @@ public class DBInitialer{
         }
         SqlExecutor.checkConnectionAlive(connection);
 
-        String sql = "create table " + tableName + "(";
+        StringBuilder sql = new StringBuilder("create table " + tableName + "(");
 
         for(Field field : t.getDeclaredFields()){
 
             field.setAccessible(true);
-            sql += "`" + field.getName() + "` " + getFieldType(field) + " NOT NULL DEFAULT '' ";
+            sql.append("`").append(field.getName()).append("` ").append(getFieldType(field)).append(" NOT NULL DEFAULT '' ");
             if(field.getName().equals(primaryKey)){
-                sql += " AUTO_INCREMENT";
+                sql.append(" AUTO_INCREMENT");
             }
-            sql += ",";
+            sql.append(",");
         }
 
-        sql += "primary key(`" + primaryKey + "`)  ";
+        sql.append("primary key(`").append(primaryKey).append("`)  ");
 
-        sql += ");";
+        sql.append(");");
 
-        SqlExecutor.executeSql(sql,null, dbConfig.getConnection());
+        SqlExecutor.executeSql(sql.toString(),null, dbConfig.openConnection());
     }
 
     private String getFieldType(Field field){

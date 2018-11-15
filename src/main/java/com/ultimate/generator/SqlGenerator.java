@@ -5,7 +5,7 @@ import com.ultimate.core.Condition;
 
 public interface SqlGenerator{
 
-    <T> String generateInsertSql(T component);
+    String generateInsertSql(Object component,boolean selective);
 
     String generateDeleteSql(ComponentInfo componentInfo, Condition condition);
 

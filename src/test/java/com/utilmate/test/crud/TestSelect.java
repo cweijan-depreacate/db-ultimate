@@ -12,13 +12,19 @@ import java.util.List;
 
 public class TestSelect extends BaseTest{
 
+    @Test
+    public void testGet(){
+
+        Admin admin = dbUltimate.get(new Condition(), Admin.class);
+        Log.getLogger().info(admin.toString());
+
+    }
 
     @Test
     public void testSelectAll(){
 
-        List<Admin> admins = dbUltimate.find( new Condition(),Admin.class);
+        List<Admin> admins = dbUltimate.find(new Condition(), Admin.class);
         ComponentInfo component = TableInfo.getComponent(Admin.class);
-        System.out.println(component);
         Log.getLogger().info(admins.toString());
     }
 
@@ -26,9 +32,9 @@ public class TestSelect extends BaseTest{
     public void testSelectByEquals(){
 
         condition.equals("test", "test2");
-        condition.orEquals("test","123");
+        condition.orEquals("test", "123");
         condition.setColumn("id, message");
-        List<Admin> admins = dbUltimate.find(condition,Admin.class );
+        List<Admin> admins = dbUltimate.find(condition, Admin.class);
         logger.info(admins.toString());
 
     }
@@ -37,7 +43,7 @@ public class TestSelect extends BaseTest{
     public void testSearch(){
 
         condition.search("test", "2");
-        List<Admin> admins = dbUltimate.find(condition,Admin.class );
+        List<Admin> admins = dbUltimate.find(condition, Admin.class);
         logger.info(admins.toString());
 
     }

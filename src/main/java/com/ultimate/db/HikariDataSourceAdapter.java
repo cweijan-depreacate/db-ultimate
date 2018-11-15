@@ -1,5 +1,6 @@
 package com.ultimate.db;
 
+import com.ultimate.db.config.DbConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -8,21 +9,24 @@ import javax.sql.DataSource;
 public class HikariDataSourceAdapter{
 
     private Thread shutdownHook;
-    private String url;
-    private String username;
-    private String password;
-    private String driver;
+    private DbConfig dbConfig;
 
-    public HikariDataSourceAdapter(){
+    public HikariDataSourceAdapter(DbConfig dbConfig){
 
+        this.dbConfig = dbConfig;
     }
 
-    public HikariDataSourceAdapter(String url, String username, String password, String driver){
+    private HikariConfig buildConfig(){
 
-        this.url = url;
-        this.username = username;
-        this.password = password;
-        this.driver = driver;
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(dbConfig.getUrl());
+        config.setUsername(dbConfig.getUsername());
+        config.setPassword(dbConfig.getPassword());
+        config.setDriverClassName(dbConfig.getPassword());
+        config.setMinimumIdle(dbConfig.getMinimumIdle());
+        config.setMaximumPoolSize(dbConfig.getMaximumPoolSize());
+
+        return config;
     }
 
     public DataSource refreshDataSource(){
@@ -40,21 +44,6 @@ public class HikariDataSourceAdapter{
         Runtime.getRuntime().addShutdownHook(shutdownHook);
 
         return dataSource;
-    }
-
-    private HikariConfig buildConfig(){
-
-        // TODO 需要增加动态参数
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(url);
-        config.setUsername(username);
-        config.setPassword(password);
-        config.setDriverClassName(driver);
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        config.addDataSourceProperty("prepStmtCacheSize", "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-
-        return config;
     }
 
 }

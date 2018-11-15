@@ -61,7 +61,7 @@ public class TypeConvert{
 
      @param resultSet sql查询的结果
      @param clazz     要转换成的javaBean类型
-     @param columns Field对应的列名
+     @param columns   Field对应的列名
      @return 转换完成的实体类型
      */
     private static <T> T toJavaBean(ResultSet resultSet, Class<T> clazz, Map<String, String> columns){
@@ -87,6 +87,7 @@ public class TypeConvert{
             String fieldType = columns.get(fieldName);
 
             try{
+                System.out.println(fieldType);
                 // TODO 这里需要增加其他类型的支持
                 switch(fieldType){
                     case "INT":
@@ -159,7 +160,7 @@ public class TypeConvert{
                 columns.put(columnLabel, metaData.getColumnTypeName(i));
             }
         } catch(SQLException e){
-            logger.error("get metaData fail!", e);
+            logger.error(e.getMessage(), e);
         }
 
         return columns;

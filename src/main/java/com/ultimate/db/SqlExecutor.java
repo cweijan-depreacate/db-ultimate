@@ -1,6 +1,8 @@
 package com.ultimate.db;
 
 import com.ultimate.db.config.DbConfig;
+import com.ultimate.transaction.jdbc.JdbcTransaction;
+import com.ultimate.util.DbUtils;
 import com.ultimate.util.Log;
 import org.slf4j.Logger;
 
@@ -26,19 +28,19 @@ public class SqlExecutor{
      */
     public ResultSet executeSql(String sql){
 
-        return executeSql(sql, null, dbConfig.getConnection());
+        return executeSql(sql, null, dbConfig.openConnection());
     }
 
     /**
      @param sql    sql
      @param params 查询参数
      */
-    public ResultSet executeSql(String sql, String[] params){
+    public ResultSet executeSql(String sql, Object[] params){
 
-        return executeSql(sql, params, dbConfig.getConnection());
+        return executeSql(sql, params, dbConfig.openConnection());
     }
 
-    public static ResultSet executeSql(String sql, String[] params, Connection connection){
+    public static ResultSet executeSql(String sql, Object[] params, Connection connection){
 
         AtomicReference<ResultSet> resultSet = new AtomicReference<>();
 
@@ -48,7 +50,7 @@ public class SqlExecutor{
             if(params != null){
                 IntStream.range(0, params.length).forEach(index->{
                     try{
-                        preparedStatement.setString(index + 1, params[index]);
+                        preparedStatement.setObject(index + 1, params[index]);
                     } catch(SQLException e){
                         logger.error(e.getMessage(), e);
                     }
@@ -58,12 +60,12 @@ public class SqlExecutor{
                 resultSet.set(preparedStatement.executeQuery());
             } else{
                 preparedStatement.executeUpdate();
+                DbUtils.closeConnection(connection);
             }
+            if(!logger.isDebugEnabled())return;
             logger.debug("Execute SQL : " + sql);
-            if(params != null){
-                IntStream.range(0, params.length).forEach(index->{
-                    logger.debug("param " + index + ":" + params[index]+" ");
-                });
+            if(params != null ){
+                IntStream.range(0, params.length).forEach(index->logger.debug(" param " + index + " : " + params[index] + " "));
             }
         });
 
@@ -80,24 +82,16 @@ public class SqlExecutor{
     public static void transaction(String sql, Connection connection, SqlWrapper sqlWrapper){
 
         checkConnectionAlive(connection);
-        // TODO 这里需要修改为事务管理器
+        JdbcTransaction jdbcTransaction = new JdbcTransaction(connection);
         try{
             sqlWrapper.execute();
         } catch(SQLException e){
             logger.error("Execute SQL : `" + sql + "` fail!  \n" + e.getMessage(), e);
             try{
-                if(!connection.getAutoCommit() && !sql.contains("select")){
-                    connection.rollback();
-                }
+                jdbcTransaction.rollback();
             } catch(SQLException e1){
                 Log.getLogger().error(e1.getMessage(), e1);
             }
-        } finally{
-            //            try{
-            //                connection.close();
-            //            } catch(SQLException e){
-            //                Log.getLogger().error(e.getMessage(), e);
-            //            }
         }
     }
 

@@ -25,7 +25,17 @@ public class Admin{
     @Override
     public String toString(){
 
-        return "Admin{" + "id=" + id + ", message='" + message + '\'' + ", test='" + test + '\'' + '}';
+        return "Admin{" + "id=" + id + ", message='" + message + '\'' + ", date=" + date + ", test='" + test + '\'' + '}';
+    }
+
+    public Date getDate(){
+
+        return date;
+    }
+
+    public void setDate(Date date){
+
+        this.date = date;
     }
 
     public int getId(){
