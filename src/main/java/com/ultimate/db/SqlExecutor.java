@@ -81,7 +81,7 @@ public class SqlExecutor{
      */
     public static void transaction(String sql, Connection connection, SqlWrapper sqlWrapper){
 
-        checkConnectionAlive(connection);
+        DbUtils.checkConnectionAlive(connection);
         JdbcTransaction jdbcTransaction = new JdbcTransaction(connection);
         try{
             sqlWrapper.execute();
@@ -95,14 +95,5 @@ public class SqlExecutor{
         }
     }
 
-    public static void checkConnectionAlive(Connection connection){
 
-        try{
-            if(connection == null || connection.isClosed()){
-                throw new IllegalArgumentException("connection is valid!");
-            }
-        } catch(SQLException e1){
-            logger.error(e1.getMessage(), e1);
-        }
-    }
 }

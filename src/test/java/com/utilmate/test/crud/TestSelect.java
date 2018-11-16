@@ -1,13 +1,14 @@
 package com.utilmate.test.crud;
 
 import com.ultimate.bean.Admin;
-import com.ultimate.component.info.ComponentInfo;
 import com.ultimate.component.TableInfo;
+import com.ultimate.component.info.ComponentInfo;
 import com.ultimate.core.Condition;
 import com.ultimate.util.Log;
 import com.utilmate.test.base.BaseTest;
 import org.junit.Test;
 
+import java.util.Date;
 import java.util.List;
 
 public class TestSelect extends BaseTest{
@@ -16,6 +17,8 @@ public class TestSelect extends BaseTest{
     public void testGet(){
 
         Admin admin = dbUltimate.get(new Condition(), Admin.class);
+        Date date = admin.getDate();
+        System.out.println(date);
         Log.getLogger().info(admin.toString());
 
     }

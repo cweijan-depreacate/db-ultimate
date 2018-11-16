@@ -1,5 +1,7 @@
 package com.ultimate.core;
 
+import com.ultimate.util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -188,6 +190,10 @@ public class Condition{
     }
 
     public String getColumn(){
+
+        if(StringUtils.isEmpty(this.column)){
+            return "*";
+        }
 
         return this.column;
     }

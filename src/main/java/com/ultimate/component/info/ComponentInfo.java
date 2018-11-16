@@ -24,33 +24,53 @@ public class ComponentInfo{
 
     private Class<?> componentClass;
 
+    /**
+     所有列,用于insert语句
+     */
     private List<String> columnList;
 
-    private List<String> fieldNameList;
+    /**
+     属性名与ColumnInfo的映射
+     */
+    private Map<String, ColumnInfo> fieldColumnInfoMap;
 
-    private Map<String, ColumnInfo> fileColumnMap;
+    /**
+     列名与属性名的映射
+     */
+    private Map<String, String> columnFieldMap;
 
-    public ColumnInfo getColumnInfoByFieldName(String fieldName){
+    public String getColumnNameByFieldName(String fieldName){
 
-        ColumnInfo columnInfo = fileColumnMap.get(fieldName);
-        if(columnInfo==null){
-               throw new ColumnNotExistsException("尝试获取列信息"+fieldName+"失败!");
+        ColumnInfo columnInfo = fieldColumnInfoMap.get(fieldName);
+        if(columnInfo == null){
+            throw new ColumnNotExistsException("尝试获取列信息" + fieldName + "失败!");
         }
 
-        return columnInfo;
+        return columnInfo.getColumnName();
+    }
+
+    /**
+     根据列名找到属性名
+
+     @param columnName 列名
+     @return 对应的属性名
+     */
+    public String getFieldNameByColumnName(String columnName){
+
+        return columnFieldMap.get(columnName);
     }
 
     private void putColumn(String fieldName, ColumnInfo columnInfo){
 
-        if(fileColumnMap == null){
-            fileColumnMap = new HashMap<>();
+        if(fieldColumnInfoMap == null){
+            fieldColumnInfoMap = new HashMap<>();
+            columnFieldMap = new HashMap<>();
             columnList = new ArrayList<>();
-            fieldNameList = new ArrayList<>();
         }
 
-        fileColumnMap.put(fieldName, columnInfo);
-        fieldNameList.add(fieldName);
-        columnList.add(columnInfo.getJdbcName());
+        fieldColumnInfoMap.put(fieldName, columnInfo);
+        columnFieldMap.put(columnInfo.getColumnName(), fieldName);
+        columnList.add(columnInfo.getColumnName());
 
     }
 
@@ -99,7 +119,7 @@ public class ComponentInfo{
                 if(columnAnnotation.nullable()){
                     columnInfo.setNullable(true);
                 }
-                if(columnAnnotation.length()!=0){
+                if(columnAnnotation.length() != 0){
                     columnInfo.setLength(columnAnnotation.length());
                 }
             } else{
@@ -118,10 +138,7 @@ public class ComponentInfo{
                 componentInfo.setPrimaryKey(field.getName());
             }
 
-            columnInfo.setFieldName(field.getName());
-            columnInfo.setFieldType(field.getType());
-            columnInfo.setJdbcName(columnName);
-            columnInfo.setJdbcType(TypeAdapter.getJdbcType(field.getType()));
+            columnInfo.setColumnName(columnName);
             columnInfo.setNumeric(TypeAdapter.checkNumericType(field.getType()));
             componentInfo.putColumn(field.getName(), columnInfo);
         }
@@ -134,23 +151,12 @@ public class ComponentInfo{
         return "ComponentInfo{" + "primaryKey='" + primaryKey + '\'' + ", tableName='" + tableName + '\'' + ", columnList=" + columnList + '}';
     }
 
-    public List<String> getFieldNameList(){
-
-        return fieldNameList;
-    }
-
-    public Map<String, ColumnInfo> getFieldColumnMap(){
-
-        return fileColumnMap;
-    }
-
     /**
      @return 返回所有列信息, 用于查询
      */
     public String getAllColumns(){
 
         String allColumns = columnList.toString();
-
         return allColumns.substring(1, allColumns.length() - 1);
     }
 

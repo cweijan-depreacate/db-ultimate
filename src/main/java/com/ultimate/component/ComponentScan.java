@@ -2,25 +2,21 @@ package com.ultimate.component;
 
 import com.ultimate.annotation.Table;
 import com.ultimate.component.info.ComponentInfo;
+import com.ultimate.db.config.DbConfig;
+import com.ultimate.util.DbUtils;
 import com.ultimate.util.Log;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
 public class ComponentScan{
 
-    private String[] scanPackages;
-
-    public ComponentScan(String... scanPackage){
-
-        this.scanPackages = scanPackage;
-    }
-
-    public void scan(){
+    public void scan(String... scanPackages){
 
         for(String scanPackage : scanPackages){
             Class[] classes = scanTableClasses(scanPackage);
@@ -42,7 +38,7 @@ public class ComponentScan{
      */
     public Class[] scanTableClasses(String packageName){
 
-        Log.getLogger().debug("scan component classes for package "+packageName);
+        Log.getLogger().debug("scan component classes for package " + packageName);
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         String path = packageName.replace('.', '/');
         Enumeration<URL> resources;
@@ -96,8 +92,8 @@ public class ComponentScan{
                 }
             }
         }
+
         return classes;
     }
-
 
 }

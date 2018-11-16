@@ -22,7 +22,7 @@ public class HikariDataSourceAdapter{
         config.setJdbcUrl(dbConfig.getUrl());
         config.setUsername(dbConfig.getUsername());
         config.setPassword(dbConfig.getPassword());
-        config.setDriverClassName(dbConfig.getPassword());
+        config.setDriverClassName(dbConfig.getDriver());
         config.setMinimumIdle(dbConfig.getMinimumIdle());
         config.setMaximumPoolSize(dbConfig.getMaximumPoolSize());
 

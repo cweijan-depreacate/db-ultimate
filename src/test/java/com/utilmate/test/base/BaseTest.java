@@ -20,7 +20,6 @@ public class BaseTest{
     @Before
     public void initConfig(){
 
-        new ComponentScan("com.ultimate").scan();
         dbConfig = new DbConfig();
         dbConfig.setUrl("jdbc:mysql://localhost:3306/ultimate");
         dbConfig.setUsername("root");
@@ -28,7 +27,6 @@ public class BaseTest{
         dbConfig.setDriver("com.mysql.jdbc.Driver");
         dbConfig.setCreateNonexistsTable(true);
         dbUltimate = new DbUltimate(dbConfig);
-        dbInitialer=new DBInitialer(dbConfig);
         condition=new Condition();
     }
 }

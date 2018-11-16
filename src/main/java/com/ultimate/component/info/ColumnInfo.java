@@ -1,13 +1,8 @@
 package com.ultimate.component.info;
 
-import java.sql.JDBCType;
-
 public class ColumnInfo{
 
-    private String fieldName;
-    private Class fieldType;
-    private String jdbcName;
-    private JDBCType jdbcType;
+    private String columnName;
     private Integer length;
     private boolean isNumeric;
     private boolean nullable;
@@ -33,44 +28,14 @@ public class ColumnInfo{
         this.length = length;
     }
 
-    public String getJdbcName(){
+    public String getColumnName(){
 
-        return jdbcName;
+        return columnName;
     }
 
-    public void setJdbcName(String jdbcName){
+    public void setColumnName(String columnName){
 
-        this.jdbcName = jdbcName;
-    }
-
-    public String getFieldName(){
-
-        return fieldName;
-    }
-
-    public void setFieldName(String fieldName){
-
-        this.fieldName = fieldName;
-    }
-
-    public Class getFieldType(){
-
-        return fieldType;
-    }
-
-    public void setFieldType(Class fieldType){
-
-        this.fieldType = fieldType;
-    }
-
-    public JDBCType getJdbcType(){
-
-        return jdbcType;
-    }
-
-    public void setJdbcType(JDBCType jdbcType){
-
-        this.jdbcType = jdbcType;
+        this.columnName = columnName;
     }
 
     public boolean isNullable(){

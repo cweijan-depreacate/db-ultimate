@@ -20,19 +20,19 @@ public abstract class BaseSqlGenerator implements SqlGenerator{
 
         ComponentInfo componentInfo = TableInfo.getComponent(component.getClass());
         StringBuilder values = new StringBuilder();
-        List<String> fieldNameList = componentInfo.getFieldNameList();
+        Field[] fields = componentInfo.getComponentClass().getDeclaredFields();
         String columns = componentInfo.getAllColumns();
         StringBuilder columnsBuild = new StringBuilder();
-        IntStream.range(0, fieldNameList.size()).forEach(index->{
+        IntStream.range(0, fields.length).forEach(index->{
             try{
-                Field field = componentInfo.getComponentClass().getDeclaredField(fieldNameList.get(index));
+                Field field = fields[index];
                 field.setAccessible(true);
                 Object fieldValue = field.get(component);
                 if(selective && fieldValue == null){
                     return;
                 }
                 if(selective){
-                    columnsBuild.append(componentInfo.getColumnInfoByFieldName(field.getName()).getJdbcName());
+                    columnsBuild.append(componentInfo.getColumnNameByFieldName(field.getName()));
                 }
                 if(String.class.equals(field.getType()) || field.getType().getName().equals("chat") || Character.class.equals(field.getType())){
                     values.append("'").append(fieldValue).append("'");
@@ -42,11 +42,11 @@ public abstract class BaseSqlGenerator implements SqlGenerator{
                 } else{
                     values.append(fieldValue);
                 }
-                if(index != fieldNameList.size() - 1){
+                if(index != fields.length - 1){
                     values.append(",");
                     columnsBuild.append(",");
                 }
-            } catch(NoSuchFieldException | IllegalAccessException e){
+            } catch(IllegalAccessException e){
                 Log.getLogger().error(e.getMessage(), e);
             }
         });
@@ -91,14 +91,7 @@ public abstract class BaseSqlGenerator implements SqlGenerator{
     @Override
     public String generateSelectSql(ComponentInfo componentInfo, Condition condition){
 
-        String sql = "select ";
-        if(StringUtils.isNotEmpty(condition.getColumn())){
-            sql += condition.getColumn();
-        } else{
-            sql += componentInfo.getAllColumns();
-        }
-        sql += " from " + componentInfo.getTableName() + generateConditionSql(condition);
-        return sql;
+        return "select " + condition.getColumn() + " from " + componentInfo.getTableName() + generateConditionSql(condition);
     }
 
     private String generateConditionSql(Condition condition){

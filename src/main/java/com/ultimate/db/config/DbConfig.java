@@ -49,7 +49,7 @@ public class DbConfig{
             connection = dataSource.getConnection();
             connection.setAutoCommit(autoCommit);
         } catch(SQLException e){
-            Log.getLogger().error("get jdbc connection fail!", e);
+            Log.getLogger().error("getGenerator jdbc connection fail!", e);
         }
 
         return connection;

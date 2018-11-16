@@ -1,5 +1,6 @@
 package com.ultimate.core;
 
+import com.ultimate.component.ComponentScan;
 import com.ultimate.component.TableInfo;
 import com.ultimate.convert.TypeConvert;
 import com.ultimate.db.DBInitialer;
@@ -24,9 +25,10 @@ public class DbUltimate{
 
     public DbUltimate(DbConfig dbConfig){
 
-        this.dbConfig=dbConfig;
+        this.dbConfig = dbConfig;
         sqlExecutor = new SqlExecutor(dbConfig);
-        sqlGenerator = new GeneratorAdapter(dbConfig).get();
+        sqlGenerator = new GeneratorAdapter(dbConfig).getGenerator();
+        new ComponentScan().scan("com.ultimate");
         new DBInitialer(dbConfig).initalerTable();
 
     }
@@ -46,7 +48,7 @@ public class DbUltimate{
     public <T> T getBySql(String sql, Object[] params, Class<T> clazz){
 
         Connection connection = dbConfig.openConnection();
-        ResultSet resultSet = SqlExecutor.executeSql(sql, params,connection);
+        ResultSet resultSet = SqlExecutor.executeSql(sql, params, connection);
         T bean = TypeConvert.resultSetToBean(resultSet, clazz);
         DbUtils.closeConnection(connection);
         return bean;
@@ -55,7 +57,7 @@ public class DbUltimate{
     public <T> List<T> findBySql(String sql, Object[] params, Class<T> clazz){
 
         Connection connection = dbConfig.openConnection();
-        ResultSet resultSet = SqlExecutor.executeSql(sql, params,connection);
+        ResultSet resultSet = SqlExecutor.executeSql(sql, params, connection);
         List<T> beanList = TypeConvert.resultSetToBeanList(resultSet, clazz);
         DbUtils.closeConnection(connection);
         return beanList;

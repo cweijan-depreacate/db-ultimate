@@ -14,7 +14,7 @@ public class GeneratorAdapter{
         this.driverName =config.getDriver();
     }
 
-    public SqlGenerator get(){
+    public SqlGenerator getGenerator(){
 
         Objects.requireNonNull(driverName);
         if("com.mysql.jdbc.Driver".equals(driverName)){

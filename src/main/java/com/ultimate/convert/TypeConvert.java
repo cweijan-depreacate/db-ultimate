@@ -1,7 +1,6 @@
 package com.ultimate.convert;
 
 import com.ultimate.component.TableInfo;
-import com.ultimate.component.info.ColumnInfo;
 import com.ultimate.component.info.ComponentInfo;
 import com.ultimate.util.Log;
 import org.slf4j.Logger;
@@ -32,7 +31,7 @@ public class TypeConvert{
             return null;
         }
 
-        Map<String, String> columns = getColumns(resultSet);
+        Map<String, String> columns = getColumns(resultSet, beanClass);
 
         return toJavaBean(resultSet, beanClass, columns);
     }
@@ -67,13 +66,12 @@ public class TypeConvert{
     private static <T> T toJavaBean(ResultSet resultSet, Class<T> clazz, Map<String, String> columns){
 
         Field[] fields = clazz.getDeclaredFields();
-        T beanInstance = null;
+        T beanInstance;
         try{
             beanInstance = clazz.newInstance();
-        } catch(InstantiationException e){
+        } catch(InstantiationException | IllegalAccessException e){
             logger.error("this class have not default constructor!", e);
-        } catch(IllegalAccessException e){
-            logger.error("this class not support instance!", e);
+            return null;
         }
 
         // 为对象进行赋值
@@ -81,34 +79,21 @@ public class TypeConvert{
 
             field.setAccessible(true);
             String fieldName = field.getName();
-            if(!columns.containsKey(fieldName)){
+            String fieldType = field.getType().getName();
+            if(!columns.containsKey(fieldName) && TypeAdapter.isSimpleType(fieldType)){
                 continue;
             }
-            String fieldType = columns.get(fieldName);
+            String columnName = columns.get(fieldName);
 
             try{
-                System.out.println(fieldType);
-                // TODO 这里需要增加其他类型的支持
-                switch(fieldType){
-                    case "INT":
-                        field.set(beanInstance, resultSet.getInt(fieldName));
-                        break;
-                    case "LONG":
-                        field.set(beanInstance, resultSet.getLong(fieldName));
-                        break;
-                    case "VARCHAR":
-                        field.set(beanInstance, resultSet.getString(fieldName));
-                        break;
-                    case "FLOAT":
-                    case "DECIMAL":
-                        field.set(beanInstance, resultSet.getFloat(fieldName));
-                        break;
-                    case "DOUBLE":
-                        field.set(beanInstance, resultSet.getDouble(fieldName));
-                        break;
+                if(TypeAdapter.isSimpleType(fieldType)){
+                    field.set(beanInstance, resultSet.getObject(columnName));
+                } else{
+                    Class<?> fieldClass = Class.forName(fieldType);
+                    field.set(beanInstance, toJavaBean(resultSet, fieldClass, columns));
                 }
             } catch(Exception e){
-                logger.error("set fieldType error!", e);
+                logger.error(e.getMessage(), e);
             }
         }
         return beanInstance;
@@ -125,7 +110,7 @@ public class TypeConvert{
 
         List<T> beanList = new ArrayList<>();
 
-        Map<String, String> columns = getColumns(resultSet);
+        Map<String, String> columns = getColumns(resultSet, beanClass);
         T bean;
 
         while(next(resultSet)){
@@ -143,24 +128,23 @@ public class TypeConvert{
 
      @param resultSet 查询的结果集
      */
-    public static Map<String, String> getColumns(ResultSet resultSet){
+    public static Map<String, String> getColumns(ResultSet resultSet, Class clazz){
 
+        Map<String, String> columns = new HashMap<>();
+        ComponentInfo component = TableInfo.getComponent(clazz);
         ResultSetMetaData metaData;
-        Map<String, String> columns = null;
-        String columnLabel;
+        String fieldName;
 
         // 获取resultSet字段类型
         try{
             metaData = resultSet.getMetaData();
             int count = metaData.getColumnCount();
-            columns = new HashMap<>();
-
             for(int i = 1; i <= count; i++){
-                columnLabel = metaData.getColumnLabel(i);
-                columns.put(columnLabel, metaData.getColumnTypeName(i));
+                fieldName = component.getFieldNameByColumnName(metaData.getColumnLabel(i));
+                columns.put(fieldName, component.getColumnNameByFieldName(fieldName));
             }
         } catch(SQLException e){
-            logger.error(e.getMessage(), e);
+            logger.error("get result column info fail! \n " + e.getMessage(), e);
         }
 
         return columns;

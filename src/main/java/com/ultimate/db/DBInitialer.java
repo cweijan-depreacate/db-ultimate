@@ -3,6 +3,7 @@ package com.ultimate.db;
 import com.ultimate.component.info.ComponentInfo;
 import com.ultimate.component.TableInfo;
 import com.ultimate.db.config.DbConfig;
+import com.ultimate.util.DbUtils;
 import com.ultimate.util.Log;
 import com.ultimate.util.StringUtils;
 import org.slf4j.Logger;
@@ -77,7 +78,7 @@ public class DBInitialer{
         if(StringUtils.isEmpty(primaryKey)){
             throw new InvalidParameterException("class " + t.getName() + " primary key must exists !");
         }
-        SqlExecutor.checkConnectionAlive(connection);
+        DbUtils.checkConnectionAlive(connection);
 
         StringBuilder sql = new StringBuilder("create table " + tableName + "(");
 
