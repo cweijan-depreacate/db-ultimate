@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.utilmate.test.base.ComponentTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2018-11-19T02:38:05" hostname="WIN-S60BATUFINR" time="0.049">
+  <properties/>
+  <testcase name="testGetAllColumns" classname="com.utilmate.test.base.ComponentTest" time="0.026"/>
+  <testcase name="scan" classname="com.utilmate.test.base.ComponentTest" time="0.023"/>
+  <system-out><![CDATA[2018-11-19 10:38:05 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+id, message, create_date, test, lib
+2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+ComponentInfo{primaryKey='id', tableName='rh_admin', columnList=[id, message, create_date, test, lib]}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

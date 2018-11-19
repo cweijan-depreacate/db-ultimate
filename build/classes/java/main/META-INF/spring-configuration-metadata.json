@@ -1,0 +1,48 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "com.ultimate.db.config.DbConfig",
+      "name": "ultimate.jdbc",
+      "type": "com.ultimate.db.config.DbConfig"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "com.ultimate.db.config.DbConfig",
+      "defaultValue": false,
+      "name": "ultimate.jdbc.create-nonexists-table",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.ultimate.db.config.DbConfig",
+      "name": "ultimate.jdbc.driver",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.ultimate.db.config.DbConfig",
+      "name": "ultimate.jdbc.maximum-pool-size",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.ultimate.db.config.DbConfig",
+      "name": "ultimate.jdbc.minimum-idle",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.ultimate.db.config.DbConfig",
+      "name": "ultimate.jdbc.password",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.ultimate.db.config.DbConfig",
+      "name": "ultimate.jdbc.url",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.ultimate.db.config.DbConfig",
+      "name": "ultimate.jdbc.username",
+      "type": "java.lang.String"
+    }
+  ]
+}

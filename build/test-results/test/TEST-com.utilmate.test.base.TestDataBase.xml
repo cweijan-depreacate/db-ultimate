@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.utilmate.test.base.TestDataBase" tests="3" skipped="0" failures="0" errors="0" timestamp="2018-11-19T02:38:06" hostname="WIN-S60BATUFINR" time="0.119">
+  <properties/>
+  <testcase name="testCreateDatasource" classname="com.utilmate.test.base.TestDataBase" time="0.045"/>
+  <testcase name="testCreateTable" classname="com.utilmate.test.base.TestDataBase" time="0.036"/>
+  <testcase name="testCheckTableExists" classname="com.utilmate.test.base.TestDataBase" time="0.037"/>
+  <system-out><![CDATA[2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+HikariProxyConnection@5418363 wrapping com.mysql.jdbc.JDBC4Connection@241d6c4a
+2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+2018-11-19 10:38:06 [ERROR] (SqlExecutor:92) - Execute SQL : `create table rh_admin(`id` int NOT NULL DEFAULT ''  AUTO_INCREMENT,`message` varchar(100) NOT NULL DEFAULT '' ,`date` null NOT NULL DEFAULT '' ,`test` varchar(100) NOT NULL DEFAULT '' ,`lib` null NOT NULL DEFAULT '' ,primary key(`id`)  );` fail!  
+Invalid default value for 'id'
+com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Invalid default value for 'id'
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+	at com.mysql.jdbc.Util.handleNewInstance(Util.java:404)
+	at com.mysql.jdbc.Util.getInstance(Util.java:387)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:939)
+	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:3878)
+	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:3814)
+	at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:2478)
+	at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:2625)
+	at com.mysql.jdbc.ConnectionImpl.execSQL(ConnectionImpl.java:2551)
+	at com.mysql.jdbc.PreparedStatement.executeInternal(PreparedStatement.java:1861)
+	at com.mysql.jdbc.PreparedStatement.executeUpdateInternal(PreparedStatement.java:2073)
+	at com.mysql.jdbc.PreparedStatement.executeUpdateInternal(PreparedStatement.java:2009)
+	at com.mysql.jdbc.PreparedStatement.executeLargeUpdate(PreparedStatement.java:5094)
+	at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:1994)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+	at com.ultimate.db.SqlExecutor.lambda$executeSql$2(SqlExecutor.java:65)
+	at com.ultimate.db.SqlExecutor.transaction(SqlExecutor.java:90)
+	at com.ultimate.db.SqlExecutor.executeSql(SqlExecutor.java:50)
+	at com.ultimate.db.DBInitialer.createTable(DBInitialer.java:102)
+	at com.ultimate.db.DBInitialer.createTable(DBInitialer.java:51)
+	at com.utilmate.test.base.TestDataBase.testCreateTable(TestDataBase.java:15)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:106)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
+	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:66)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:117)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:155)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:137)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+	at java.lang.Thread.run(Thread.java:748)
+2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+2018-11-19 10:38:06 [INFO] (BaseTest:22) - true
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

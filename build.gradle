@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'com.ultimate'
+group 'com.github.cweijan'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
@@ -21,6 +21,9 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.0.4.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.0.4.RELEASE'
 
+    testCompile (group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.0.4.RELEASE'){
+        exclude module: 'logback-classic'
+    }
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
 }

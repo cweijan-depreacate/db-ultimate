@@ -1,0 +1,406 @@
+b2018-11-19 10:38:05 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:05 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:05 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:05 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+«2018-11-19 10:38:05 [ERROR] (SqlExecutor:92) - Execute SQL : `insert into rh_admin(id,message,create_date,test,) values(0,'hello','2018-11-19 10:38:05','test',);` fail!  
+ÅYou have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ') values(0,'hello','2018-11-19 10:38:05','test',)' at line 1
+€com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ') values(0,'hello','2018-11-19 10:38:05','test',)' at line 1
+K	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+b	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+j	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+E	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+:	at com.mysql.jdbc.Util.handleNewInstance(Util.java:404)
+4	at com.mysql.jdbc.Util.getInstance(Util.java:387)
+C	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:939)
+@	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:3878)
+@	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:3814)
+;	at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:2478)
+>	at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:2625)
+E	at com.mysql.jdbc.ConnectionImpl.execSQL(ConnectionImpl.java:2551)
+S	at com.mysql.jdbc.PreparedStatement.executeInternal(PreparedStatement.java:1861)
+Y	at com.mysql.jdbc.PreparedStatement.executeUpdateInternal(PreparedStatement.java:2073)
+Y	at com.mysql.jdbc.PreparedStatement.executeUpdateInternal(PreparedStatement.java:2009)
+V	at com.mysql.jdbc.PreparedStatement.executeLargeUpdate(PreparedStatement.java:5094)
+Q	at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:1994)
+a	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+j	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+J	at com.ultimate.db.SqlExecutor.lambda$executeSql$2(SqlExecutor.java:65)
+B	at com.ultimate.db.SqlExecutor.transaction(SqlExecutor.java:90)
+A	at com.ultimate.db.SqlExecutor.executeSql(SqlExecutor.java:50)
+A	at com.ultimate.db.SqlExecutor.executeSql(SqlExecutor.java:34)
+A	at com.ultimate.core.DbUltimate.executeSql(DbUltimate.java:41)
+G	at com.ultimate.core.DbUltimate.insertSelective(DbUltimate.java:119)
+O	at com.utilmate.test.crud.TestInsert.testInsertSelective(TestInsert.java:29)
+A	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+S	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+[	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+6	at java.lang.reflect.Method.invoke(Method.java:498)
+Z	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+Y	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+X	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+W	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+S	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+C	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+W	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+W	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+A	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+E	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+G	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+E	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+F	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+?	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+v	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:106)
+p	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)
+p	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
+‹	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:66)
+u	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
+A	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+S	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+[	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+6	at java.lang.reflect.Method.invoke(Method.java:498)
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+j	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+y	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+<	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
+c	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:117)
+A	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+S	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+[	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+6	at java.lang.reflect.Method.invoke(Method.java:498)
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+’	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:155)
+’	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:137)
+Y	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+l	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+[	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+U	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+U	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+k	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
++	at java.lang.Thread.run(Thread.java:748)
+b2018-11-19 10:38:05 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:05 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:05 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:05 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+¶2018-11-19 10:38:05 [ERROR] (SqlExecutor:92) - Execute SQL : `insert into rh_admin(id, message, create_date, test, lib) values(0,'hello','2018-11-19 10:38:05','test',null);` fail!  
+&Unknown column 'lib' in 'field list'
+acom.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Unknown column 'lib' in 'field list'
+K	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+b	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+j	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+E	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+:	at com.mysql.jdbc.Util.handleNewInstance(Util.java:404)
+4	at com.mysql.jdbc.Util.getInstance(Util.java:387)
+C	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:939)
+@	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:3878)
+@	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:3814)
+;	at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:2478)
+>	at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:2625)
+E	at com.mysql.jdbc.ConnectionImpl.execSQL(ConnectionImpl.java:2551)
+S	at com.mysql.jdbc.PreparedStatement.executeInternal(PreparedStatement.java:1861)
+Y	at com.mysql.jdbc.PreparedStatement.executeUpdateInternal(PreparedStatement.java:2073)
+Y	at com.mysql.jdbc.PreparedStatement.executeUpdateInternal(PreparedStatement.java:2009)
+V	at com.mysql.jdbc.PreparedStatement.executeLargeUpdate(PreparedStatement.java:5094)
+Q	at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:1994)
+a	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+j	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+J	at com.ultimate.db.SqlExecutor.lambda$executeSql$2(SqlExecutor.java:65)
+B	at com.ultimate.db.SqlExecutor.transaction(SqlExecutor.java:90)
+A	at com.ultimate.db.SqlExecutor.executeSql(SqlExecutor.java:50)
+A	at com.ultimate.db.SqlExecutor.executeSql(SqlExecutor.java:34)
+A	at com.ultimate.core.DbUltimate.executeSql(DbUltimate.java:41)
+>	at com.ultimate.core.DbUltimate.insert(DbUltimate.java:108)
+F	at com.utilmate.test.crud.TestInsert.testInsert(TestInsert.java:18)
+A	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+S	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+[	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+6	at java.lang.reflect.Method.invoke(Method.java:498)
+Z	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+Y	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+X	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+W	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+S	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+C	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+W	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+W	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+A	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+E	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+G	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+E	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+F	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+?	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+v	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:106)
+p	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)
+p	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
+‹	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:66)
+u	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
+A	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+S	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+[	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+6	at java.lang.reflect.Method.invoke(Method.java:498)
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+j	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+y	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+<	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
+c	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:117)
+A	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+S	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+[	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+6	at java.lang.reflect.Method.invoke(Method.java:498)
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+’	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:155)
+’	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:137)
+Y	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+l	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+[	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+U	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+U	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+k	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
++	at java.lang.Thread.run(Thread.java:748)
+b2018-11-19 10:38:05 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+%id, message, create_date, test, lib
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+hComponentInfo{primaryKey='id', tableName='rh_admin', columnList=[id, message, create_date, test, lib]}
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+
+	b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+
+	h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+
+	a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+
+	W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+
+	PHikariProxyConnection@5418363 wrapping com.mysql.jdbc.JDBC4Connection@241d6c4a
+
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+
+¶2018-11-19 10:38:06 [ERROR] (SqlExecutor:92) - Execute SQL : `create table rh_admin(`id` int NOT NULL DEFAULT ''  AUTO_INCREMENT,`message` varchar(100) NOT NULL DEFAULT '' ,`date` null NOT NULL DEFAULT '' ,`test` varchar(100) NOT NULL DEFAULT '' ,`lib` null NOT NULL DEFAULT '' ,primary key(`id`)  );` fail!  
+
+ Invalid default value for 'id'
+
+[com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Invalid default value for 'id'
+
+K	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+
+b	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+
+j	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+
+E	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+
+:	at com.mysql.jdbc.Util.handleNewInstance(Util.java:404)
+
+4	at com.mysql.jdbc.Util.getInstance(Util.java:387)
+
+C	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:939)
+
+@	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:3878)
+
+@	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:3814)
+
+;	at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:2478)
+
+>	at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:2625)
+
+E	at com.mysql.jdbc.ConnectionImpl.execSQL(ConnectionImpl.java:2551)
+
+S	at com.mysql.jdbc.PreparedStatement.executeInternal(PreparedStatement.java:1861)
+
+Y	at com.mysql.jdbc.PreparedStatement.executeUpdateInternal(PreparedStatement.java:2073)
+
+Y	at com.mysql.jdbc.PreparedStatement.executeUpdateInternal(PreparedStatement.java:2009)
+
+V	at com.mysql.jdbc.PreparedStatement.executeLargeUpdate(PreparedStatement.java:5094)
+
+Q	at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:1994)
+
+a	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+
+j	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+
+J	at com.ultimate.db.SqlExecutor.lambda$executeSql$2(SqlExecutor.java:65)
+
+B	at com.ultimate.db.SqlExecutor.transaction(SqlExecutor.java:90)
+
+A	at com.ultimate.db.SqlExecutor.executeSql(SqlExecutor.java:50)
+
+C	at com.ultimate.db.DBInitialer.createTable(DBInitialer.java:102)
+
+B	at com.ultimate.db.DBInitialer.createTable(DBInitialer.java:51)
+
+O	at com.utilmate.test.base.TestDataBase.testCreateTable(TestDataBase.java:15)
+
+A	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+S	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+
+[	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+6	at java.lang.reflect.Method.invoke(Method.java:498)
+
+Z	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+
+Y	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+
+X	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+
+W	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+
+S	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+
+C	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+
+W	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+
+W	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+
+A	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+
+E	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+
+G	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+
+E	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+
+F	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+
+?	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+
+v	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:106)
+
+p	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)
+
+p	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
+
+‹	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:66)
+
+u	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
+
+A	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+S	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+
+[	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+6	at java.lang.reflect.Method.invoke(Method.java:498)
+
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+
+j	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+
+y	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+
+<	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
+
+c	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:117)
+
+A	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+S	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+
+[	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+6	at java.lang.reflect.Method.invoke(Method.java:498)
+
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+
+Z	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+
+’	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:155)
+
+’	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:137)
+
+Y	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+
+l	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+
+[	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+
+U	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+
+U	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+
+k	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+
++	at java.lang.Thread.run(Thread.java:748)
+
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+
+12018-11-19 10:38:06 [INFO] (BaseTest:22) - true
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+Ÿ2018-11-19 10:38:06 [DEBUG] (DbUtils:52) - closed connection HikariProxyConnection@174613321 wrapping com.zaxxer.hikari.pool.ProxyConnection.ClosedConnection
+`2018-11-19 10:38:06 [DEBUG] (SqlExecutor:69) - Execute SQL : DELETE FROM rh_admin where id =? 
+>2018-11-19 10:38:06 [DEBUG] (SqlExecutor:71) -  param 0 : 1 
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+]2018-11-19 10:38:06 [DEBUG] (SqlExecutor:69) - Execute SQL : select * from rh_admin limit 1
+ 2018-11-19 10:38:06 [DEBUG] (DbUtils:52) - closed connection HikariProxyConnection@1450833689 wrapping com.zaxxer.hikari.pool.ProxyConnection.ClosedConnection
+2018-11-16 15:08:14.0
+u2018-11-19 10:38:06 [INFO] (TestSelect:22) - Admin{id=2, message='hello', date=2018-11-16 15:08:14.0, test='test2'}
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+U2018-11-19 10:38:06 [DEBUG] (SqlExecutor:69) - Execute SQL : select * from rh_admin
+Ÿ2018-11-19 10:38:06 [DEBUG] (DbUtils:52) - closed connection HikariProxyConnection@687013749 wrapping com.zaxxer.hikari.pool.ProxyConnection.ClosedConnection
+°2018-11-19 10:38:06 [INFO] (TestSelect:31) - [Admin{id=2, message='hello', date=2018-11-16 15:08:14.0, test='test2'}, Admin{id=3, message='hello', date=null, test='test2'}, Admin{id=4, message='msg', date=null, test='test2'}, Admin{id=5, message='hello', date=null, test='test2'}, Admin{id=6, message='hello', date=null, test='test2'}, Admin{id=7, message='hello', date=null, test='test2'}, Admin{id=8, message='hello', date=null, test='test2'}, Admin{id=9, message='hello', date=null, test='test2'}, Admin{id=10, message='hello', date=null, test='test2'}, Admin{id=11, message='hello', date=null, test='test2'}, Admin{id=12, message='hello', date=null, test='test2'}, Admin{id=13, message='hello', date=2018-11-15 15:36:40.0, test='test2'}, Admin{id=14, message='hello', date=2018-11-15 15:38:21.0, test='test2'}]
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+y2018-11-19 10:38:06 [DEBUG] (SqlExecutor:69) - Execute SQL : select id, message from rh_admin where test =? or test =? 
+B2018-11-19 10:38:06 [DEBUG] (SqlExecutor:71) -  param 0 : test2 
+@2018-11-19 10:38:06 [DEBUG] (SqlExecutor:71) -  param 1 : 123 
+ 2018-11-19 10:38:06 [DEBUG] (DbUtils:52) - closed connection HikariProxyConnection@1953245238 wrapping com.zaxxer.hikari.pool.ProxyConnection.ClosedConnection
+î2018-11-19 10:38:06 [INFO] (BaseTest:41) - [Admin{id=2, message='hello', date=null, test='null'}, Admin{id=3, message='hello', date=null, test='null'}, Admin{id=4, message='msg', date=null, test='null'}, Admin{id=5, message='hello', date=null, test='null'}, Admin{id=6, message='hello', date=null, test='null'}, Admin{id=7, message='hello', date=null, test='null'}, Admin{id=8, message='hello', date=null, test='null'}, Admin{id=9, message='hello', date=null, test='null'}, Admin{id=10, message='hello', date=null, test='null'}, Admin{id=11, message='hello', date=null, test='null'}, Admin{id=12, message='hello', date=null, test='null'}, Admin{id=13, message='hello', date=null, test='null'}, Admin{id=14, message='hello', date=null, test='null'}]
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+h2018-11-19 10:38:06 [DEBUG] (SqlExecutor:69) - Execute SQL : select * from rh_admin where test like ? 
+@2018-11-19 10:38:06 [DEBUG] (SqlExecutor:71) -  param 0 : %2% 
+ 2018-11-19 10:38:06 [DEBUG] (DbUtils:52) - closed connection HikariProxyConnection@1721550628 wrapping com.zaxxer.hikari.pool.ProxyConnection.ClosedConnection
+®2018-11-19 10:38:06 [INFO] (BaseTest:50) - [Admin{id=2, message='hello', date=2018-11-16 15:08:14.0, test='test2'}, Admin{id=3, message='hello', date=null, test='test2'}, Admin{id=4, message='msg', date=null, test='test2'}, Admin{id=5, message='hello', date=null, test='test2'}, Admin{id=6, message='hello', date=null, test='test2'}, Admin{id=7, message='hello', date=null, test='test2'}, Admin{id=8, message='hello', date=null, test='test2'}, Admin{id=9, message='hello', date=null, test='test2'}, Admin{id=10, message='hello', date=null, test='test2'}, Admin{id=11, message='hello', date=null, test='test2'}, Admin{id=12, message='hello', date=null, test='test2'}, Admin{id=13, message='hello', date=2018-11-15 15:36:40.0, test='test2'}, Admin{id=14, message='hello', date=2018-11-15 15:38:21.0, test='test2'}]
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+ 2018-11-19 10:38:06 [DEBUG] (DbUtils:52) - closed connection HikariProxyConnection@2077370716 wrapping com.zaxxer.hikari.pool.ProxyConnection.ClosedConnection
+a2018-11-19 10:38:06 [DEBUG] (SqlExecutor:69) - Execute SQL : UPDATE rh_admin a set test='test2'
+b2018-11-19 10:38:06 [DEBUG] (ComponentScan:41) - scan component classes for package com.ultimate
+h2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Admin, table is rh_admin
+a2018-11-19 10:38:06 [DEBUG] (ComponentInfo:94) - load class com.ultimate.bean.Lib, table is lib
+W2018-11-19 10:38:06 [DEBUG] (DbConfig:41) - dataSource is null! init hikariDataSource
+[]
