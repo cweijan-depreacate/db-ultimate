@@ -16,6 +16,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.List;
 
+/**
+ 核心Api,用于Crud操作
+ */
 public class DbUltimate{
 
     private static Logger logger = Log.getLogger();
@@ -73,25 +76,25 @@ public class DbUltimate{
         return getBySql(sql, null, clazz);
     }
 
-    public <T> T get(Condition condition, Class<T> clazz){
+    public <T> T get(Operation operation, Class<T> clazz){
 
-        String sql = sqlGenerator.generateSelectSql(TableInfo.getComponent(clazz), condition);
+        String sql = sqlGenerator.generateSelectSql(TableInfo.getComponent(clazz), operation);
         sql += " limit 1";
-        return getBySql(sql, condition.getParams(), clazz);
+        return getBySql(sql, operation.getParams(), clazz);
     }
 
     public <T> T getByPrimaryKey(Object primary, Class<T> clazz){
 
-        Condition condition = new Condition();
-        condition.equals("id", primary);
+        Operation operation = new Operation();
+        operation.equals("id", primary);
 
-        return get(condition, clazz);
+        return get(operation, clazz);
     }
 
-    public <T> List<T> find(Condition condition, Class<T> clazz){
+    public <T> List<T> find(Operation operation, Class<T> clazz){
 
-        String sql = sqlGenerator.generateSelectSql(TableInfo.getComponent(clazz), condition);
-        return findBySql(sql, condition.getParams(), clazz);
+        String sql = sqlGenerator.generateSelectSql(TableInfo.getComponent(clazz), operation);
+        return findBySql(sql, operation.getParams(), clazz);
     }
 
     /**
@@ -123,15 +126,15 @@ public class DbUltimate{
         }
     }
 
-    public void delete(Condition condition, Class clazz){
+    public void delete(Operation operation, Class clazz){
 
-        String sql = sqlGenerator.generateDeleteSql(TableInfo.getComponent(clazz), condition);
-        executeSql(sql, condition.getParams());
+        String sql = sqlGenerator.generateDeleteSql(TableInfo.getComponent(clazz), operation);
+        executeSql(sql, operation.getParams());
     }
 
-    public void update(Condition condition, Class clazz){
+    public void update(Operation operation, Class clazz){
 
-        String sql = sqlGenerator.generateUpdateSql(TableInfo.getComponent(clazz), condition);
-        executeSql(sql, condition.getParams());
+        String sql = sqlGenerator.generateUpdateSql(TableInfo.getComponent(clazz), operation);
+        executeSql(sql, operation.getParams());
     }
 }

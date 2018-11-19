@@ -1,5 +1,8 @@
 package com.ultimate.util;
 
+/**
+ 字符串操作工具类
+ */
 public class StringUtils{
 
     public static boolean isEmpty(String string){

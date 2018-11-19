@@ -13,6 +13,9 @@ import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
+/**
+ 用来执行Sql
+ */
 public class SqlExecutor{
 
     private static Logger logger = Log.getLogger();

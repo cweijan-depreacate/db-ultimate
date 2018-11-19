@@ -8,8 +8,8 @@ public class TestDelete extends BaseTest{
 
     @Test
     public void deleteByEquals(){
-        condition.equals("id","1");
-        dbUltimate.delete(condition, Admin.class);
+        operation.equals("id","1");
+        dbUltimate.delete(operation, Admin.class);
     }
 
 }

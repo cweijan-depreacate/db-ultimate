@@ -8,8 +8,8 @@ public class TestUpdate extends BaseTest{
 
     @Test
     public void testUpdate(){
-        condition.update("test","test2");
-        dbUltimate.update(condition, Admin.class);
+        operation.update("test","test2");
+        dbUltimate.update(operation, Admin.class);
     }
 
 }

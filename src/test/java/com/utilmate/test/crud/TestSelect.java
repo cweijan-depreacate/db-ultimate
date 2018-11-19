@@ -3,7 +3,7 @@ package com.utilmate.test.crud;
 import com.ultimate.bean.Admin;
 import com.ultimate.component.TableInfo;
 import com.ultimate.component.info.ComponentInfo;
-import com.ultimate.core.Condition;
+import com.ultimate.core.Operation;
 import com.ultimate.util.Log;
 import com.utilmate.test.base.BaseTest;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class TestSelect extends BaseTest{
     @Test
     public void testGet(){
 
-        Admin admin = dbUltimate.get(new Condition(), Admin.class);
+        Admin admin = dbUltimate.get(new Operation(), Admin.class);
         Date date = admin.getDate();
         System.out.println(date);
         Log.getLogger().info(admin.toString());
@@ -26,7 +26,7 @@ public class TestSelect extends BaseTest{
     @Test
     public void testSelectAll(){
 
-        List<Admin> admins = dbUltimate.find(new Condition(), Admin.class);
+        List<Admin> admins = dbUltimate.find(new Operation(), Admin.class);
         ComponentInfo component = TableInfo.getComponent(Admin.class);
         Log.getLogger().info(admins.toString());
     }
@@ -34,10 +34,10 @@ public class TestSelect extends BaseTest{
     @Test
     public void testSelectByEquals(){
 
-        condition.equals("test", "test2");
-        condition.orEquals("test", "123");
-        condition.setColumn("id, message");
-        List<Admin> admins = dbUltimate.find(condition, Admin.class);
+        operation.equals("test", "test2");
+        operation.orEquals("test", "123");
+        operation.setColumn("id, message");
+        List<Admin> admins = dbUltimate.find(operation, Admin.class);
         logger.info(admins.toString());
 
     }
@@ -45,8 +45,8 @@ public class TestSelect extends BaseTest{
     @Test
     public void testSearch(){
 
-        condition.search("test", "2");
-        List<Admin> admins = dbUltimate.find(condition, Admin.class);
+        operation.search("test", "2");
+        List<Admin> admins = dbUltimate.find(operation, Admin.class);
         logger.info(admins.toString());
 
     }

@@ -15,6 +15,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Objects;
 
+/**
+ 用于创建实体对应的不存在的数据表
+ */
 public class DBInitialer{
 
     private static Logger logger = Log.getLogger();

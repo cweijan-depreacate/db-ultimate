@@ -5,6 +5,9 @@ import com.ultimate.generator.impl.MysqlGenerator;
 
 import java.util.Objects;
 
+/**
+ 根据DB配置获取sql生成器
+ */
 public class GeneratorAdapter{
 
     private String driverName;

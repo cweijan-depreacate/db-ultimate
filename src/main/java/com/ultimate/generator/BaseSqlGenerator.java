@@ -2,7 +2,7 @@ package com.ultimate.generator;
 
 import com.ultimate.component.TableInfo;
 import com.ultimate.component.info.ComponentInfo;
-import com.ultimate.core.Condition;
+import com.ultimate.core.Operation;
 import com.ultimate.util.DateUtils;
 import com.ultimate.util.Log;
 import com.ultimate.util.StringUtils;
@@ -58,52 +58,52 @@ public abstract class BaseSqlGenerator implements SqlGenerator{
     }
 
     @Override
-    public String generateDeleteSql(ComponentInfo componentInfo, Condition condition){
+    public String generateDeleteSql(ComponentInfo componentInfo, Operation operation){
 
         String sql = "DELETE FROM " + componentInfo.getTableName();
-        sql += generateConditionSql(condition);
+        sql += generateOperationSql(operation);
         return sql;
     }
 
     @Override
-    public String generateCountSql(ComponentInfo componentInfo, Condition condition){
+    public String generateCountSql(ComponentInfo componentInfo, Operation operation){
 
         String sql = "select count(*) count from " + componentInfo.getTableName();
-        return sql + generateConditionSql(condition);
+        return sql + generateOperationSql(operation);
     }
 
     @Override
-    public String generateUpdateSql(ComponentInfo componentInfo, Condition condition){
+    public String generateUpdateSql(ComponentInfo componentInfo, Operation operation){
 
         StringBuilder sql = new StringBuilder("UPDATE " + componentInfo.getTableName() + " a set ");
 
-        condition.getUpdateList().forEach((key, value)->sql.append(key).append("='").append(value).append("',"));
+        operation.getUpdateList().forEach((key, value)->sql.append(key).append("='").append(value).append("',"));
         String updateSql;
         if(sql.lastIndexOf(",") != -1){
             updateSql = sql.substring(0, sql.lastIndexOf(","));
         } else{
             updateSql = sql.toString();
         }
-        updateSql += generateConditionSql(condition);
+        updateSql += generateOperationSql(operation);
         return updateSql;
     }
 
     @Override
-    public String generateSelectSql(ComponentInfo componentInfo, Condition condition){
+    public String generateSelectSql(ComponentInfo componentInfo, Operation operation){
 
-        return "select " + condition.getColumn() + " from " + componentInfo.getTableName() + generateConditionSql(condition);
+        return "select " + operation.getColumn() + " from " + componentInfo.getTableName() + generateOperationSql(operation);
     }
 
-    private String generateConditionSql(Condition condition){
+    private String generateOperationSql(Operation operation){
 
         String AND = "and";
         String OR = "or";
         String sql = "";
 
-        sql += generateConditionSql0(condition.getEqualsCondition(), "=?", AND, condition);
-        sql += generateConditionSql0(condition.getNotEqualsCondition(), "!=?", AND, condition);
-        sql += generateConditionSql0(condition.getSearchCondition(), "like ?", AND, condition);
-        sql += generateConditionSql0(condition.getOrEqualsCondition(), "=?", OR, condition);
+        sql += generateOperationSql0(operation.getEqualsOperation(), "=?", AND, operation);
+        sql += generateOperationSql0(operation.getNotEqualsOperation(), "!=?", AND, operation);
+        sql += generateOperationSql0(operation.getSearchOperation(), "like ?", AND, operation);
+        sql += generateOperationSql0(operation.getOrEqualsOperation(), "=?", OR, operation);
 
         if(sql.startsWith(AND)){
             sql = sql.replaceFirst(AND, "");
@@ -114,23 +114,23 @@ public abstract class BaseSqlGenerator implements SqlGenerator{
             sql = " where" + sql;
         }
 
-        if(StringUtils.isNotEmpty(condition.getOrderBy())){
-            sql += " order by " + condition.getOrderBy();
+        if(StringUtils.isNotEmpty(operation.getOrderBy())){
+            sql += " order by " + operation.getOrderBy();
         }
 
         return sql;
     }
 
-    private String generateConditionSql0(Map<String, List<String>> conditionMap, String type, String separator, Condition condition){
+    private String generateOperationSql0(Map<String, List<String>> operationMap, String type, String separator, Operation operation){
 
         StringBuilder sql = new StringBuilder();
 
-        if(conditionMap != null){
-            conditionMap.forEach((key, conditions)->conditions.forEach(value->{
+        if(operationMap != null){
+            operationMap.forEach((key, operations)->operations.forEach(value->{
                 sql.append(separator).append(" ");
                 sql.append(key).append(" ");
                 sql.append(type).append(" ");
-                condition.addParam(value);
+                operation.addParam(value);
             }));
         }
 

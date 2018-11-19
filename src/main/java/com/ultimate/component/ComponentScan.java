@@ -2,18 +2,18 @@ package com.ultimate.component;
 
 import com.ultimate.annotation.Table;
 import com.ultimate.component.info.ComponentInfo;
-import com.ultimate.db.config.DbConfig;
-import com.ultimate.util.DbUtils;
 import com.ultimate.util.Log;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+/**
+ 扫描实体类
+ */
 public class ComponentScan{
 
     public void scan(String... scanPackages){
