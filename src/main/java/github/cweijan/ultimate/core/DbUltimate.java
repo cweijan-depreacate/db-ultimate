@@ -132,6 +132,17 @@ public class DbUltimate{
         executeSql(sql, operation.getParams());
     }
 
+    public void update(Object object){
+
+        try{
+            String sql = sqlGenerator.generateUpdateSql(object);
+            executeSql(sql);
+        } catch(IllegalAccessException e){
+            logger.error(e.getMessage(), e);
+        }
+
+    }
+
     public void update(Operation operation, Class clazz){
 
         String sql = sqlGenerator.generateUpdateSql(TableInfo.getComponent(clazz), operation);

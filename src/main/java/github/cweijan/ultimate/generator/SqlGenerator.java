@@ -5,11 +5,13 @@ import github.cweijan.ultimate.core.Operation;
 
 public interface SqlGenerator{
 
-    String generateInsertSql(Object component,boolean selective);
+    String generateInsertSql(Object component, boolean selective);
 
-    String generateDeleteSql(ComponentInfo componentInfo, Operation operation);
+    String generateUpdateSql(Object component) throws IllegalAccessException;
 
     String generateUpdateSql(ComponentInfo componentInfo, Operation operation);
+
+    String generateDeleteSql(ComponentInfo componentInfo, Operation operation);
 
     String generateSelectSql(ComponentInfo componentInfo, Operation operation);
 

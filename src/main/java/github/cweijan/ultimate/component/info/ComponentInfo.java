@@ -8,17 +8,17 @@ import github.cweijan.ultimate.annotation.Column;
 import github.cweijan.ultimate.annotation.Primary;
 import github.cweijan.ultimate.annotation.Table;
 import github.cweijan.ultimate.convert.TypeAdapter;
-import github.cweijan.ultimate.exception.ColumnNotExistsException;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ComponentInfo{
 
     private String primaryKey;
+
+    private String primaryFieldName;
+
+    private Field primaryField;
 
     private String tableName;
 
@@ -28,6 +28,16 @@ public class ComponentInfo{
      所有列,用于insert语句
      */
     private List<String> columnList;
+
+    /**
+     不包含主键的所有列,用于Insert语句
+     */
+    private List<String> notPrimaryColumnList;
+
+    /**
+     exclude column list
+     */
+    private List<String> excludeColumnList;
 
     /**
      属性名与ColumnInfo的映射
@@ -43,10 +53,16 @@ public class ComponentInfo{
 
         ColumnInfo columnInfo = fieldColumnInfoMap.get(fieldName);
         if(columnInfo == null){
-            throw new ColumnNotExistsException("尝试获取列信息" + fieldName + "失败!");
+            return null;
         }
 
         return columnInfo.getColumnName();
+    }
+
+    public Object getPrimaryValue(Object component) throws IllegalAccessException{
+
+        return primaryField.get(component);
+
     }
 
     /**
@@ -66,12 +82,19 @@ public class ComponentInfo{
             fieldColumnInfoMap = new HashMap<>();
             columnFieldMap = new HashMap<>();
             columnList = new ArrayList<>();
+
         }
 
         fieldColumnInfoMap.put(fieldName, columnInfo);
         columnFieldMap.put(columnInfo.getColumnName(), fieldName);
         columnList.add(columnInfo.getColumnName());
+    }
 
+    public boolean isExcludeField(Field field){
+
+        excludeColumnList = Optional.ofNullable(excludeColumnList).orElse(new ArrayList<>());
+
+        return field != null && excludeColumnList.contains(field.getName());
     }
 
     /**
@@ -111,6 +134,8 @@ public class ComponentInfo{
         for(Field field : fields){
             Exclude excludeAnnotation = field.getAnnotation(Exclude.class);
             if(excludeAnnotation != null){
+                componentInfo.excludeColumnList = Optional.ofNullable(componentInfo.excludeColumnList).orElse(new ArrayList<>());
+                componentInfo.excludeColumnList.add(field.getName());
                 continue;
             }
             columnInfo = new ColumnInfo();
@@ -127,17 +152,22 @@ public class ComponentInfo{
             } else{
                 columnName = field.getName();
             }
-
+field.setAccessible(true);
             Primary primaryAnnotation = field.getAnnotation(Primary.class);
             if(primaryAnnotation != null){
                 componentInfo.setPrimaryKey(columnName);
+                componentInfo.setPrimaryFieldName(field.getName());
+                componentInfo.primaryField=field;
                 if(primaryAnnotation.autoIncrement()){
                     columnInfo.setAutoIncrement(true);
                 }
-            }
-
-            if(field.getName().equals("id") && StringUtils.isEmpty(componentInfo.getPrimaryKey())){
+            } else if(field.getName().equals("id") && StringUtils.isEmpty(componentInfo.getPrimaryKey())){
                 componentInfo.setPrimaryKey(field.getName());
+                componentInfo.setPrimaryFieldName(field.getName());
+                componentInfo.primaryField=field;
+            } else{
+                componentInfo.notPrimaryColumnList = new ArrayList<>();
+                componentInfo.notPrimaryColumnList.add(columnName);
             }
 
             columnInfo.setColumnName(columnName);
@@ -153,13 +183,38 @@ public class ComponentInfo{
         return "ComponentInfo{" + "primaryKey='" + primaryKey + '\'' + ", tableName='" + tableName + '\'' + ", columnList=" + columnList + '}';
     }
 
+    public boolean isPrimaryField(Field field){
+        if(null==field)return false;
+
+        return Objects.equals(field.getName(),primaryFieldName);
+    }
+
     /**
-     @return 返回所有列信息, 用于查询
+     @return 返回所有列信息, 用于insert语句
      */
     public String getAllColumns(){
 
         String allColumns = columnList.toString();
         return allColumns.substring(1, allColumns.length() - 1);
+    }
+
+    public String getPrimaryFieldName(){
+
+        return primaryFieldName;
+    }
+
+    public void setPrimaryFieldName(String primaryFieldName){
+
+        this.primaryFieldName = primaryFieldName;
+    }
+
+    /**
+     @return 返回不包含主键的所有列信息, 用于insert语句
+     */
+    public String getNotPrimaryColumns(){
+
+        String notPrimaryColumns = notPrimaryColumnList.toString();
+        return notPrimaryColumns.substring(1, notPrimaryColumns.length() - 1);
     }
 
     public String getTableName(){

@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.generator;
 
 import github.cweijan.ultimate.component.TableInfo;
+import github.cweijan.ultimate.convert.TypeAdapter;
 import github.cweijan.ultimate.util.DateUtils;
 import github.cweijan.ultimate.util.Log;
 import github.cweijan.ultimate.util.StringUtils;
@@ -21,40 +22,89 @@ public abstract class BaseSqlGenerator implements SqlGenerator{
         ComponentInfo componentInfo = TableInfo.getComponent(component.getClass());
         StringBuilder values = new StringBuilder();
         Field[] fields = componentInfo.getComponentClass().getDeclaredFields();
-        String columns = componentInfo.getAllColumns();
+        String columns = componentInfo.getNotPrimaryColumns();
+        String values2 = "";
         StringBuilder columnsBuild = new StringBuilder();
-        IntStream.range(0, fields.length).forEach(index->{
+        for(Field field : fields){
             try{
-                Field field = fields[index];
                 field.setAccessible(true);
                 Object fieldValue = field.get(component);
-                if(selective && fieldValue == null){
-                    return;
+                if(selective && fieldValue == null || componentInfo.isExcludeField(field)){
+                    continue;
+                }
+                if(fieldValue != null && componentInfo.isPrimaryField(field)){
+                    columns = componentInfo.getAllColumns();
                 }
                 if(selective){
                     columnsBuild.append(componentInfo.getColumnNameByFieldName(field.getName()));
                 }
                 if(String.class.equals(field.getType()) || field.getType().getName().equals("chat") || Character.class.equals(field.getType())){
+                    if(fieldValue == null) fieldValue = "";
                     values.append("'").append(fieldValue).append("'");
                 } else if(Date.class.equals(field.getType())){
+                    if(fieldValue == null) fieldValue = "";
                     String date = DateUtils.formatDate((Date) fieldValue);
                     values.append("'").append(date).append("'");
+                } else if(TypeAdapter.isSimpleType(field.getType().getName())){
+                    if(fieldValue == null) fieldValue = 0;
+                    values.append(fieldValue);
                 } else{
                     values.append(fieldValue);
                 }
-                if(index != fields.length - 1){
-                    values.append(",");
-                    columnsBuild.append(",");
-                }
+                values.append(",");
+                columnsBuild.append(",");
             } catch(IllegalAccessException e){
                 Log.getLogger().error(e.getMessage(), e);
             }
-        });
+        }
         if(selective){
             columns = columnsBuild.toString();
+            if(columns.lastIndexOf(",") != -1){
+                columns = columns.substring(0, columns.lastIndexOf(","));
+            }
+        }
+        if(values.lastIndexOf(",") != -1){
+            values2 = values.substring(0, values.lastIndexOf(","));
+            Log.getLogger().info(values2);
         }
 
-        return "insert into " + componentInfo.getTableName() + "(" + columns + ") values(" + values.toString() + ");";
+        return "insert into " + componentInfo.getTableName() + "(" + columns + ") values(" + values2 + ");";
+    }
+
+    @Override
+    public String generateUpdateSql(Object component) throws IllegalAccessException{
+
+        ComponentInfo componentInfo = TableInfo.getComponent(component.getClass());
+        Object primaryValue = componentInfo.getPrimaryValue(component);
+        StringBuilder sql = new StringBuilder("UPDATE " + componentInfo.getTableName() + " a set ");
+
+        Field[] fields = component.getClass().getDeclaredFields();
+        for(Field field : fields){
+            try{
+                field.setAccessible(true);
+                Object fieldValue = field.get(component);
+                sql.append(field.getName() + "=");
+                if(TypeAdapter.isCharacterType(field.getType().getName())){
+                    if(fieldValue == null) fieldValue = "";
+                    sql.append("'").append(fieldValue).append("'");
+                } else if(TypeAdapter.isDateType(field.getType().getName())){
+                    if(fieldValue == null) fieldValue = "";
+                    String date = DateUtils.formatDate((Date) fieldValue);
+                    sql.append("'").append(date).append("'");
+                } else if(TypeAdapter.isSimpleType(field.getType().getName())){
+                    if(fieldValue == null) fieldValue = 0;
+                    sql.append(fieldValue);
+                } else{
+                    sql.append(fieldValue);
+                }
+                sql.append(",");
+            } catch(IllegalAccessException e){
+                Log.getLogger().error(e.getMessage(), e);
+            }
+
+        }
+        sql.append(" where ").append(componentInfo.getPrimaryKey()).append("='").append(primaryValue).append("'");
+        return null;
     }
 
     @Override

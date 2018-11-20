@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.test.bean;
 
 import github.cweijan.ultimate.annotation.Column;
+import github.cweijan.ultimate.annotation.Exclude;
 import github.cweijan.ultimate.annotation.Primary;
 import github.cweijan.ultimate.annotation.Table;
 
@@ -21,6 +22,7 @@ public class Admin{
 //    @Exclude
     private String test;
 
+    @Exclude
     private Lib lib;
 
     @Override

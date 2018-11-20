@@ -141,6 +141,7 @@ public class TypeConvert{
             int count = metaData.getColumnCount();
             for(int i = 1; i <= count; i++){
                 fieldName = component.getFieldNameByColumnName(metaData.getColumnLabel(i));
+                if(component.getColumnNameByFieldName(fieldName) == null) continue;
                 columns.put(fieldName, component.getColumnNameByFieldName(fieldName));
             }
         } catch(SQLException e){
