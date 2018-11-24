@@ -1,16 +1,12 @@
 package github.cweijan.ultimate.db
 
 import github.cweijan.ultimate.transaction.jdbc.JdbcTransaction
-import github.cweijan.ultimate.util.DbUtils
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.db.config.DbConfig
-import org.slf4j.Logger
 
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.sql.SQLException
-import java.util.concurrent.atomic.AtomicReference
 import java.util.stream.IntStream
 
 /**
@@ -36,7 +32,7 @@ class SqlExecutor(private val dbConfig: DbConfig) {
             var resultSet: ResultSet? = null
 
             val preparedStatement: PreparedStatement = connection.prepareStatement(sql)
-            val jdbcTransaction = JdbcTransaction(connection)
+            val transaction = JdbcTransaction(connection)
             if (params != null) {
                 IntStream.range(0, params.size).forEach { index ->
                     preparedStatement.setObject(index + 1, params[index])
@@ -47,16 +43,17 @@ class SqlExecutor(private val dbConfig: DbConfig) {
                     resultSet = preparedStatement.executeQuery()
                 } else {
                     preparedStatement.executeUpdate()
-                    DbUtils.closeConnection(connection)
                 }
+                transaction.commit()
+                transaction.close()
             } catch (e: Exception) {
                 logger.error("Execute SQL : `$sql` fail!  \n ${e.message} ", e)
-                jdbcTransaction.rollback()
+                transaction.rollback()
             }
             if (logger.isDebugEnabled) {
                 logger.debug("Execute SQL : $sql")
                 if (params != null) {
-                    IntStream.range(0, params.size ).forEach { index -> logger.debug(" param ${index+1} : ${params[index]} ") }
+                    IntStream.range(0, params.size).forEach { index -> logger.debug(" param ${index + 1} : ${params[index]} ") }
                 }
             }
 
