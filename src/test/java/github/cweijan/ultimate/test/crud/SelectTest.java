@@ -17,6 +17,7 @@ public class SelectTest extends BaseTest{
     public void testGet(){
 
         Admin admin = dbUltimate.get(new Operation(), Admin.class);
+        assert admin != null;
         Date date = admin.getDate();
         System.out.println(date);
         Log.getLogger().info(admin.toString());
@@ -26,8 +27,9 @@ public class SelectTest extends BaseTest{
     @Test
     public void testSelectAll(){
 
-        List<Admin> admins = dbUltimate.find(new Operation(), Admin.class);
-        ComponentInfo component = TableInfo.getComponent(Admin.class);
+        operation.limit(1);
+        List<Admin> admins = dbUltimate.find(operation, Admin.class);
+        ComponentInfo component = TableInfo.INSTANCE.getComponent(Admin.class);
         Log.getLogger().info(admins.toString());
     }
 

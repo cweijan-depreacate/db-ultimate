@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 public class JdbcTransaction implements Transaction{
 
-    private static Logger log = Log.getLogger();
+    private static Logger log = Log.INSTANCE.getLogger();
     protected Connection connection;
     protected DataSource dataSource;
     protected boolean autoCommit;

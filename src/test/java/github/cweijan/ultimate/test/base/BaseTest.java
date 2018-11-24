@@ -15,7 +15,7 @@ public class BaseTest{
     protected DbUltimate dbUltimate;
     protected DBInitialer dbInitialer;
     protected Operation operation ;
-    protected static Logger logger = Log.getLogger();
+    protected static Logger logger = Log.INSTANCE.getLogger();
 
     @Before
     public void initConfig(){
@@ -34,7 +34,7 @@ public class BaseTest{
 
     @Test
     public void testInit(){
-        Log.getLogger().info("init successful");
+        Log.INSTANCE.getLogger().info("init successful");
     }
 
 }

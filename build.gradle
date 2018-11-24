@@ -2,13 +2,15 @@ plugins {
     id 'java'
 }
 
-group 'com.github.cweijan'
+group 'github.cweijan'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
+
 repositories {
     mavenCentral()
+
 }
 
 dependencies {
@@ -20,6 +22,8 @@ dependencies {
     compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.38'
     compile group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.0.4.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.0.4.RELEASE'
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.3.0'
+
 
     testCompile (group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.0.4.RELEASE'){
         exclude module: 'logback-classic'

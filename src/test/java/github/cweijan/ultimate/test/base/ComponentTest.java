@@ -11,8 +11,8 @@ public class ComponentTest extends BaseTest{
     @Test
     public void testGetAllColumns(){
 
-        ComponentInfo component = TableInfo.getComponent(Admin.class);
-        ComponentInfo lib = TableInfo.getComponent(Lib.class);
+        ComponentInfo component = TableInfo.INSTANCE.getComponent(Admin.class);
+        ComponentInfo lib = TableInfo.INSTANCE.getComponent(Lib.class);
         String allColumns = component.getAllColumns();
         System.out.println(allColumns);
 
@@ -22,7 +22,7 @@ public class ComponentTest extends BaseTest{
     public void scan(){
 
 
-        System.out.println(TableInfo.getComponent(Admin.class));
+        System.out.println(TableInfo.INSTANCE.getComponent(Admin.class));
 
     }
 

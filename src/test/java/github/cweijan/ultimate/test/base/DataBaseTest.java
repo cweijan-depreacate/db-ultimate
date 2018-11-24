@@ -12,13 +12,13 @@ public class DataBaseTest extends BaseTest{
 
     @Test
     public void testCreateTable(){
-        dbInitialer.createTable(TableInfo.getComponent(Admin.class));
+        dbInitialer.createTable(TableInfo.INSTANCE.getComponent(Admin.class));
     }
 
     @Test
     public void testCheckTableExists(){
 
-        boolean exists = dbInitialer.tableExists(TableInfo.getComponent(Admin.class).getTableName());
+        boolean exists = dbInitialer.tableExists(TableInfo.INSTANCE.getComponent(Admin.class).getTableName());
         logger.info(String.valueOf(exists));
 
     }

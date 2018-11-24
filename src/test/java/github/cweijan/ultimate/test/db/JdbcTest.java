@@ -20,7 +20,7 @@ public class JdbcTest extends BaseTest{
         PreparedStatement preparedStatement = connection.prepareStatement("select * from rh_admin where message=? ");
         preparedStatement.setString(1,"'msg' or 1=1");
         ResultSet resultSet = preparedStatement.executeQuery();
-        List<Admin> admins = TypeConvert.resultSetToBeanList(resultSet, Admin.class);
+        List<Admin> admins = TypeConvert.INSTANCE.resultSetToBeanList(resultSet, Admin.class);
         System.out.println(admins);
 
     }

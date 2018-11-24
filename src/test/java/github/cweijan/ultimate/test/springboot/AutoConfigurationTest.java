@@ -17,7 +17,7 @@ public class AutoConfigurationTest{
 
     @Test
     public void testInit(){
-        Log.getLogger().info("init");
+        Log.INSTANCE.getLogger().info("init");
     }
 
 }
