@@ -8,15 +8,6 @@ import org.junit.Test;
 
 public class ComponentTest extends BaseTest{
 
-    @Test
-    public void testGetAllColumns(){
-
-        ComponentInfo component = TableInfo.INSTANCE.getComponent(Admin.class);
-        ComponentInfo lib = TableInfo.INSTANCE.getComponent(Lib.class);
-        String allColumns = component.getAllColumns();
-        System.out.println(allColumns);
-
-    }
 
     @Test
     public void scan(){

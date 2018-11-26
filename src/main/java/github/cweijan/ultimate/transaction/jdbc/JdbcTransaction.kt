@@ -5,7 +5,7 @@ import github.cweijan.ultimate.util.Log
 import java.sql.Connection
 import java.sql.SQLException
 
-class JdbcTransaction(var connection: Connection? = null, private var autoCommit: Boolean? = true) : Transaction {
+class JdbcTransaction(var connection: Connection? = null, private var autoCommit: Boolean = true) : Transaction {
 
     @Throws(SQLException::class)
     override fun commit() {

@@ -27,21 +27,6 @@ class ComponentInfo(var componentClass: Class<*>) {
     lateinit var tableName: String
 
     /**
-     * 所有列,用于insert语句
-     */
-    private val columnList by lazy {
-
-        return@lazy ArrayList<String>()
-    }
-
-    /**
-     * 不包含主键的所有列,用于Insert语句
-     */
-    private val notPrimaryColumnList by lazy {
-        return@lazy ArrayList<String>()
-    }
-
-    /**
      * exclude column list
      */
     private val excludeColumnList by lazy {
@@ -61,24 +46,6 @@ class ComponentInfo(var componentClass: Class<*>) {
     private val columnFieldMap by lazy {
         return@lazy HashMap<String, String>()
     }
-
-    /**
-     * @return 返回所有列信息, 用于insert语句
-     */
-    val allColumns: String
-        get() {
-            val allColumns = columnList.toString()
-            return allColumns.substring(1, allColumns.length - 1)
-        }
-
-    /**
-     * @return 返回不包含主键的所有列信息, 用于insert语句
-     */
-    val notPrimaryColumns: String
-        get() {
-            val notPrimaryColumns = notPrimaryColumnList.toString()
-            return notPrimaryColumns.substring(1, notPrimaryColumns.length - 1)
-        }
 
     /**
      * 根据属性名找列名
@@ -120,7 +87,6 @@ class ComponentInfo(var componentClass: Class<*>) {
 
         fieldColumnInfoMap[fieldName] = columnInfo
         columnFieldMap[columnInfo.columnName] = fieldName
-        columnList.add(columnInfo.columnName)
     }
 
     companion object {
@@ -183,7 +149,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                     componentInfo.primaryKey = columnInfo.columnName
                     componentInfo.primaryField = field
                     columnInfo.isAutoIncrement = primaryAnnotation?.autoIncrement ?: false
-                } else componentInfo.notPrimaryColumnList.add(columnInfo.columnName)
+                }
 
                 columnInfo.isNumeric = TypeAdapter.checkNumericType(field.type)
                 componentInfo.putColumn(field.name, columnInfo)

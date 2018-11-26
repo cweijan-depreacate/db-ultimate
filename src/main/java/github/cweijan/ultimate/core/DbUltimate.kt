@@ -8,7 +8,6 @@ import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.generator.GeneratorAdapter
 import github.cweijan.ultimate.generator.SqlGenerator
-import github.cweijan.ultimate.util.DbUtils
 import github.cweijan.ultimate.util.Log
 import java.sql.ResultSet
 
@@ -33,10 +32,9 @@ class DbUltimate(private val dbConfig: DbConfig) {
 
     fun <T> getBySql(sql: String, params: Array<String>?, clazz: Class<T>): T? {
 
-        val connection = dbConfig.openConnection()
-        val resultSet = SqlExecutor.executeSql(sql, params, connection)
+        val resultSet = sqlExecutor.executeSql(sql, params)
         val bean = TypeConvert.resultSetToBean(resultSet!!, clazz)
-        DbUtils.closeConnection(connection)
+        resultSet.close()
         return bean
     }
 
@@ -47,10 +45,9 @@ class DbUltimate(private val dbConfig: DbConfig) {
 
     fun <T> findBySql(sql: String, params: Array<String>?, clazz: Class<T>): List<T> {
 
-        val connection = dbConfig.openConnection()
-        val resultSet = SqlExecutor.executeSql(sql, params, connection)
+        val resultSet = sqlExecutor.executeSql(sql, params)
         val beanList = TypeConvert.resultSetToBeanList(resultSet!!, clazz)
-        DbUtils.closeConnection(connection)
+        resultSet.close()
         return beanList
     }
 
@@ -87,18 +84,7 @@ class DbUltimate(private val dbConfig: DbConfig) {
      */
     fun insert(component: Any) {
 
-        val sql = sqlGenerator!!.generateInsertSql(component, false)
-        executeSql(sql)
-    }
-
-    /**
-     * 插入对象,只插入不为空的属性
-     *
-     * @param component 实体对象
-     */
-    fun insertSelective(component: Any) {
-
-        val sql = sqlGenerator!!.generateInsertSql(component, true)
+        val sql = sqlGenerator!!.generateInsertSql(component)
         executeSql(sql)
     }
 

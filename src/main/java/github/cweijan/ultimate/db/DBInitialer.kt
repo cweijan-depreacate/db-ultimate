@@ -2,6 +2,7 @@ package github.cweijan.ultimate.db
 
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
+import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.util.DbUtils
 import github.cweijan.ultimate.util.Log
@@ -19,6 +20,8 @@ import java.util.Optional
  * 用于创建实体对应的不存在的数据表
  */
 class DBInitialer(private val dbConfig: DbConfig) {
+
+    private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
 
     companion object {
         private val logger = Log.logger
@@ -74,9 +77,11 @@ class DBInitialer(private val dbConfig: DbConfig) {
         for (field in clazz.declaredFields) {
 
             field.isAccessible = true
-            sql += "`${field.name}` ${getFieldType(field)} NOT NULL DEFAULT '' "
-            if (field.name == primaryKey) {
-                sql += " AUTO_INCREMENT"
+            sql += "`${field.name}` ${getFieldType(field)} NOT NULL "
+            sql += if (field.name == primaryKey) {
+                " AUTO_INCREMENT "
+            } else {
+                " DEFAULT ${TypeAdapter.getDefaultValue(field.type.name)} "
             }
             sql += ","
         }
@@ -84,7 +89,8 @@ class DBInitialer(private val dbConfig: DbConfig) {
         if (primaryKey != "") sql += "primary key(`$primaryKey`)"
         sql += " );"
 
-        SqlExecutor.executeSql(sql, null, dbConfig.openConnection())
+        sqlExecutor.executeSql(sql)
+        logger.info("auto create component table $tableName \n Execute SQL : `$sql`")
     }
 
     private fun getFieldType(field: Field): String? {
@@ -94,7 +100,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
             return "varchar(100)"
         }
 
-        if (fieldType == Int::class.java) {
+        if (fieldType == Int::class.java || fieldType == Integer::class.java) {
             return "int"
         }
 

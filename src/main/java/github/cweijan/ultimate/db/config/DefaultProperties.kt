@@ -13,5 +13,6 @@ object DefaultProperties {
     internal const val JDBC_URL = "jdbc:mysql://localhost:3306/test"
 
     internal const val DEFAULT_DRIVER = "com.mysql.jdbc.Driver"
+    internal const val SHOW_SQL = true
 
 }

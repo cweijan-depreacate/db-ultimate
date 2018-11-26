@@ -23,41 +23,47 @@ class SqlExecutor(private val dbConfig: DbConfig) {
         return executeSql(sql, params, dbConfig.openConnection())
     }
 
+    private fun executeSql(sql: String, params: Array<String>?, connection: Connection): ResultSet? {
+
+        var resultSet: ResultSet? = null
+
+        val preparedStatement: PreparedStatement = connection.prepareStatement(sql)
+        val transaction = JdbcTransaction(connection)
+        if (params != null) {
+            IntStream.range(0, params.size).forEach { index ->
+                preparedStatement.setObject(index + 1, params[index])
+            }
+        }
+        try {
+            if (sql.trim { it <= ' ' }.startsWith("select")) {
+                resultSet = preparedStatement.executeQuery()
+            } else {
+                preparedStatement.executeUpdate()
+                transaction.commit()
+
+            }
+        } catch (e: Exception) {
+            logger.error("Execute SQL : `$sql` fail!  \n ${e.message} ")
+            transaction.rollback()
+            throw e
+        }finally {
+            if(!sql.trim().startsWith("select")){
+                transaction.close()
+            }
+        }
+        if (dbConfig.showSql) {
+            logger.info("Execute SQL : $sql")
+            if (params != null) {
+                IntStream.range(0, params.size).forEach { index -> logger.debug(" param ${index + 1} : ${params[index]} ") }
+            }
+        }
+
+        return resultSet
+    }
+
     companion object {
 
         private val logger = Log.logger
 
-        fun executeSql(sql: String, params: Array<String>?, connection: Connection): ResultSet? {
-
-            var resultSet: ResultSet? = null
-
-            val preparedStatement: PreparedStatement = connection.prepareStatement(sql)
-            val transaction = JdbcTransaction(connection)
-            if (params != null) {
-                IntStream.range(0, params.size).forEach { index ->
-                    preparedStatement.setObject(index + 1, params[index])
-                }
-            }
-            try {
-                if (sql.trim { it <= ' ' }.startsWith("select")) {
-                    resultSet = preparedStatement.executeQuery()
-                } else {
-                    preparedStatement.executeUpdate()
-                }
-                transaction.commit()
-                transaction.close()
-            } catch (e: Exception) {
-                logger.error("Execute SQL : `$sql` fail!  \n ${e.message} ", e)
-                transaction.rollback()
-            }
-            if (logger.isDebugEnabled) {
-                logger.debug("Execute SQL : $sql")
-                if (params != null) {
-                    IntStream.range(0, params.size).forEach { index -> logger.debug(" param ${index + 1} : ${params[index]} ") }
-                }
-            }
-
-            return resultSet
-        }
     }
 }

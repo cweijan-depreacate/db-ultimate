@@ -5,7 +5,7 @@ import github.cweijan.ultimate.core.Operation
 
 interface SqlGenerator {
 
-    fun generateInsertSql(component: Any, selective: Boolean): String
+    fun generateInsertSql(component: Any): String
 
     @Throws(IllegalAccessException::class)
     fun generateUpdateSql(component: Any): String

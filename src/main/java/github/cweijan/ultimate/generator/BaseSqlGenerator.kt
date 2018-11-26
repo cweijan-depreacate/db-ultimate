@@ -7,33 +7,24 @@ import github.cweijan.ultimate.core.Operation
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
-import java.lang.RuntimeException
 
 abstract class BaseSqlGenerator : SqlGenerator {
 
-    override fun generateInsertSql(component: Any, selective: Boolean): String {
+    override fun generateInsertSql(component: Any): String {
 
         val componentInfo = TableInfo.getComponent(component.javaClass)
+        var columns = ""
         var values = ""
         val fields = componentInfo.componentClass.declaredFields
-        var columns = componentInfo.notPrimaryColumns
-        var selectiveColumns = ""
         for (field in fields) {
             try {
                 field.isAccessible = true
+                //TODO 获取值出现异常
                 val fieldValue: Any? = field.get(component)
-                if (selective && fieldValue == null || componentInfo.isExcludeField(field)) {
+                if (fieldValue == null || componentInfo.isExcludeField(field)) {
                     continue
                 }
-
-                if (selective) {
-                    selectiveColumns += "${componentInfo.getColumnNameByFieldName(field.name)},"
-                }
-
-                //主键值不为空,说明不用自增主键
-                if (fieldValue != null && componentInfo.isPrimaryField(field)) {
-                    columns = componentInfo.allColumns
-                }
+                columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
 
                 values += "${TypeAdapter.convertFieldValue(field.type.name, fieldValue)},"
             } catch (e: IllegalAccessException) {
@@ -41,8 +32,8 @@ abstract class BaseSqlGenerator : SqlGenerator {
             }
 
         }
-        if (selective && selectiveColumns.lastIndexOf(",") != -1) {
-            columns = selectiveColumns.substring(0, columns.lastIndexOf(","))
+        if (columns.lastIndexOf(",") != -1) {
+            columns = columns.substring(0, columns.lastIndexOf(","))
         }
         if (values.lastIndexOf(",") != -1) {
             values = values.substring(0, values.lastIndexOf(","))
@@ -62,7 +53,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
         val fields = component.javaClass.declaredFields
         for (field in fields) {
             field.isAccessible = true
-            if(componentInfo.isExcludeField(field))continue
+            if (componentInfo.isExcludeField(field)) continue
             val fieldValue: Any? = field.get(component)
             sql += "${field.name}=${TypeAdapter.convertFieldValue(field.type.name, fieldValue)},"
         }
@@ -97,7 +88,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
     override fun generateSelectSql(componentInfo: ComponentInfo, operation: Operation): String {
 
-        return "select " + operation.getColumn() + " from " + componentInfo.tableName + generateOperationSql(operation)+generatePaginationSql(operation)
+        return "select " + operation.getColumn() + " from " + componentInfo.tableName + generateOperationSql(operation) + generatePaginationSql(operation)
     }
 
     private fun generateOperationSql(operation: Operation): String {
@@ -141,6 +132,6 @@ abstract class BaseSqlGenerator : SqlGenerator {
         return sql.toString()
     }
 
-    abstract fun generatePaginationSql(operation: Operation):String?
+    abstract fun generatePaginationSql(operation: Operation): String?
 
 }

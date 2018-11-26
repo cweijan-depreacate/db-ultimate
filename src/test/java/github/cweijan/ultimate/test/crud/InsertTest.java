@@ -28,15 +28,4 @@ public class InsertTest extends BaseTest{
 
     }
 
-    @Test
-    public void testInsertSelective(){
-
-        Admin admin = new Admin();
-        admin.setMessage("hello");
-        admin.setTest("test");
-        admin.setDate(new Date());
-        dbUltimate.insertSelective(admin);
-
-    }
-
 }
