@@ -10,7 +10,7 @@ import java.util.Objects
  */
 class GeneratorAdapter(config: DbConfig) {
 
-    private val driverName: String = config.driver!!
+    private val driverName: String = config.driver
 
     val generator: SqlGenerator?
         get() {

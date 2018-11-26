@@ -19,7 +19,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
         for (field in fields) {
             try {
                 field.isAccessible = true
-                //TODO 获取值出现异常
+                //TODO 获取值出现异常,试下反射库
                 val fieldValue: Any? = field.get(component)
                 if (fieldValue == null || componentInfo.isExcludeField(field)) {
                     continue

@@ -27,8 +27,8 @@ class HikariDataSourceAdapter(private val dbConfig: DbConfig) {
         config.username = dbConfig.username
         config.password = dbConfig.password
         config.driverClassName = dbConfig.driver
-        config.minimumIdle = dbConfig.minimumIdle!!
-        config.maximumPoolSize = dbConfig.maximumPoolSize!!
+        config.minimumIdle = dbConfig.minimumIdle
+        config.maximumPoolSize = dbConfig.maximumPoolSize
 
         return config
     }
