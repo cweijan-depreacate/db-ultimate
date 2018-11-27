@@ -7,9 +7,19 @@ import org.junit.Test;
 public class UpdateTest extends BaseTest{
 
     @Test
-    public void testUpdate(){
+    public void testUpdateByOperation(){
         operation.update("test","test2");
         dbUltimate.update(operation, Admin.class);
+    }
+
+    @Test
+    public void testUpdate(){
+
+        Admin admin = new Admin();
+        admin.setId(2);
+        admin.setMessage("cweijain");
+        dbUltimate.update(admin);
+
     }
 
 }

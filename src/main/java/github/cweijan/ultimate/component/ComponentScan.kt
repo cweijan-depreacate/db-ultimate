@@ -40,30 +40,18 @@ object ComponentScan {
      *
      * @param packageName The base package
      */
-    fun scanTableClasses(packageName: String) {
+    private fun scanTableClasses(packageName: String) {
 
         if (StringUtils.isEmpty(packageName) || alreadyScanPackages.contains(packageName)) {
             return
         }
-        Log.logger.debug("scan component classes for package $packageName")
-        val classLoader = Thread.currentThread().contextClassLoader
-        val path = packageName.replace('.', '/')
-        val resources: Enumeration<URL>
-        val dirs = ArrayList<File>()
-        try {
-            resources = classLoader.getResources(path)
-            while (resources.hasMoreElements()) {
-                val resource = resources.nextElement()
-                dirs.add(File(resource.file))
-            }
-        } catch (e: IOException) {
-            Log.logger.error(e.message, e)
+        val resources = Thread.currentThread().contextClassLoader.getResources(packageName.replace('.', '/'))
+        while (resources.hasMoreElements()) {
+            val resource = resources.nextElement()
+            Log.logger.debug("scan component classes for path ${resource.path}")
+            findClasses(File(resource.file), packageName)
         }
 
-        val classes = ArrayList<Class<*>>()
-        for (directory in dirs) {
-            classes.addAll(findClasses(directory, packageName))
-        }
     }
 
     /**
@@ -73,33 +61,27 @@ object ComponentScan {
      * @param packageName The package name for classes found inside the base directory
      * @return The classes
      */
-    private fun findClasses(directory: File, packageName: String): List<Class<*>> {
+    private fun findClasses(directory: File, packageName: String) {
 
-        val classes = ArrayList<Class<*>>()
-        val files = Optional.ofNullable(directory.listFiles()).orElse(arrayOfNulls(0))
+        val files = directory.listFiles() ?: arrayOfNulls(0)
 
         for (file in files) {
             if (file.isDirectory) {
-                classes.addAll(findClasses(file, packageName + "." + file.name))
-                alreadyScanPackages.add(packageName + "." + file.name)
+                alreadyScanPackages.add("$packageName.${file.name}")
+                findClasses(file, "$packageName.${file.name}");
             } else if (file.name.endsWith(".class")) {
-                val className = packageName + '.'.toString() + file.name.substring(0, file.name.length - 6)
-                val clazz: Class<*>
                 try {
-                    clazz = Class.forName(className)
+                    val clazz = Class.forName("$packageName.${file.name.substring(0, file.name.length - 6)}")
+                    if (isComponent(clazz)) {
+                        ComponentInfo.init(clazz)
+                    }
                 } catch (e: ClassNotFoundException) {
-                    Log.logger.error("fail load $className!")
+                    Log.logger.error("fail load $packageName.${file.name.substring(0, file.name.length - 6)}!")
                     continue
-                }
-
-                if (isComponent(clazz)) {
-                    classes.add(clazz)
-                    ComponentInfo.init(clazz)
                 }
             }
         }
 
-        return classes
     }
 
 }

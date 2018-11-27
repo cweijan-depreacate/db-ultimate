@@ -7,6 +7,9 @@ import github.cweijan.ultimate.core.Operation
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
+import org.fest.reflect.core.Reflection
+
+//import org.fest.reflect.core.Reflection.*
 
 abstract class BaseSqlGenerator : SqlGenerator {
 
@@ -19,8 +22,9 @@ abstract class BaseSqlGenerator : SqlGenerator {
         for (field in fields) {
             try {
                 field.isAccessible = true
-                //TODO 获取值出现异常,试下反射库
-                val fieldValue: Any? = field.get(component)
+
+                val fieldValue: Any? = Reflection.field(field.name).ofType(field.type).`in`(component).get()
+
                 if (fieldValue == null || componentInfo.isExcludeField(field)) {
                     continue
                 }
@@ -53,8 +57,10 @@ abstract class BaseSqlGenerator : SqlGenerator {
         val fields = component.javaClass.declaredFields
         for (field in fields) {
             field.isAccessible = true
-            if (componentInfo.isExcludeField(field)) continue
-            val fieldValue: Any? = field.get(component)
+            val fieldValue: Any? = Reflection.field(field.name).ofType(field.type).`in`(component).get()
+            if (fieldValue==null||componentInfo.isExcludeField(field) || componentInfo.isPrimaryField(field)){
+                continue
+            }
             sql += "${field.name}=${TypeAdapter.convertFieldValue(field.type.name, fieldValue)},"
         }
 
@@ -79,7 +85,10 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
         var sql = "UPDATE ${componentInfo.tableName} a set "
 
-        operation.updateList!!.forEach { key, value -> sql += "$key='$value'," }
+        operation.updateList!!.forEach { key, value ->
+            sql += "$key=?,"
+            operation.addParam(value)
+        }
         if (sql.lastIndexOf(",") != -1) {
             sql = sql.substring(0, sql.lastIndexOf(","))
         }
