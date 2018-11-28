@@ -58,7 +58,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
         for (field in fields) {
             field.isAccessible = true
             val fieldValue: Any? = Reflection.field(field.name).ofType(field.type).`in`(component).get()
-            if (fieldValue==null||componentInfo.isExcludeField(field) || componentInfo.isPrimaryField(field)){
+            if (fieldValue == null || componentInfo.isExcludeField(field) || componentInfo.isPrimaryField(field)) {
                 continue
             }
             sql += "${field.name}=${TypeAdapter.convertFieldValue(field.type.name, fieldValue)},"
@@ -71,17 +71,17 @@ abstract class BaseSqlGenerator : SqlGenerator {
         return "$sql where ${componentInfo.primaryKey}='$primaryValue'"
     }
 
-    override fun generateDeleteSql(componentInfo: ComponentInfo, operation: Operation): String {
+    override fun <T> generateDeleteSql(componentInfo: ComponentInfo, operation: Operation<T>): String {
 
         return "DELETE FROM ${componentInfo.tableName} ${generateOperationSql(operation)}"
     }
 
-    override fun generateCountSql(componentInfo: ComponentInfo, operation: Operation): String {
+    override fun <T> generateCountSql(componentInfo: ComponentInfo, operation: Operation<T>): String {
 
         return "select count(*) count from ${componentInfo.tableName} ${generateOperationSql(operation)}"
     }
 
-    override fun generateUpdateSql(componentInfo: ComponentInfo, operation: Operation): String {
+    override fun <T> generateUpdateSql(componentInfo: ComponentInfo, operation: Operation<T>): String {
 
         var sql = "UPDATE ${componentInfo.tableName} a set "
 
@@ -95,12 +95,12 @@ abstract class BaseSqlGenerator : SqlGenerator {
         return "$sql ${generateOperationSql(operation)}"
     }
 
-    override fun generateSelectSql(componentInfo: ComponentInfo, operation: Operation): String {
+    override fun <T> generateSelectSql(componentInfo: ComponentInfo, operation: Operation<T>): String {
 
         return "select " + operation.getColumn() + " from " + componentInfo.tableName + generateOperationSql(operation) + generatePaginationSql(operation)
     }
 
-    private fun generateOperationSql(operation: Operation): String {
+    private fun <T> generateOperationSql(operation: Operation<T>): String {
 
         val AND = "and"
         val OR = "or"
@@ -127,7 +127,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
         return sql
     }
 
-    private fun generateOperationSql0(operationMap: Map<String, List<String>>?, condition: String, separator: String, operation: Operation): String {
+    private fun <T> generateOperationSql0(operationMap: Map<String, List<String>>?, condition: String, separator: String, operation: Operation<T>): String {
 
         val sql = StringBuilder()
 
@@ -141,6 +141,6 @@ abstract class BaseSqlGenerator : SqlGenerator {
         return sql.toString()
     }
 
-    abstract fun generatePaginationSql(operation: Operation): String?
+    abstract fun <T> generatePaginationSql(operation: Operation<T>): String?
 
 }

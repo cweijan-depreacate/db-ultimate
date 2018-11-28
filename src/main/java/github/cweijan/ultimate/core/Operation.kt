@@ -3,11 +3,11 @@ package github.cweijan.ultimate.core
 import java.util.ArrayList
 import java.util.HashMap
 
-class Operation
 /**
- * @param autoConvert convertCamelToUnderScore
+ * @param isAutoConvert convertCamelToUnderScore
  */
-@JvmOverloads constructor(var isAutoConvert: Boolean = false) {
+class Operation<T>
+private constructor(var componentClass: Class<T>, private var isAutoConvert: Boolean = false) {
 
     private val equalsMap: MutableMap<String, MutableList<String>> by lazy {
         return@lazy HashMap<String, MutableList<String>>()
@@ -70,7 +70,7 @@ class Operation
 
     private fun getOperationList(map: MutableMap<String, MutableList<String>>, key: String): MutableList<String>? {
 
-        map[key]=map[key]?:ArrayList()
+        map[key] = map[key] ?: ArrayList()
 
         return map[key]
     }
@@ -143,4 +143,13 @@ class Operation
 
         return column ?: "*"
     }
+
+    companion object {
+        @JvmStatic
+        fun <T> build(componentClass: Class<T>): Operation<T> {
+
+            return Operation(componentClass)
+        }
+    }
+
 }

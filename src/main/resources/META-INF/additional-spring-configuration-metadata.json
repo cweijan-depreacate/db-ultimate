@@ -1,0 +1,45 @@
+{
+  "properties": [
+    {
+      "name": "ultimate.jdbc.url",
+      "type": "java.lang.String",
+      "description": "Jdbc url.",
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
+    },
+    {
+      "name": "ultimate.jdbc.username",
+      "type": "java.lang.String",
+      "description": "Jdbc username.",
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
+    },
+    {
+      "name": "ultimate.jdbc.password",
+      "type": "java.lang.String",
+      "description": "Jdbc Password.",
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
+    },
+    {
+      "name": "ultimate.jdbc.driver",
+      "type": "java.lang.String",
+      "description": "DataSource Driver Name.",
+      "sourceType": "org.springframework.boot.autoconfigure.orm.jpa.JpaProperties$Hibernate"
+    },
+    {
+      "name": "ultimate.jdbc.maximumPoolSize",
+      "type": "java.lang.Integer",
+      "sourceType": "org.springframework.boot.autoconfigure.orm.jpa.JpaProperties$Hibernate"
+    },
+    {
+      "name": "ultimate.jdbc.minimumIdle",
+      "type": "java.lang.Integer",
+      "description": "Minmum Idle DataSource Pool Size.",
+      "sourceType": "org.springframework.boot.autoconfigure.orm.jpa.JpaProperties$Hibernate"
+    },
+    {
+      "name": "ultimate.jdbc.scanPackage",
+      "type": "java.lang.String",
+      "description": "set package to scan tableComponent.",
+      "sourceType": "org.springframework.boot.autoconfigure.orm.jpa.JpaProperties$Hibernate"
+    }
+  ]
+}

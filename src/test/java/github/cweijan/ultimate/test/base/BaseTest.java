@@ -4,6 +4,7 @@ import github.cweijan.ultimate.core.Operation;
 import github.cweijan.ultimate.core.DbUltimate;
 import github.cweijan.ultimate.db.DBInitialer;
 import github.cweijan.ultimate.db.config.DbConfig;
+import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +15,6 @@ public class BaseTest{
     protected DbConfig dbConfig;
     protected DbUltimate dbUltimate;
     protected DBInitialer dbInitialer;
-    protected Operation operation ;
     protected static Logger logger = Log.getLogger();
 
     @Before
@@ -29,7 +29,6 @@ public class BaseTest{
         dbConfig.setScanPackage("github.cweijan.ultimate");
         dbUltimate = new DbUltimate(dbConfig);
         dbInitialer=new DBInitialer(dbConfig);
-        operation=new Operation();
     }
 
     @Test

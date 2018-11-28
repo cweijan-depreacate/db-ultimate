@@ -14,7 +14,7 @@ import java.sql.ResultSet
 /**
  * 核心Api,用于Crud操作
  */
-class DbUltimate(private val dbConfig: DbConfig) {
+class DbUltimate(dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
     private val sqlGenerator: SqlGenerator? = GeneratorAdapter(dbConfig).generator
@@ -56,25 +56,25 @@ class DbUltimate(private val dbConfig: DbConfig) {
         return findBySql(sql, null, clazz)
     }
 
-    operator fun <T> get(operation: Operation, clazz: Class<T>): T? {
+    operator fun <T> get(operation: Operation<T>): T? {
 
-        var sql = sqlGenerator!!.generateSelectSql(TableInfo.getComponent(clazz), operation)
+        var sql = sqlGenerator!!.generateSelectSql(TableInfo.getComponent(operation.componentClass), operation)
         sql += " limit 1"
-        return getBySql(sql, operation.getParams(), clazz)
+        return getBySql(sql, operation.getParams(), operation.componentClass)
     }
 
     fun <T> getByPrimaryKey(primary: Any, clazz: Class<T>): T? {
 
-        val operation = Operation()
+        val operation = Operation.build(clazz)
         operation.equals("id", primary)
 
-        return get(operation, clazz)
+        return get(operation);
     }
 
-    fun <T> find(operation: Operation, clazz: Class<T>): List<T> {
+    fun <T> find(operation: Operation<T>): List<T> {
 
-        val sql = sqlGenerator!!.generateSelectSql(TableInfo.getComponent(clazz), operation)
-        return findBySql(sql, operation.getParams(), clazz)
+        val sql = sqlGenerator!!.generateSelectSql(TableInfo.getComponent(operation.componentClass), operation)
+        return findBySql(sql, operation.getParams(), operation.componentClass)
     }
 
     /**
@@ -95,9 +95,9 @@ class DbUltimate(private val dbConfig: DbConfig) {
         }
     }
 
-    fun delete(operation: Operation, clazz: Class<*>) {
+    fun <T> delete(operation: Operation<T>) {
 
-        val sql = sqlGenerator!!.generateDeleteSql(TableInfo.getComponent(clazz), operation)
+        val sql = sqlGenerator!!.generateDeleteSql(TableInfo.getComponent(operation.componentClass), operation)
         executeSql(sql, operation.getParams())
     }
 
@@ -112,9 +112,9 @@ class DbUltimate(private val dbConfig: DbConfig) {
 
     }
 
-    fun update(operation: Operation, clazz: Class<*>) {
+    fun <T> update(operation: Operation<T>) {
 
-        val sql = sqlGenerator!!.generateUpdateSql(TableInfo.getComponent(clazz), operation)
+        val sql = sqlGenerator!!.generateUpdateSql(TableInfo.getComponent(operation.componentClass), operation)
         executeSql(sql, operation.getParams())
     }
 
