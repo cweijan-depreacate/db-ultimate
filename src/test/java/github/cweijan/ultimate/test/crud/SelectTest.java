@@ -41,7 +41,7 @@ public class SelectTest extends BaseTest{
         Operation<Admin> operation = Operation.build(Admin.class);
         operation.equals("test", "test2");
         operation.orEquals("test", "123");
-        operation.setColumn("id, message");
+//        operation.setColumn("id, message");
         List<Admin> admins = dbUltimate.find(operation);
         logger.info(admins.toString());
 

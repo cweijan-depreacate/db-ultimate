@@ -24,6 +24,8 @@ class ComponentInfo(var componentClass: Class<*>) {
 
     private var primaryField: Field? = null
 
+    lateinit var selectColumns: String;
+
     lateinit var tableName: String
 
     /**
@@ -107,6 +109,7 @@ class ComponentInfo(var componentClass: Class<*>) {
 
             val componentInfo = ComponentInfo(componentClass)
             componentInfo.tableName = tableName
+            componentInfo.selectColumns = table.selectColumns
             generateColumns(componentInfo, componentClass)
             TableInfo.putComponent(componentClass, componentInfo)
             Log.logger.debug("load class ${componentClass.name}, table is $tableName")

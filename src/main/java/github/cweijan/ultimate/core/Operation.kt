@@ -141,7 +141,7 @@ private constructor(var componentClass: Class<T>, private var isAutoConvert: Boo
 
     fun getColumn(): String? {
 
-        return column ?: "*"
+        return column
     }
 
     companion object {

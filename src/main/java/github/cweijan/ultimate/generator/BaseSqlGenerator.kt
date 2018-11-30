@@ -97,7 +97,9 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
     override fun <T> generateSelectSql(componentInfo: ComponentInfo, operation: Operation<T>): String {
 
-        return "select " + operation.getColumn() + " from " + componentInfo.tableName + generateOperationSql(operation) + generatePaginationSql(operation)
+        val column = operation.getColumn() ?: componentInfo.selectColumns
+
+        return "select $column from ${componentInfo.tableName + generateOperationSql(operation) + generatePaginationSql(operation)}"
     }
 
     private fun <T> generateOperationSql(operation: Operation<T>): String {
