@@ -99,26 +99,27 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
         val column = operation.getColumn() ?: componentInfo.selectColumns
 
-        return "select $column from ${componentInfo.tableName + generateOperationSql(operation) + generatePaginationSql(operation)}"
+        val sql = "select $column from ${componentInfo.tableName + generateOperationSql(operation)}"
+        return generatePaginationSql(sql, operation)
     }
 
     private fun <T> generateOperationSql(operation: Operation<T>): String {
 
-        val AND = "and"
-        val OR = "or"
+        val and = "and"
+        val or = "or"
         var sql = ""
 
-        sql += generateOperationSql0(operation.equalsOperation, "=", AND, operation)
-        sql += generateOperationSql0(operation.notEqualsOperation, "!=", AND, operation)
-        sql += generateOperationSql0(operation.searchOperation, "like", AND, operation)
-        sql += generateOperationSql0(operation.orEqualsOperation, "=", OR, operation)
+        sql += generateOperationSql0(operation.equalsOperation, "=", and, operation)
+        sql += generateOperationSql0(operation.notEqualsOperation, "!=", and, operation)
+        sql += generateOperationSql0(operation.searchOperation, "like", and, operation)
+        sql += generateOperationSql0(operation.orEqualsOperation, "=", or, operation)
 
-        if (sql.startsWith(AND)) {
-            sql = sql.replaceFirst(AND.toRegex(), "")
+        if (sql.startsWith(and)) {
+            sql = sql.replaceFirst(and.toRegex(), "")
             sql = " where$sql"
         }
-        if (sql.startsWith(OR)) {
-            sql = sql.replaceFirst(OR.toRegex(), "")
+        if (sql.startsWith(or)) {
+            sql = sql.replaceFirst(or.toRegex(), "")
             sql = " where$sql"
         }
 
@@ -143,6 +144,6 @@ abstract class BaseSqlGenerator : SqlGenerator {
         return sql.toString()
     }
 
-    abstract fun <T> generatePaginationSql(operation: Operation<T>): String?
+    abstract fun <T> generatePaginationSql(sql: String, operation: Operation<T>): String
 
 }

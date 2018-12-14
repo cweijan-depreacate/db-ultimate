@@ -11,8 +11,19 @@ import org.junit.Test;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class SelectTest extends BaseTest{
+
+    @Test
+    public void testGetMap(){
+
+        String sql = "select * from rh_admin";
+        Map<String, Object> result = dbUltimate.executeSqlOfMap(sql);
+
+        Log.getLogger().info(result.toString());
+
+    }
 
     @Test
     public void testGet(){
@@ -41,7 +52,7 @@ public class SelectTest extends BaseTest{
         Operation<Admin> operation = Operation.build(Admin.class);
         operation.equals("test", "test2");
         operation.orEquals("test", "123");
-//        operation.setColumn("id, message");
+        //        operation.setColumn("id, message");
         List<Admin> admins = dbUltimate.find(operation);
         logger.info(admins.toString());
 

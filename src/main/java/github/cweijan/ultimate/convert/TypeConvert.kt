@@ -18,15 +18,56 @@ object TypeConvert {
      * @param beanClass 要转换的实体类型
      * @return 返回转换完成的实体
      */
-    fun <T> resultSetToBean(resultSet: ResultSet, beanClass: Class<T>): T? {
+    fun <T> resultSetToBean(resultSet: ResultSet, beanClass: Class<T>, hadNext: Boolean = false): T? {
 
-        if (!resultSet.next()) {
-            return null
+        if (!hadNext && !resultSet.next()) return null
+
+        if (beanClass == Map::class.java) {
+//            return resultSetToMap(resultSet)
         }
 
         val columns = getColumns(resultSet, beanClass)
 
+
         return toJavaBean(resultSet, beanClass, columns)
+    }
+
+    /**
+     * 将resultSet转为java对象List
+     *
+     * @param resultSet 查询的结果集
+     * @param beanClass 要转换的类型
+     * @return 转换完成的实体列表
+     */
+    fun <T> resultSetToBeanList(resultSet: ResultSet, beanClass: Class<T>): List<T> {
+
+        val beanList = ArrayList<T>()
+        while (resultSet.next()) {
+            beanList.add(resultSetToBean(resultSet, beanClass,true)!!)
+        }
+
+        return beanList
+    }
+
+    fun resultSetToMapList(resultSet: ResultSet): List<Map<String, Any>> {
+        val list = ArrayList<Map<String, Any>>()
+        while (resultSet.next()) {
+            list.add(resultSetToMap(resultSet, true)!!)
+        }
+        return list
+    }
+
+    fun resultSetToMap(resultSet: ResultSet, hadNext: Boolean = false): Map<String, Any>? {
+
+        if (!hadNext && !resultSet.next()) return null
+
+        val md = resultSet.metaData
+        val columns = md.columnCount
+        val row = HashMap<String, Any>(columns)
+        for (i in 1..columns) {
+            row[md.getColumnName(i)] = resultSet.getObject(i)
+        }
+        return row;
     }
 
     /**
@@ -66,25 +107,6 @@ object TypeConvert {
 
         }
         return beanInstance
-    }
-
-    /**
-     * 将resultSet转为java对象List
-     *
-     * @param resultSet 查询的结果集
-     * @param beanClass 要转换的类型
-     * @return 转换完成的实体列表
-     */
-    fun <T> resultSetToBeanList(resultSet: ResultSet, beanClass: Class<T>): List<T> {
-
-        val beanList = ArrayList<T>()
-        val columns = getColumns(resultSet, beanClass)
-
-        while (resultSet.next()) {
-            beanList.add(toJavaBean(resultSet, beanClass, columns))
-        }
-
-        return beanList
     }
 
     /**
