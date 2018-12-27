@@ -1,10 +1,8 @@
 package github.cweijan.ultimate.test.base;
 
-import github.cweijan.ultimate.core.Operation;
 import github.cweijan.ultimate.core.DbUltimate;
-import github.cweijan.ultimate.db.DBInitialer;
+import github.cweijan.ultimate.db.init.DBInitialer;
 import github.cweijan.ultimate.db.config.DbConfig;
-import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Before;
 import org.junit.Test;

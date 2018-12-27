@@ -3,7 +3,7 @@ package github.cweijan.ultimate.test.bean
 import github.cweijan.ultimate.annotation.Primary
 import github.cweijan.ultimate.annotation.Table
 
-@Table
+@Table(alias = "l")
 class Lib {
 
     @Primary

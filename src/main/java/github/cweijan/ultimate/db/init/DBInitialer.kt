@@ -1,20 +1,17 @@
-package github.cweijan.ultimate.db
+package github.cweijan.ultimate.db.init
 
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
+import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.util.DbUtils
 import github.cweijan.ultimate.util.Log
-import github.cweijan.ultimate.util.StringUtils
 
 import java.lang.reflect.Field
 import java.security.InvalidParameterException
-import java.sql.Connection
 import java.sql.SQLException
-import java.util.ArrayList
-import java.util.Objects
-import java.util.Optional
+import java.util.*
 
 /**
  * 用于创建实体对应的不存在的数据表
@@ -32,7 +29,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
      */
     fun initalerTable() {
 
-        if (dbConfig.isCreateNonexistsTable) {
+        if (dbConfig.createNonexistsTable) {
             TableInfo.componentList.stream().filter { componentInfo -> !tableExists(componentInfo.tableName) }.forEach { componentInfo ->
                 createTable(componentInfo)
             }
@@ -42,7 +39,31 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
     fun createTable(componentInfo: ComponentInfo) {
 
-        createTable(componentInfo.componentClass, componentInfo.tableName, componentInfo.primaryKey, dbConfig.openConnection())
+        if (componentInfo.primaryKey == "") {
+            throw InvalidParameterException("class ${componentInfo.componentClass.name} primary key must exists !")
+        }
+        var sql = "create table ${componentInfo.tableName}("
+
+        for (field in componentInfo.componentClass.declaredFields) {
+
+            if (componentInfo.isExcludeField(field)) {
+                continue
+            }
+            field.isAccessible = true
+            sql += "`${componentInfo.getColumnNameByFieldName(field.name)}` ${getFieldType(field)} NOT NULL "
+            sql += if (field.name == componentInfo.primaryKey) {
+                " AUTO_INCREMENT "
+            } else {
+                " DEFAULT ${TypeAdapter.getDefaultValue(field.type.name)} "
+            }
+            sql += ","
+        }
+
+        if (componentInfo.primaryKey != "") sql += "primary key(`${componentInfo.primaryKey}`)"
+        sql += " );"
+
+        sqlExecutor.executeSql(sql)
+        logger.info("auto create component table ${componentInfo.tableName} \n Execute SQL : `$sql`")
     }
 
     /**
@@ -63,34 +84,6 @@ class DBInitialer(private val dbConfig: DbConfig) {
         }
 
         return true
-    }
-
-    private fun <T> createTable(clazz: Class<T>, tableName: String, primaryKey: String?, connection: Connection) {
-
-        if (primaryKey == "") {
-            throw InvalidParameterException("class ${clazz.name} primary key must exists !")
-        }
-        DbUtils.checkConnectionAlive(connection)
-
-        var sql = "create table $tableName("
-
-        for (field in clazz.declaredFields) {
-
-            field.isAccessible = true
-            sql += "`${field.name}` ${getFieldType(field)} NOT NULL "
-            sql += if (field.name == primaryKey) {
-                " AUTO_INCREMENT "
-            } else {
-                " DEFAULT ${TypeAdapter.getDefaultValue(field.type.name)} "
-            }
-            sql += ","
-        }
-
-        if (primaryKey != "") sql += "primary key(`$primaryKey`)"
-        sql += " );"
-
-        sqlExecutor.executeSql(sql)
-        logger.info("auto create component table $tableName \n Execute SQL : `$sql`")
     }
 
     private fun getFieldType(field: Field): String? {
@@ -116,9 +109,13 @@ class DBInitialer(private val dbConfig: DbConfig) {
             return "float"
         }
 
+        if (fieldType == Date::class.java) {
+            return "datetime"
+        }
+
         return if (fieldType.isPrimitive) {
             fieldType.name
-        } else null
+        } else "varchar(100)"
 
     }
 

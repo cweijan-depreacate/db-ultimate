@@ -7,7 +7,7 @@ import github.cweijan.ultimate.annotation.Table
 
 import java.util.Date
 
-@Table(value="rh_admin",selectColumns = "message")
+@Table(value="rh_admin",selectColumns = "*",alias = "ad")
 class Admin {
 
     @Primary

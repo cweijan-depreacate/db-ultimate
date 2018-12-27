@@ -1,5 +1,7 @@
 package github.cweijan.ultimate.core
 
+import github.cweijan.ultimate.component.TableInfo
+import github.cweijan.ultimate.component.info.ComponentInfo
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -21,22 +23,24 @@ private constructor(var componentClass: Class<T>, private var isAutoConvert: Boo
     private val searchMap: MutableMap<String, MutableList<String>>by lazy {
         return@lazy HashMap<String, MutableList<String>>()
     }
-    private val joinTables: MutableList<String> by lazy {
-        return@lazy ArrayList<String>()
-    }
+
     private val params: MutableList<String> by lazy {
         return@lazy ArrayList<String>()
     }
     private val updateMap: MutableMap<String, String>by lazy {
         return@lazy HashMap<String, String>()
     }
+    private var column: String? = null
+    val joinTables: MutableList<String> by lazy {
+        return@lazy ArrayList<String>()
+    }
     var orderBy: String? = null
         private set
-    private var column: String? = null
     var start: Int? = null
         private set
     var limit: Int? = null
         private set
+    var tableAlias: String? = null
 
     val updateList: Map<String, String>?
         get() = updateMap
@@ -53,6 +57,15 @@ private constructor(var componentClass: Class<T>, private var isAutoConvert: Boo
     val searchOperation: Map<String, List<String>>?
         get() = searchMap
 
+    val alias: String?
+        get()  {
+            return when {
+                this.tableAlias != null -> " $tableAlias"
+                TableInfo.getComponent(componentClass).tableAlias != null -> " "+TableInfo.getComponent(componentClass).tableAlias
+                else -> ""
+            }
+        }
+
     fun addParam(param: String) {
 
         params.add(param)
@@ -62,10 +75,16 @@ private constructor(var componentClass: Class<T>, private var isAutoConvert: Boo
         return params.toTypedArray()
     }
 
-    fun join(table: String, alias: String, onOperation: String) {
+    @JvmOverloads
+    fun join(table: String, alias: String?="", onOperation: String) {
 
-        val segment = "join $table $alias on $onOperation"
+        val segment = " join $table $alias on $onOperation "
         joinTables.add(segment)
+    }
+
+    @JvmOverloads
+    fun <T> join(clazz: Class<T>, alias: String?=TableInfo.getComponent(clazz).tableAlias, onOperation: String) {
+        join(TableInfo.getComponent(clazz).tableName, alias, onOperation)
     }
 
     private fun getOperationList(map: MutableMap<String, MutableList<String>>, key: String): MutableList<String>? {

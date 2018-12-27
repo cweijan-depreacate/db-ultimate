@@ -11,7 +11,7 @@ import javax.sql.DataSource
 @ConfigurationProperties(prefix = "ultimate.jdbc")
 class DbConfig(private var dataSource: DataSource? = null) {
 
-    var isCreateNonexistsTable: Boolean = false
+    var createNonexistsTable: Boolean = false
 
     var url: String? = null
     var username: String? = null

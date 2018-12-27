@@ -21,7 +21,7 @@ public class SelectTest extends BaseTest{
         String sql = "select * from rh_admin";
         Map<String, Object> result = dbUltimate.executeSqlOfMap(sql);
 
-        Log.getLogger().info(result.toString());
+        Log.getLogger().info(result + "");
 
     }
 
@@ -37,10 +37,20 @@ public class SelectTest extends BaseTest{
     }
 
     @Test
+    public void testJoin(){
+
+        Operation<Admin> operation = Operation.build(Admin.class);
+        operation.join(Lib.class, "ad.id=l.id");
+
+        Admin admin = dbUltimate.get(operation);
+        Log.getLogger().info(admin + "");
+
+    }
+
+    @Test
     public void testSelectAll(){
 
         Operation<Admin> operation = Operation.build(Admin.class);
-        operation.limit(1);
         List<Admin> admins = dbUltimate.find(operation);
         ComponentInfo component = TableInfo.INSTANCE.getComponent(Admin.class);
         Log.getLogger().info(admins.toString());

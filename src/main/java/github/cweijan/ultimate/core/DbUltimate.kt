@@ -3,7 +3,7 @@ package github.cweijan.ultimate.core
 import github.cweijan.ultimate.component.ComponentScan
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.convert.TypeConvert
-import github.cweijan.ultimate.db.DBInitialer
+import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.generator.GeneratorAdapter
@@ -22,8 +22,8 @@ class DbUltimate(dbConfig: DbConfig) {
     private var sqlGenerator: SqlGenerator = GeneratorAdapter(dbConfig).generator
 
     init {
-        DBInitialer(dbConfig).initalerTable()
         ComponentScan.scan(dbConfig.scanPackage!!)
+        DBInitialer(dbConfig).initalerTable()
     }
 
     @JvmOverloads
