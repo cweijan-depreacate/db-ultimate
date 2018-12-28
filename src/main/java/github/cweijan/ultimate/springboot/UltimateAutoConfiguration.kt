@@ -18,19 +18,8 @@ open class UltimateAutoConfiguration {
 
     @Autowired
     private val dbConfig: DbConfig? = null
-
-    @Autowired
-    @Bean
-    @ConditionalOnBean(DataSource::class)
-    open fun createUltimate(dataSource: DataSource): DbUltimate? {
-
-        if (null != dbConfig && !dbConfig.enable) {
-            Log.logger.debug("Db-ultimate is disabled, skip..")
-            return null
-        }
-
-        return DbUltimate(DbConfig(dataSource))
-    }
+    @Autowired(required = false)
+    private val dataSource: DataSource? = null
 
     @Bean
     @ConditionalOnMissingBean(DataSource::class)
@@ -47,6 +36,18 @@ open class UltimateAutoConfiguration {
         }
 
         return DbUltimate(dbConfig)
+    }
+
+    @Bean
+    @ConditionalOnBean(DataSource::class)
+    open fun createUltimateByDataSource(): DbUltimate? {
+
+        if (null != dbConfig && !dbConfig.enable) {
+            Log.logger.debug("Db-ultimate is disabled, skip..")
+            return null
+        }
+
+        return DbUltimate(DbConfig(dataSource))
     }
 
 }
