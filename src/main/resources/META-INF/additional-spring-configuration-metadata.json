@@ -1,4 +1,10 @@
 {
+  "groups": [
+    {
+      "name": "ultimate",
+      "type": "github.cweijan.ultimate.db.config.DbConfig"
+    }
+  ],
   "properties": [
     {
       "name": "ultimate.jdbc.url",
@@ -22,24 +28,42 @@
       "name": "ultimate.jdbc.driver",
       "type": "java.lang.String",
       "description": "DataSource Driver Name.",
-      "sourceType": "org.springframework.boot.autoconfigure.orm.jpa.JpaProperties$Hibernate"
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
     },
     {
       "name": "ultimate.jdbc.maximumPoolSize",
       "type": "java.lang.Integer",
-      "sourceType": "org.springframework.boot.autoconfigure.orm.jpa.JpaProperties$Hibernate"
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
     },
     {
       "name": "ultimate.jdbc.minimumIdle",
       "type": "java.lang.Integer",
       "description": "Minmum Idle DataSource Pool Size.",
-      "sourceType": "org.springframework.boot.autoconfigure.orm.jpa.JpaProperties$Hibernate"
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
     },
     {
       "name": "ultimate.jdbc.scanPackage",
       "type": "java.lang.String",
       "description": "set package to scan tableComponent.",
-      "sourceType": "org.springframework.boot.autoconfigure.orm.jpa.JpaProperties$Hibernate"
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
+    },
+    {
+      "name": "ultimate.jdbc.showSql",
+      "type": "java.lang.Boolean",
+      "description": "Enable or disable showsql.",
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
+    },
+    {
+      "name": "ultimate.jdbc.enable",
+      "type": "java.lang.Boolean",
+      "description": "Enable or disable dbultimate.",
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
+    },
+    {
+      "name": "ultimate.jdbc.createNonexistsTable",
+      "type": "java.lang.Boolean",
+      "description": "Enable or disable auto create non exists table.",
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
     }
   ]
 }

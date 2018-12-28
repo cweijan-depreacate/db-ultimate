@@ -3,13 +3,12 @@ package github.cweijan.ultimate.core
 import github.cweijan.ultimate.component.ComponentScan
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.convert.TypeConvert
-import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
+import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.generator.GeneratorAdapter
 import github.cweijan.ultimate.generator.SqlGenerator
 import github.cweijan.ultimate.util.Log
-import org.fest.util.Arrays
 import java.sql.ResultSet
 import java.util.stream.IntStream
 
@@ -115,10 +114,7 @@ class DbUltimate(dbConfig: DbConfig) {
     @JvmOverloads
     fun <T> findBy(clazz: Class<T>, column: String, value: String, columns: String = ""): List<T> {
 
-        val operation = Operation.build(clazz)
-        if (columns != "") operation.setColumn(columns)
-        operation.equals(column, value)
-        return findBy(clazz, Arrays.array(column), Arrays.array(value), columns)
+        return findBy(clazz, arrayOf(column), arrayOf(value), columns)
     }
 
     @JvmOverloads
@@ -140,7 +136,7 @@ class DbUltimate(dbConfig: DbConfig) {
     @JvmOverloads
     fun <T> getBy(clazz: Class<T>, column: String, value: String, columns: String = ""): T? {
 
-        return getBy(clazz, Arrays.array(column), Arrays.array(value), columns)
+        return getBy(clazz, arrayOf(column), arrayOf(value), columns)
     }
 
     @JvmOverloads

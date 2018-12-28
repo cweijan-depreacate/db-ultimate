@@ -24,6 +24,11 @@ open class UltimateAutoConfiguration {
     @ConditionalOnBean(DataSource::class)
     open fun createUltimate(dataSource: DataSource): DbUltimate? {
 
+        if (null != dbConfig && !dbConfig.enable) {
+            Log.logger.debug("Db-ultimate is disabled, skip..")
+            return null
+        }
+
         return DbUltimate(DbConfig(dataSource))
     }
 
