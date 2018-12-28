@@ -6,6 +6,7 @@ import github.cweijan.ultimate.convert.TypeConvert
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
+import github.cweijan.ultimate.debug.HotSwapSupport
 import github.cweijan.ultimate.generator.GeneratorAdapter
 import github.cweijan.ultimate.generator.SqlGenerator
 import github.cweijan.ultimate.util.Log
@@ -21,6 +22,9 @@ class DbUltimate(dbConfig: DbConfig) {
     private var sqlGenerator: SqlGenerator = GeneratorAdapter(dbConfig).generator
 
     init {
+        if(dbConfig.develop){
+            HotSwapSupport.startHotSwapListener()
+        }
         ComponentScan.scan(dbConfig.scanPackage!!)
         DBInitialer(dbConfig).initalerTable()
     }

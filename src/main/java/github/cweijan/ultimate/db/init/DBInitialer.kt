@@ -39,9 +39,6 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
     fun createTable(componentInfo: ComponentInfo) {
 
-        if (componentInfo.primaryKey == "") {
-            throw InvalidParameterException("class ${componentInfo.componentClass.name} primary key must exists !")
-        }
         var sql = "create table ${componentInfo.tableName}("
 
         for (field in componentInfo.componentClass.declaredFields) {

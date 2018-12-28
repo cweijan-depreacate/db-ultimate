@@ -28,7 +28,7 @@ object ComponentScan {
         }
     }
 
-    private fun isComponent(clazz: Class<*>): Boolean {
+    fun isComponent(clazz: Class<*>): Boolean {
 
         val table = clazz.getAnnotation(Table::class.java)
 

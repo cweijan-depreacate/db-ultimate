@@ -22,6 +22,13 @@ object TableInfo {
         componentList.add(componentInfo)
     }
 
+    @JvmStatic
+    fun removeComponent(clazz: Class<*>?){
+        clazz?:return
+        componentList.remove(TypeMap[clazz.name])
+        TypeMap.remove(clazz.name)
+    }
+
     fun isAlreadyInit(clazz: Class<*>): Boolean {
         return TypeMap.containsKey(clazz.name)
     }

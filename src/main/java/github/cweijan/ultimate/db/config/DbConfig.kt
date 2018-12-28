@@ -22,6 +22,7 @@ class DbConfig(private var dataSource: DataSource? = null) {
     var minimumIdle = DefaultProperties.MINIUM_IDEL_SIZE
     var showSql = DefaultProperties.SHOW_SQL
     var enable = DefaultProperties.ENABLE
+    var develop = DefaultProperties.DEVELOP
     var scanPackage: String? = null
 
     companion object {

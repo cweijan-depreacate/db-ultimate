@@ -28,8 +28,7 @@ class ComponentInfo(var componentClass: Class<*>) {
 
     lateinit var tableName: String
 
-    var tableAlias:String?=null
-
+    var tableAlias: String? = null
 
     /**
      * exclude column list
@@ -101,9 +100,9 @@ class ComponentInfo(var componentClass: Class<*>) {
          *
          * @param componentClass 实体类
          */
-        fun init(componentClass: Class<*>) {
+        fun init(componentClass: Class<*>, scanMode: Boolean = true) {
 
-            if (TableInfo.isAlreadyInit(componentClass)) return
+            if (TableInfo.isAlreadyInit(componentClass) && scanMode) return
             val table = componentClass.getAnnotation(Table::class.java) ?: return
             var tableName = table.value
             if (tableName == "") {
@@ -113,7 +112,7 @@ class ComponentInfo(var componentClass: Class<*>) {
             val componentInfo = ComponentInfo(componentClass)
             componentInfo.tableName = tableName
             componentInfo.selectColumns = table.selectColumns
-            componentInfo.tableAlias=table.alias
+            componentInfo.tableAlias = table.alias
             generateColumns(componentInfo, componentClass)
             TableInfo.putComponent(componentClass, componentInfo)
             Log.logger.debug("load class ${componentClass.name}, table is $tableName")

@@ -64,6 +64,12 @@
       "type": "java.lang.Boolean",
       "description": "Enable or disable auto create non exists table.",
       "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
+    },
+    {
+      "name": "ultimate.jdbc.develop",
+      "type": "java.lang.Boolean",
+      "description": "Enable or disable develop mode,develop mode support reconfig component.",
+      "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
     }
   ]
 }

@@ -6,5 +6,6 @@ object DefaultProperties {
     internal const val MINIUM_IDEL_SIZE = 5
     internal const val SHOW_SQL = true
     internal const val ENABLE =true
+    internal const val DEVELOP =false
 
 }
