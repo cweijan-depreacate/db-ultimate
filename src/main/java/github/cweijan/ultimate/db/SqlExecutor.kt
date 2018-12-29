@@ -43,7 +43,7 @@ class SqlExecutor(private val dbConfig: DbConfig) {
 
             }
         } catch (e: Exception) {
-            logger.error("Execute SQL : $sql fail!  \n ${e.message} ")
+            logger.error("Fail Execute SQL : $sql   \n ${e.message} ")
             transaction.rollback()
             throw e
         }finally {

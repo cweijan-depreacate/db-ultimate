@@ -16,6 +16,14 @@ import java.util.Map;
 public class SelectTest extends BaseTest{
 
     @Test
+    public void findByDriect(){
+
+        List<Admin> admins = dbUltimate.find(Admin.class, 0, 20);
+        Log.getLogger().info(admins.toString());
+
+    }
+
+    @Test
     public void testGetMap(){
 
         String sql = "select * from rh_admin";

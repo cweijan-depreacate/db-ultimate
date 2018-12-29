@@ -22,8 +22,8 @@ class DbUltimate(dbConfig: DbConfig) {
     private var sqlGenerator: SqlGenerator = GeneratorAdapter(dbConfig).generator
 
     init {
-        if(dbConfig.develop){
-            HotSwapSupport.startHotSwapListener()
+        if (dbConfig.develop) {
+            HotSwapSupport.startHotSwapListener(dbConfig)
         }
         ComponentScan.scan(dbConfig.scanPackage!!)
         DBInitialer(dbConfig).initalerTable()
@@ -107,6 +107,23 @@ class DbUltimate(dbConfig: DbConfig) {
         operation.equals("id", primary)
 
         return get(operation)
+    }
+
+    @JvmOverloads
+    fun <T> find(clazz: Class<T>, page: Int=1, pageSize: Int = 0, columns: String = ""): List<T> {
+
+        val operation = Operation.build(clazz)
+        if (pageSize != 0) {
+
+            val start = if (page <= 0) {
+                0
+            } else (page - 1) * pageSize
+            operation.start(start)
+            operation.limit(pageSize)
+        }
+        operation.setColumn(columns)
+
+        return find(operation)
     }
 
     fun <T> find(operation: Operation<T>): List<T> {

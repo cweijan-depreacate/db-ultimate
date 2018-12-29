@@ -62,6 +62,13 @@ class ComponentInfo(var componentClass: Class<*>) {
     }
 
     /**
+     * 判断这个组件是否有属性
+     */
+    fun nonExistsColumn():Boolean{
+        return fieldColumnInfoMap.keys.size==0
+    }
+
+    /**
      * 根据列名找属性名
      *
      * @param columnName 列名
@@ -100,10 +107,10 @@ class ComponentInfo(var componentClass: Class<*>) {
          *
          * @param componentClass 实体类
          */
-        fun init(componentClass: Class<*>, scanMode: Boolean = true) {
+        fun init(componentClass: Class<*>, scanMode: Boolean = true): ComponentInfo? {
 
-            if (TableInfo.isAlreadyInit(componentClass) && scanMode) return
-            val table = componentClass.getAnnotation(Table::class.java) ?: return
+            if (TableInfo.isAlreadyInit(componentClass) && scanMode) return null
+            val table = componentClass.getAnnotation(Table::class.java) ?: return null
             var tableName = table.value
             if (tableName == "") {
                 tableName = componentClass.simpleName.toLowerCase()
@@ -116,7 +123,7 @@ class ComponentInfo(var componentClass: Class<*>) {
             generateColumns(componentInfo, componentClass)
             TableInfo.putComponent(componentClass, componentInfo)
             Log.logger.debug("load class ${componentClass.name}, table is $tableName")
-
+            return componentInfo
         }
 
         /**

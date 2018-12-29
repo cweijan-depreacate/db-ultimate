@@ -9,7 +9,6 @@ import github.cweijan.ultimate.util.DbUtils
 import github.cweijan.ultimate.util.Log
 
 import java.lang.reflect.Field
-import java.security.InvalidParameterException
 import java.sql.SQLException
 import java.util.*
 
@@ -30,14 +29,20 @@ class DBInitialer(private val dbConfig: DbConfig) {
     fun initalerTable() {
 
         if (dbConfig.createNonexistsTable) {
-            TableInfo.componentList.stream().filter { componentInfo -> !tableExists(componentInfo.tableName) }.forEach { componentInfo ->
+            TableInfo.componentList.stream().forEach { componentInfo ->
                 createTable(componentInfo)
             }
         }
 
     }
 
-    fun createTable(componentInfo: ComponentInfo) {
+    fun createTable(componentInfo: ComponentInfo?) {
+        if (componentInfo==null || tableExists(componentInfo.tableName)) return
+
+        if(componentInfo.nonExistsColumn()){
+            logger.debug("${componentInfo.componentClass.name} dont have any columns, skip create table ")
+            return
+        }
 
         var sql = "create table ${componentInfo.tableName}("
 
@@ -56,11 +61,16 @@ class DBInitialer(private val dbConfig: DbConfig) {
             sql += ","
         }
 
-        if (componentInfo.primaryKey != "") sql += "primary key(`${componentInfo.primaryKey}`)"
+        if (componentInfo.primaryKey != null) sql += "primary key(`${componentInfo.primaryKey}`)"
         sql += " );"
 
-        sqlExecutor.executeSql(sql)
-        logger.info("auto create component table ${componentInfo.tableName} \n Execute SQL : `$sql`")
+        try {
+            sqlExecutor.executeSql(sql)
+        } catch (e: Exception) {
+            logger.error("create table ${componentInfo.tableName} fail!")
+            return
+        }
+        logger.info("auto create component table ${componentInfo.tableName}")
     }
 
     /**
