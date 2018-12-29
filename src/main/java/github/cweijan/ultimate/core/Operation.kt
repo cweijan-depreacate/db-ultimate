@@ -160,6 +160,8 @@ private constructor(var componentClass: Class<T>, private var isAutoConvert: Boo
 
     fun getColumn(): String? {
 
+        if(column.equals(""))return null
+
         return column
     }
 
