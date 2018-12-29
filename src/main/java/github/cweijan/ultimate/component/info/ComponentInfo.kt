@@ -122,7 +122,7 @@ class ComponentInfo(var componentClass: Class<*>) {
             componentInfo.tableAlias = table.alias
             generateColumns(componentInfo, componentClass)
             TableInfo.putComponent(componentClass, componentInfo)
-            Log.logger.debug("load class ${componentClass.name}, table is $tableName")
+            Log.logger.debug("load component ${componentClass.name}, table is $tableName")
             return componentInfo
         }
 

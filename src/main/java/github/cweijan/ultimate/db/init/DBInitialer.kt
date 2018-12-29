@@ -9,6 +9,7 @@ import github.cweijan.ultimate.util.DbUtils
 import github.cweijan.ultimate.util.Log
 
 import java.lang.reflect.Field
+import java.sql.Connection
 import java.sql.SQLException
 import java.util.*
 
@@ -18,6 +19,7 @@ import java.util.*
 class DBInitialer(private val dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
+    private var connection: Connection = dbConfig.openConnection()
 
     companion object {
         private val logger = Log.logger
@@ -37,9 +39,12 @@ class DBInitialer(private val dbConfig: DbConfig) {
     }
 
     fun createTable(componentInfo: ComponentInfo?) {
-        if (componentInfo==null || tableExists(componentInfo.tableName)) return
 
-        if(componentInfo.nonExistsColumn()){
+        if (connection.isClosed) connection = dbConfig.openConnection()
+
+        if (componentInfo == null || tableExists(componentInfo.tableName)) return
+
+        if (componentInfo.nonExistsColumn()) {
             logger.debug("${componentInfo.componentClass.name} dont have any columns, skip create table ")
             return
         }
@@ -80,14 +85,10 @@ class DBInitialer(private val dbConfig: DbConfig) {
      */
     fun tableExists(tableName: String): Boolean {
 
-        val connection = dbConfig.openConnection()
-
         try {
             return connection.metaData.getTables(null, null, tableName, null).next()
         } catch (e: SQLException) {
             logger.error(e.message, e)
-        } finally {
-            DbUtils.closeConnection(connection)
         }
 
         return true
