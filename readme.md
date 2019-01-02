@@ -1,18 +1,19 @@
 # db-ultimate
-目前Java有很多操作Db的框架, 但是用起来都不和我的心意, 需要重复的地方太多, 于是, db-ultimate诞生了, 一个极速开发的ORM框架
+目前Java有很多操作数据库的框架, 但是都不和我的心意, 需要重复的代码太多, 于是, 我开发了db-ultimate, 一个极速的ORM框架, 最大力度的减少重复代码
 
 ## QuickStart
-1. [下载](https://github.com/cweijan/db-ultimate/releases)Jar包, 加入项目依赖,对DbUltimate进行集成配置
+1. [下载](https://github.com/cweijan/db-ultimate/releases)jar包, 加入项目依赖,对DbUltimate进行集成配置
 2. 使用**Table**注解对数据库对象和实体进行映射
 
-## 定义TableComponent
+## ORM映射
+**定义TableComponent**
 ``` java
 import github.cweijan.ultimate.annotation.Table;
 import github.cweijan.ultimate.annotation.Exclude;
 import github.cweijan.ultimate.annotation.Primary;
 import github.cweijan.ultimate.annotation.Table;
 
-//值为标名,默认表名为类名
+//值为表名,默认表名为类名
 @Table(value = "t_booklist")
 public class Book{
 
@@ -41,13 +42,13 @@ public class Book{
 
 
 ## 集成Spring-Boot
-在applciation.properites加上配置信息, 内置[HikariCp](https://github.com/brettwooldridge/HikariCP)数据库连接池, [点击](#SpringBoot配置详解)查看更多配置信息
+在application.properties加上配置信息, 内置[HikariCp](https://github.com/brettwooldridge/HikariCP)数据库连接池, [点击](#SpringBoot配置详解)查看更多配置详情
 ``` 
 ultimate.jdbc.driver=com.mysql.jdbc.Driver
 ultimate.jdbc.username=root
 ultimate.jdbc.password=root
 ultimate.jdbc.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8
-#配置扫描的TableCommponent路径
+#配置需要扫描的TableCommponent包名
 ultimate.jdbc.scanPackage=gitbhu.cweijan
 ```
 
@@ -115,16 +116,6 @@ ultimate.jdbc.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEnco
 
 # Api
 
-## Operation对象
-除了插入操作外, 更新删除查询主要围绕Operation对象进行
-``` java
-Operation<Admin> operation = Operation.build(Admin.class);
-operation.equals("test", "test2"); // ==查询
-operation.notEquals("test", "test2"); // !=查询
-operation.search("test", "t"); //like查询
-operation.join(Lib.class, "ad.id=l.id"); //连表查询,建议在TableComponent配置表别名
-```
-
 ## 插入
 直接插入Java对象即可
 ``` java
@@ -133,6 +124,16 @@ admin.setMessage("hello");
 admin.setTest("test");
 admin.setDate(new Date());
 dbUltimate.insert(admin);
+```
+
+## Operation对象
+除了插入操作外, 更新删除查询主要围绕Operation对象进行
+``` java
+Operation<Admin> operation = Operation.build(Admin.class);
+operation.equals("test", "test2"); // ==查询
+operation.notEquals("test", "test2"); // !=查询
+operation.search("test", "t"); //like查询
+operation.join(Lib.class, "ad.id=l.id"); //连表查询,建议在TableComponent配置表别名
 ```
 
 ## 更新
