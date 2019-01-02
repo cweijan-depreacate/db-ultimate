@@ -15,7 +15,7 @@ class AutoComponentScanner : ImportBeanDefinitionRegistrar {
 
         val scanPackages = AnnotationAttributes.fromMap(annotationAttributes)?.getStringArray("value")
         if (scanPackages != null) {
-            ComponentScan.scan(*scanPackages)
+            ComponentScan.scan(scanPackages.asList())
         }
 
     }

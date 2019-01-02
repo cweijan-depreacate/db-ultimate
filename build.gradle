@@ -6,12 +6,11 @@ plugins {
 }
 
 
-
 group = 'github.cweijan'
 
 sourceCompatibility = 1.8
 
-version '1.24'
+version '1.25'
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

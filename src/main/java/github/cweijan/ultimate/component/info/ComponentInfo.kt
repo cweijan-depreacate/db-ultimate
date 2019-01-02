@@ -64,8 +64,8 @@ class ComponentInfo(var componentClass: Class<*>) {
     /**
      * 判断这个组件是否有属性
      */
-    fun nonExistsColumn():Boolean{
-        return fieldColumnInfoMap.keys.size==0
+    fun nonExistsColumn(): Boolean {
+        return fieldColumnInfoMap.keys.size == 0
     }
 
     /**
@@ -120,7 +120,7 @@ class ComponentInfo(var componentClass: Class<*>) {
             componentInfo.tableName = tableName
             componentInfo.selectColumns = table.selectColumns
             componentInfo.tableAlias = table.alias
-            generateColumns(componentInfo, componentClass)
+            generateColumns(componentInfo, table.camelcaseToUnderLine)
             TableInfo.putComponent(componentClass, componentInfo)
             Log.logger.debug("load component ${componentClass.name}, table is $tableName")
             return componentInfo
@@ -130,11 +130,11 @@ class ComponentInfo(var componentClass: Class<*>) {
          * 生成component的列信息
          *
          * @param componentInfo component实例
-         * @param clazz         实体类
+         * @param camelcaseToUnderLine         是否将驼峰变量转为下划线列名
          */
-        private fun generateColumns(componentInfo: ComponentInfo, clazz: Class<*>) {
+        private fun generateColumns(componentInfo: ComponentInfo, camelcaseToUnderLine: Boolean = true) {
 
-            val fields = clazz.declaredFields
+            val fields = componentInfo.componentClass.declaredFields
             var columnInfo: ColumnInfo
 
             for (field in fields) {
@@ -154,7 +154,15 @@ class ComponentInfo(var componentClass: Class<*>) {
                     if (columnAnnotation.length != 0) {
                         columnInfo.length = columnAnnotation.length
                     }
-                } else columnInfo.columnName = field.name
+                } else {
+                    columnInfo.columnName = field.name
+                }
+
+                if (camelcaseToUnderLine) {
+                    val regex = Regex("([a-z])([A-Z]+)")
+                    val replacement = "$1_$2"
+                    columnInfo.columnName = columnInfo.columnName.replace(regex, replacement).toLowerCase()
+                }
 
                 //生成primary key column info
                 val primaryAnnotation = field.getAnnotation(Primary::class.java)

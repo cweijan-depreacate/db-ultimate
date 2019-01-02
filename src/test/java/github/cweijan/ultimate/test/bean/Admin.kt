@@ -7,7 +7,7 @@ import github.cweijan.ultimate.annotation.Table
 
 import java.util.Date
 
-@Table(value="rh_admin",selectColumns = "*",alias = "ad")
+@Table(value="rh_admin",selectColumns = "*",alias = "ad",camelcaseToUnderLine = true)
 class Admin {
 
     @Primary
@@ -15,6 +15,8 @@ class Admin {
 
     @Column
     var message: String? = null
+
+    var helloWorldTest:String?=null
 
     @Column("create_date")
     var date: Date? = null

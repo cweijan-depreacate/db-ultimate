@@ -6,11 +6,7 @@ import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
 
 import java.io.File
-import java.io.IOException
-import java.net.URL
 import java.util.ArrayList
-import java.util.Enumeration
-import java.util.Optional
 
 /**
  * 扫描实体类
@@ -20,9 +16,9 @@ object ComponentScan {
     private val alreadyScanPackages = ArrayList<String>()
 
     @JvmStatic
-    fun scan(vararg scanPackages: String) {
+    fun scan(scanPackages: List<String>) {
 
-        for (scanPackage in scanPackages) {
+        scanPackages.forEach { scanPackage ->
             scanTableClasses(scanPackage)
             alreadyScanPackages.add(scanPackage)
         }

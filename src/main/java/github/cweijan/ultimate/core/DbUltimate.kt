@@ -25,7 +25,7 @@ class DbUltimate(dbConfig: DbConfig) {
         if (dbConfig.develop) {
             HotSwapSupport.startHotSwapListener(dbConfig)
         }
-        ComponentScan.scan(dbConfig.scanPackage!!)
+        ComponentScan.scan(dbConfig.scanPackage!!.split(","))
         DBInitialer(dbConfig).initalerTable()
     }
 

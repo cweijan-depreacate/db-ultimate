@@ -6,4 +6,4 @@ import org.springframework.context.annotation.Import
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FILE)
 @Import(AutoComponentScanner::class)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class TableComponentScan(vararg val value: String = [""])
+annotation class TableComponentScan( val value: Array<String> = [""])
