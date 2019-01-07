@@ -1,17 +1,15 @@
 package github.cweijan.ultimate.component.info
 
-import github.cweijan.ultimate.annotation.Exclude
-import github.cweijan.ultimate.component.TableInfo
-import github.cweijan.ultimate.util.Log
-import github.cweijan.ultimate.util.StringUtils
 import github.cweijan.ultimate.annotation.Column
+import github.cweijan.ultimate.annotation.Exclude
 import github.cweijan.ultimate.annotation.Primary
 import github.cweijan.ultimate.annotation.Table
+import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.convert.TypeAdapter
-
+import github.cweijan.ultimate.exception.ColumnNotExistsException
+import github.cweijan.ultimate.util.Log
+import github.cweijan.ultimate.util.StringUtils
 import java.lang.reflect.Field
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class ComponentInfo(var componentClass: Class<*>) {
 
@@ -57,8 +55,10 @@ class ComponentInfo(var componentClass: Class<*>) {
      * @param fieldName 列名
      * @return 对应的属性名
      */
-    fun getColumnNameByFieldName(fieldName: String?): String? {
+    fun getColumnNameByFieldName(fieldName: String): String {
+
         return fieldColumnInfoMap[fieldName]?.columnName
+                ?: throw ColumnNotExistsException("column field $fieldName is not exists!")
     }
 
     /**

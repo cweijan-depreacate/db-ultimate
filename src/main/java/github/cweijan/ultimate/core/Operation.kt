@@ -1,15 +1,16 @@
 package github.cweijan.ultimate.core
 
 import github.cweijan.ultimate.component.TableInfo
-import github.cweijan.ultimate.component.info.ComponentInfo
-import java.util.ArrayList
-import java.util.HashMap
+import github.cweijan.ultimate.convert.TypeAdapter
+import github.cweijan.ultimate.util.Log
+import org.fest.reflect.core.Reflection
+import java.util.*
 
 /**
  * @param isAutoConvert convertCamelToUnderScore
  */
 class Operation<T>
-private constructor(var componentClass: Class<T>, private var isAutoConvert: Boolean = false) {
+private constructor(var componentClass: Class<out T>, private var isAutoConvert: Boolean = false) {
 
     private val equalsMap: MutableMap<String, MutableList<String>> by lazy {
         return@lazy HashMap<String, MutableList<String>>()
@@ -58,10 +59,10 @@ private constructor(var componentClass: Class<T>, private var isAutoConvert: Boo
         get() = searchMap
 
     val alias: String?
-        get()  {
+        get() {
             return when {
                 this.tableAlias != null -> " $tableAlias"
-                TableInfo.getComponent(componentClass).tableAlias != null -> " "+TableInfo.getComponent(componentClass).tableAlias
+                TableInfo.getComponent(componentClass).tableAlias != null -> " " + TableInfo.getComponent(componentClass).tableAlias
                 else -> ""
             }
         }
@@ -76,14 +77,14 @@ private constructor(var componentClass: Class<T>, private var isAutoConvert: Boo
     }
 
     @JvmOverloads
-    fun join(table: String, alias: String?="", onOperation: String) {
+    fun join(table: String, alias: String? = "", onOperation: String) {
 
         val segment = " join $table $alias on $onOperation "
         joinTables.add(segment)
     }
 
     @JvmOverloads
-    fun <T> join(clazz: Class<T>, alias: String?=TableInfo.getComponent(clazz).tableAlias, onOperation: String) {
+    fun <T> join(clazz: Class<T>, alias: String? = TableInfo.getComponent(clazz).tableAlias, onOperation: String) {
         join(TableInfo.getComponent(clazz).tableName, alias, onOperation)
     }
 
@@ -160,7 +161,7 @@ private constructor(var componentClass: Class<T>, private var isAutoConvert: Boo
 
     fun getColumn(): String? {
 
-        if(column.equals(""))return null
+        if (column.equals("")) return null
 
         return column
     }
@@ -171,6 +172,29 @@ private constructor(var componentClass: Class<T>, private var isAutoConvert: Boo
 
             return Operation(componentClass)
         }
+
+        @JvmStatic
+        fun <T : Any> build(component: T): Operation<T> {
+
+            val operation = Operation(component::class.java)
+            val componentInfo = TableInfo.getComponent(component::class.java)
+            val fields = componentInfo.componentClass.declaredFields
+            for (field in fields) {
+                try {
+                    field.isAccessible = true
+                    val fieldValue: Any? = Reflection.field(field.name).ofType(field.type).`in`(component).get()
+                    if (fieldValue == null || componentInfo.isExcludeField(field)) {
+                        continue
+                    }
+                    operation.equals(componentInfo.getColumnNameByFieldName(field.name), TypeAdapter.convertFieldValue(field.type.name, fieldValue))
+                } catch (e: IllegalAccessException) {
+                    Log.logger.error(e.message, e)
+                }
+
+            }
+            return operation
+        }
+
     }
 
 }

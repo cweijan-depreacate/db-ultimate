@@ -11,7 +11,6 @@ import github.cweijan.ultimate.generator.GeneratorAdapter
 import github.cweijan.ultimate.generator.SqlGenerator
 import github.cweijan.ultimate.util.Log
 import java.sql.ResultSet
-import java.util.stream.IntStream
 
 /**
  * 核心Api,用于Crud操作
@@ -80,6 +79,33 @@ class DbUltimate(dbConfig: DbConfig) {
         return getBySql(sql, Int::class.java)!!
     }
 
+    @JvmOverloads
+    fun <T> get(operation: Operation<T>, columns: String = ""): T? {
+
+        operation.limit(1)
+        operation.setColumn(columns)
+        val sql = sqlGenerator.generateSelectSql(TableInfo.getComponent(operation.componentClass), operation)
+
+        return getBySql(sql, operation.getParams(), operation.componentClass)
+    }
+
+    @JvmOverloads
+    fun <T : Any> get(component: T, columns: String = ""): T? {
+
+        return get(Operation.build(component), columns)
+    }
+
+    @JvmOverloads
+    fun <T> getBy(clazz: Class<T>, column: String, value: String, columns: String? = null): T? {
+
+        val operation = Operation.build(clazz)
+        columns?.let { operation.setColumn(it) }
+
+        operation.equals(TableInfo.getComponent(clazz).getColumnNameByFieldName(column), value)
+
+        return get(operation)
+    }
+
     fun <T> findBySql(sql: String, params: Array<String>?, clazz: Class<T>): List<T> {
 
         val resultSet = sqlExecutor.executeSql(sql, params)
@@ -93,86 +119,40 @@ class DbUltimate(dbConfig: DbConfig) {
         return findBySql(sql, null, clazz)
     }
 
-    operator fun <T> get(operation: Operation<T>): T? {
+    @JvmOverloads
+    fun <T> find(clazz: Class<T>, page: Int = 1, pageSize: Int = 0, columns: String = ""): List<T> {
 
-        operation.limit(1)
-        val sql = sqlGenerator.generateSelectSql(TableInfo.getComponent(operation.componentClass), operation)
-
-        return getBySql(sql, operation.getParams(), operation.componentClass)
-    }
-
-    fun <T> getByPrimaryKey(primary: Any, clazz: Class<T>): T? {
-
-        val operation = Operation.build(clazz)
-        operation.equals("id", primary)
-
-        return get(operation)
+        return find(Operation.build(clazz), page, pageSize, columns)
     }
 
     @JvmOverloads
-    fun <T> find(clazz: Class<T>, page: Int=1, pageSize: Int = 0, columns: String = ""): List<T> {
+    fun <T : Any> find(component: T, page: Int = 1, pageSize: Int = 0, columns: String = ""): List<T> {
 
-        val operation = Operation.build(clazz)
+        return find(Operation.build(component), page, pageSize, columns)
+    }
+
+    @JvmOverloads
+    fun <T> find(operation: Operation<T>, page: Int = 1, pageSize: Int = 0, columns: String = ""): List<T> {
+
         if (pageSize != 0) {
-
-            val start = if (page <= 0) {
-                0
-            } else (page - 1) * pageSize
+            val start = if (page <= 0) 0 else (page - 1) * pageSize
             operation.start(start)
             operation.limit(pageSize)
         }
         operation.setColumn(columns)
-
-        return find(operation)
-    }
-
-    fun <T> find(operation: Operation<T>): List<T> {
-
         val sql = sqlGenerator.generateSelectSql(TableInfo.getComponent(operation.componentClass), operation)
         return findBySql(sql, operation.getParams(), operation.componentClass)
     }
 
     @JvmOverloads
-    fun <T> findBy(clazz: Class<T>, column: String, value: String, columns: String = ""): List<T> {
+    fun <T> findBy(clazz: Class<T>, column: String, value: String, columns: String? = null): List<T> {
 
-        return findBy(clazz, arrayOf(column), arrayOf(value), columns)
-    }
-
-    @JvmOverloads
-    fun <T> findBy(clazz: Class<T>, columnArray: Array<String>, valueArray: Array<String>, columns: String = ""): List<T> {
-
-        if (columnArray.size != valueArray.size) {
-            throw IllegalArgumentException("the columnArray and valueArray params length must same size!")
-        }
         val operation = Operation.build(clazz)
-        if (columns != "") operation.setColumn(columns)
+        columns?.let { operation.setColumn(it) }
 
-        IntStream.range(0, columnArray.size).forEach { index ->
-            operation.equals(columnArray[index], valueArray[index])
-        }
+        operation.equals(TableInfo.getComponent(clazz).getColumnNameByFieldName(column), value)
 
         return find(operation)
-    }
-
-    @JvmOverloads
-    fun <T> getBy(clazz: Class<T>, column: String, value: String, columns: String = ""): T? {
-
-        return getBy(clazz, arrayOf(column), arrayOf(value), columns)
-    }
-
-    @JvmOverloads
-    fun <T> getBy(clazz: Class<T>, columnArray: Array<String>, valueArray: Array<String>, columns: String = ""): T? {
-
-        if (columnArray.size != valueArray.size) {
-            throw IllegalArgumentException("the columnArray and valueArray params length must same size!")
-        }
-        val operation = Operation.build(clazz)
-        if (columns != "") operation.setColumn(columns)
-
-        IntStream.range(0, columnArray.size).forEach { index ->
-            operation.equals(columnArray[index], valueArray[index])
-        }
-        return get(operation)
     }
 
     /**
@@ -186,9 +166,9 @@ class DbUltimate(dbConfig: DbConfig) {
         executeSql(sql)
     }
 
-    fun insertList(list: List<Any>) {
+    fun insertList(componentList: List<Any>) {
 
-        for (t in list) {
+        for (t in componentList) {
             insert(t)
         }
     }

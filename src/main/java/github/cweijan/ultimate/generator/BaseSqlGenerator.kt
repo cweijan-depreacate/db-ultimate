@@ -109,7 +109,6 @@ abstract class BaseSqlGenerator : SqlGenerator {
         val or = "or"
         var sql = ""
 
-        sql += operation.alias
         sql += generateJoinTablesSql(operation.joinTables)
         sql += generateOperationSql0(operation.equalsOperation, "=", and, operation)
         sql += generateOperationSql0(operation.notEqualsOperation, "!=", and, operation)
@@ -129,7 +128,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
             sql += " order by ${operation.orderBy}"
         }
 
-        return sql
+        return operation.alias+sql
     }
 
     private fun generateJoinTablesSql(joinTables: MutableList<String>?): String {

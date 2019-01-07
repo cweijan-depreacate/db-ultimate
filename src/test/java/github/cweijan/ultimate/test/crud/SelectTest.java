@@ -16,11 +16,13 @@ import java.util.Map;
 public class SelectTest extends BaseTest{
 
     @Test
-    public void findByDriect(){
-
-        List<Admin> admins = dbUltimate.find(Admin.class, 0, 20);
-        Log.getLogger().info(admins.toString());
-
+    public void testGetByEquals(){
+        Operation<Admin> operation = Operation.build(Admin.class);
+        operation.equals("test", "test2");
+        operation.orEquals("id", "2");
+        //        operation.setColumn("id, message");
+        Admin admin = dbUltimate.get(operation);
+        logger.info(admin.toString());
     }
 
     @Test
@@ -30,6 +32,14 @@ public class SelectTest extends BaseTest{
         Map<String, Object> result = dbUltimate.executeSqlOfMap(sql);
 
         Log.getLogger().info(result + "");
+
+    }
+
+    @Test
+    public void testGetBy(){
+
+        Admin admin = dbUltimate.getBy(Admin.class, "id", "2");
+        Log.getLogger().info(admin.toString());
 
     }
 
@@ -56,7 +66,42 @@ public class SelectTest extends BaseTest{
     }
 
     @Test
-    public void testSelectAll(){
+    public void testFind(){
+
+        List<Admin> admins = dbUltimate.findBy(Admin.class, "id", "2");
+        System.out.println(admins);
+    }
+
+    @Test
+    public void testFindByComponent(){
+
+        Admin admin = new Admin();
+        admin.setId(2);
+        List<Admin> admins = dbUltimate.find(admin);
+        System.out.println(admins);
+
+    }
+
+    @Test
+    public void testGetByComponent(){
+
+        Admin admin = new Admin();
+        admin.setId(2);
+        admin = dbUltimate.get(admin);
+        Log.getLogger().info(admin.toString());
+
+    }
+
+    @Test
+    public void findByComponentClass(){
+
+        List<Admin> admins = dbUltimate.find(Admin.class, 0, 20);
+        Log.getLogger().info(admins.toString());
+
+    }
+
+    @Test
+    public void testFindAll(){
 
         Operation<Admin> operation = Operation.build(Admin.class);
         List<Admin> admins = dbUltimate.find(operation);
@@ -65,7 +110,7 @@ public class SelectTest extends BaseTest{
     }
 
     @Test
-    public void testSelectByEquals(){
+    public void testFindByEquals(){
 
         Operation<Admin> operation = Operation.build(Admin.class);
         operation.equals("test", "test2");

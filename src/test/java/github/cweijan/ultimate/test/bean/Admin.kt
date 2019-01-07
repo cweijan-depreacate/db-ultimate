@@ -14,7 +14,7 @@ class Admin {
     var id: Int = 0
 
     @Column
-    var message: String? = null
+    private var message: String? = null
 
     var helloWorldTest:String?=null
 

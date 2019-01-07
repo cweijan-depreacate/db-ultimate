@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.test.base
 
+import github.cweijan.ultimate.core.DbUltimate
 import github.cweijan.ultimate.core.Operation
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
@@ -15,7 +16,6 @@ class TypeTest : BaseTest() {
     @Test
     fun test(){
 
-        println("is empty? "+StringUtils.isEmpty(""))
 
     }
 

@@ -19,7 +19,7 @@ public class UpdateTest extends BaseTest{
 
         Admin admin = new Admin();
         admin.setId(2);
-        admin.setMessage("cweijain");
+//        admin.setMessage("cweijain");
         dbUltimate.update(admin);
 
     }
