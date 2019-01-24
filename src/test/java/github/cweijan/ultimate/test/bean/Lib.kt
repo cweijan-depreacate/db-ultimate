@@ -10,4 +10,5 @@ class Lib {
     var id: Int? = null
     var message: String? = null
     var test: String? = null
+    var msd:String?=null
 }

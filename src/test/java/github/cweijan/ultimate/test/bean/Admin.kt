@@ -1,9 +1,6 @@
 package github.cweijan.ultimate.test.bean
 
-import github.cweijan.ultimate.annotation.Column
-import github.cweijan.ultimate.annotation.Exclude
-import github.cweijan.ultimate.annotation.Primary
-import github.cweijan.ultimate.annotation.Table
+import github.cweijan.ultimate.annotation.*
 
 import java.util.Date
 
@@ -11,10 +8,13 @@ import java.util.Date
 class Admin {
 
     @Primary
+    @ForeignKey(Lib::class)
     var id: Int = 0
 
     @Column
     private var message: String? = null
+
+    var msd:String?=null
 
     var helloWorldTest:String?=null
 
@@ -28,7 +28,7 @@ class Admin {
     var lib: Lib? = null
 
     override fun toString(): String {
-
-        return "Admin{" + "id=" + id + ", message='" + message + '\''.toString() + ", date=" + date + ", test='" + test + '\''.toString() + '}'.toString()
+        return "Admin(id=$id, message=$message, msd=$msd, helloWorldTest=$helloWorldTest, date=$date, test=$test, lib=$lib)"
     }
+
 }

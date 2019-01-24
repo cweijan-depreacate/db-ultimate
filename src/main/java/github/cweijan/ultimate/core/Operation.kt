@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.core
 
 import github.cweijan.ultimate.component.TableInfo
+import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.util.Log
 import org.fest.reflect.core.Reflection
@@ -10,7 +11,9 @@ import java.util.*
  * @param isAutoConvert convertCamelToUnderScore
  */
 class Operation<T>
-private constructor(var componentClass: Class<out T>, private var isAutoConvert: Boolean = false) {
+private constructor(val componentClass: Class<out T>, private var isAutoConvert: Boolean = false) {
+
+    var component:ComponentInfo = TableInfo.getComponent(componentClass)
 
     private val equalsMap: MutableMap<String, MutableList<String>> by lazy {
         return@lazy HashMap<String, MutableList<String>>()
@@ -21,7 +24,7 @@ private constructor(var componentClass: Class<out T>, private var isAutoConvert:
     private val notEqualsMap: MutableMap<String, MutableList<String>>by lazy {
         return@lazy HashMap<String, MutableList<String>>()
     }
-    private val searchMap: MutableMap<String, MutableList<String>>by lazy {
+    private val likeMap: MutableMap<String, MutableList<String>>by lazy {
         return@lazy HashMap<String, MutableList<String>>()
     }
 
@@ -56,13 +59,13 @@ private constructor(var componentClass: Class<out T>, private var isAutoConvert:
         get() = orEqualsMap
 
     val searchOperation: Map<String, List<String>>?
-        get() = searchMap
+        get() = likeMap
 
     val alias: String?
         get() {
             return when {
                 this.tableAlias != null -> " $tableAlias"
-                TableInfo.getComponent(componentClass).tableAlias != null -> " " + TableInfo.getComponent(componentClass).tableAlias
+                component.tableAlias != null -> " " + component.tableAlias
                 else -> ""
             }
         }
@@ -76,16 +79,22 @@ private constructor(var componentClass: Class<out T>, private var isAutoConvert:
         return params.toTypedArray()
     }
 
-    @JvmOverloads
-    fun join(table: String, alias: String? = "", onOperation: String) {
+    fun join(sql: String) {
 
-        val segment = " join $table $alias on $onOperation "
+        val segment = " join $sql "
         joinTables.add(segment)
     }
 
-    @JvmOverloads
-    fun <T> join(clazz: Class<T>, alias: String? = TableInfo.getComponent(clazz).tableAlias, onOperation: String) {
-        join(TableInfo.getComponent(clazz).tableName, alias, onOperation)
+    fun join(clazz: Class<*>) {
+
+        val foreignComponent = TableInfo.getComponent(clazz)
+        val foreignTableName = foreignComponent.tableName
+        val foreignKeyInfo = component.getForeignKey(clazz)
+
+        val tableAlias=component.tableAlias?:component.tableName
+        val foreignTableAlias = foreignComponent.tableAlias?:foreignTableName
+
+        join(" $foreignTableName $foreignTableAlias on $tableAlias.${foreignKeyInfo.foreignKey}=$foreignTableAlias.${foreignKeyInfo.joinKey} ")
     }
 
     private fun getOperationList(map: MutableMap<String, MutableList<String>>, key: String): MutableList<String>? {
@@ -129,9 +138,9 @@ private constructor(var componentClass: Class<out T>, private var isAutoConvert:
         put(equalsMap, column, value)
     }
 
-    fun search(column: String, content: Any) {
+    fun like(column: String, content: Any) {
 
-        put(searchMap, column, "%$content%")
+        put(likeMap, column, "%$content%")
     }
 
     fun orEquals(column: String, value: Any) {

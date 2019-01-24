@@ -17,6 +17,7 @@ public class SelectTest extends BaseTest{
 
     @Test
     public void testGetByEquals(){
+
         Operation<Admin> operation = Operation.build(Admin.class);
         operation.equals("test", "test2");
         operation.orEquals("id", "2");
@@ -58,7 +59,7 @@ public class SelectTest extends BaseTest{
     public void testJoin(){
 
         Operation<Admin> operation = Operation.build(Admin.class);
-        operation.join(Lib.class, "ad.id=l.id");
+        operation.join(Lib.class);
 
         Admin admin = dbUltimate.get(operation);
         Log.getLogger().info(admin + "");
@@ -125,7 +126,7 @@ public class SelectTest extends BaseTest{
     public void testSearch(){
 
         Operation<Admin> operation = Operation.build(Admin.class);
-        operation.search("test", "2");
+        operation.like("test", "2");
         List<Admin> admins = dbUltimate.find(operation);
         logger.info(admins.toString());
 

@@ -1,12 +1,11 @@
 package github.cweijan.ultimate.component.info
 
-import github.cweijan.ultimate.annotation.Column
-import github.cweijan.ultimate.annotation.Exclude
-import github.cweijan.ultimate.annotation.Primary
-import github.cweijan.ultimate.annotation.Table
+import github.cweijan.ultimate.annotation.*
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.exception.ColumnNotExistsException
+import github.cweijan.ultimate.exception.ForeignKeyNotSetException
+import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
 import java.lang.reflect.Field
@@ -50,6 +49,20 @@ class ComponentInfo(var componentClass: Class<*>) {
     }
 
     /**
+     * 外键映射
+     */
+    private val foreignKeyMap by lazy {
+        return@lazy HashMap<Class<*>, ForeignKeyInfo>();
+    }
+
+    /**
+     * 自动关联的外键列表
+     */
+    val autoJoinComponentList by lazy{
+        return@lazy ArrayList<Class<*>>();
+    }
+
+    /**
      * 根据属性名找列名
      *
      * @param fieldName 列名
@@ -84,6 +97,25 @@ class ComponentInfo(var componentClass: Class<*>) {
 
         return primaryField!!.get(component)
 
+    }
+
+    fun getForeignKey(foreignClass: Class<*>): ForeignKeyInfo {
+        if (!foreignKeyMap.contains(foreignClass))
+            throw ForeignKeyNotSetException("${foreignClass.name} is not a valid foreign class")
+
+        val foreignKeyInfo = foreignKeyMap[foreignClass]
+
+        val joinKey = foreignKeyInfo!!.joinKey
+        if (joinKey == "") {
+            val component = TableInfo.getComponent(foreignClass)
+            if (component.primaryKey == null || component.primaryKey == "") {
+                throw PrimaryValueNotSetException("join component ${foreignClass.name} is not primary key found! ")
+            } else {
+                foreignKeyInfo.joinKey = component.primaryKey!!
+            }
+        }
+
+        return foreignKeyInfo
     }
 
     fun isPrimaryField(field: Field?): Boolean {
@@ -170,6 +202,22 @@ class ComponentInfo(var componentClass: Class<*>) {
                     componentInfo.primaryKey = columnInfo.columnName
                     componentInfo.primaryField = field
                     columnInfo.isAutoIncrement = primaryAnnotation?.autoIncrement ?: false
+                }
+
+                //生成foreign key column info
+                val foreignKeyAnnotation = field.getAnnotation(ForeignKey::class.java)
+                foreignKeyAnnotation?.run {
+                    var joinColumnName = joinColumn
+                    if (camelcaseToUnderLine) {
+                        val regex = Regex("([a-z])([A-Z]+)")
+                        val replacement = "$1_$2"
+                        joinColumnName = joinColumn.replace(regex, replacement).toLowerCase()
+                    }
+                    if(autoJoin){
+                        componentInfo.autoJoinComponentList.add(value.java)
+                    }
+                    val foreignKeyInfo = ForeignKeyInfo(columnInfo.columnName, joinColumnName)
+                    componentInfo.foreignKeyMap.put(value.java, foreignKeyInfo)
                 }
 
                 columnInfo.isNumeric = TypeAdapter.checkNumericType(field.type)

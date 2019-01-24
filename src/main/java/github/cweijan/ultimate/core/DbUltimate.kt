@@ -74,7 +74,7 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun <T> getCount(operation: Operation<T>): Int {
 
-        val sql = sqlGenerator.generateCountSql(TableInfo.getComponent(operation.componentClass), operation)
+        val sql = sqlGenerator.generateCountSql(operation.component, operation)
 
         return getBySql(sql, Int::class.java)!!
     }
@@ -84,7 +84,7 @@ class DbUltimate(dbConfig: DbConfig) {
 
         operation.limit(1)
         operation.setColumn(columns)
-        val sql = sqlGenerator.generateSelectSql(TableInfo.getComponent(operation.componentClass), operation)
+        val sql = sqlGenerator.generateSelectSql(operation.component, operation)
 
         return getBySql(sql, operation.getParams(), operation.componentClass)
     }
@@ -140,7 +140,7 @@ class DbUltimate(dbConfig: DbConfig) {
             operation.limit(pageSize)
         }
         operation.setColumn(columns)
-        val sql = sqlGenerator.generateSelectSql(TableInfo.getComponent(operation.componentClass), operation)
+        val sql = sqlGenerator.generateSelectSql(operation.component, operation)
         return findBySql(sql, operation.getParams(), operation.componentClass)
     }
 
@@ -175,7 +175,7 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun <T> delete(operation: Operation<T>) {
 
-        val sql = sqlGenerator.generateDeleteSql(TableInfo.getComponent(operation.componentClass), operation)
+        val sql = sqlGenerator.generateDeleteSql(operation.component, operation)
         executeSql(sql, operation.getParams())
     }
 
@@ -192,7 +192,7 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun <T> update(operation: Operation<T>) {
 
-        val sql = sqlGenerator.generateUpdateSql(TableInfo.getComponent(operation.componentClass), operation)
+        val sql = sqlGenerator.generateUpdateSql(operation.component, operation)
         executeSql(sql, operation.getParams())
     }
 

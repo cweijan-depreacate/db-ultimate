@@ -10,7 +10,7 @@ class TypeTest : BaseTest() {
 
     @Test
     fun testDefaultInt(){
-
+println(null=="")
     }
 
     @Test

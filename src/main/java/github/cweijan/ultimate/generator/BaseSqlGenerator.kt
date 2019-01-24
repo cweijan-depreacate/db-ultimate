@@ -109,6 +109,9 @@ abstract class BaseSqlGenerator : SqlGenerator {
         val or = "or"
         var sql = ""
 
+        operation.component.autoJoinComponentList.let {
+            it.forEach{autoJoinComponent->operation.join(autoJoinComponent)}
+        }
         sql += generateJoinTablesSql(operation.joinTables)
         sql += generateOperationSql0(operation.equalsOperation, "=", and, operation)
         sql += generateOperationSql0(operation.notEqualsOperation, "!=", and, operation)
