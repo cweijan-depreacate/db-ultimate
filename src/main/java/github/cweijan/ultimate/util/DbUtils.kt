@@ -32,7 +32,7 @@ object DbUtils {
 
         try {
             if (connection == null || connection.isClosed) {
-                throw IllegalArgumentException("connection is valid!")
+                throw java.lang.IllegalArgumentException("connection is valid!")
             }
         } catch (e: SQLException) {
             logger.error(e.message, e)
