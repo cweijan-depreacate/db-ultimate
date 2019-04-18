@@ -3,9 +3,11 @@ package github.cweijan.ultimate.convert
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
+import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import java.util.*
+import kotlin.collections.HashMap
 
 object TypeConvert {
 
@@ -26,7 +28,7 @@ object TypeConvert {
 //            return resultSetToMap(resultSet)
         }
 
-        val columns = getColumns(resultSet, beanClass)
+        val columns = getColumns(resultSet)
 
 
         return toJavaBean(resultSet, beanClass, columns)
@@ -43,7 +45,7 @@ object TypeConvert {
 
         val beanList = ArrayList<T>()
         while (resultSet.next()) {
-            beanList.add(resultSetToBean(resultSet, beanClass,true)!!)
+            beanList.add(resultSetToBean(resultSet, beanClass, true)!!)
         }
 
         return beanList
@@ -82,6 +84,9 @@ object TypeConvert {
 
         val fields = clazz.declaredFields
         val beanInstance = clazz.newInstance()
+        if (columns.keys.isEmpty()) return beanInstance
+        val component = TableInfo.getComponent(clazz)
+        val objectMap = HashMap<Field, Class<*>>();
 
         // 为对象进行赋值
         for (field in fields) {
@@ -89,23 +94,26 @@ object TypeConvert {
             field.isAccessible = true
             val fieldName = field.name
             val fieldType = field.type.name
-            if (!columns.containsKey(fieldName) && TypeAdapter.isSimpleType(fieldType)) {
+            if (component.isExcludeField(field) ||
+                    (!columns.containsKey(component.getColumnNameByFieldName(fieldName)) && TypeAdapter.isAdapterType(fieldType))) {
                 continue
             }
-            val columnName = columns[fieldName]
+            val columnName = columns[component.getColumnNameByFieldName(fieldName)]
 
             try {
-                if (TypeAdapter.isSimpleType(fieldType)) {
-                    field.set(beanInstance, resultSet.getObject(columnName))
+                if (TypeAdapter.isAdapterType(fieldType)) {
+                    field.set(beanInstance,TypeAdapter.convertFieldValue(fieldType,resultSet.getObject(columnName)) )
                 } else {
-                    val fieldClass = Class.forName(fieldType)
-                    field.set(beanInstance, toJavaBean(resultSet, fieldClass, getColumns(resultSet, fieldClass)))
+                    objectMap[field] = Class.forName(fieldType)
                 }
+                objectMap.remove(field)
             } catch (e: Exception) {
                 logger.error(e.message, e)
             }
 
         }
+        objectMap.forEach { field, fieldClass -> field.set(beanInstance, toJavaBean(resultSet, fieldClass, columns)) }
+
         return beanInstance
     }
 
@@ -114,17 +122,17 @@ object TypeConvert {
      *
      * @param resultSet 查询的结果集
      */
-    private fun getColumns(resultSet: ResultSet, clazz: Class<*>): Map<String, String> {
+    private fun getColumns(resultSet: ResultSet): Map<String, String> {
 
         val columns = HashMap<String, String>()
-        val component = TableInfo.getComponent(clazz)
+//        val component = TableInfo.getComponent(clazz)
         val metaData: ResultSetMetaData = resultSet.metaData
 
         // 获取resultSet字段类型
         for (i in 1..metaData.columnCount) {
-            val fieldName = component.getFieldNameByColumnName(metaData.getColumnLabel(i)) ?: ""
-            if (StringUtils.isEmpty(fieldName)) continue
-            columns[fieldName] = metaData.getColumnLabel(i)
+//            val fieldName = component.getFieldNameByColumnName(metaData.getColumnLabel(i)) ?: ""
+//            if (StringUtils.isEmpty(fieldName)) continue
+            columns[metaData.getColumnLabel(i)] = metaData.getColumnLabel(i)
         }
 
         return columns

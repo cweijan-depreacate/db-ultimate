@@ -1,57 +1,46 @@
 package github.cweijan.ultimate.convert
 
 import github.cweijan.ultimate.util.DateUtils
-import github.cweijan.ultimate.util.Log
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
-//todo 这里的类型判断有问题,查看是否有其他方法可以代替
 object TypeAdapter {
 
-    private val SIMPLE_TYPE = Arrays.asList("chat", "short", "int", "float", "double", "long", String::class.java.name, Integer::class.java.name, Character::class.java.name, Short::class.java.name, Int::class.java.name, Float::class.java.name, Double::class.java.name, Long::class.java.name, Date::class.java.name)
-
+    private val NUMBER_TYPE = Arrays.asList("chat", "short", "int", "float", "double", "long", String::class.java.name, Integer::class.java.name, Character::class.java.name, Short::class.java.name, Int::class.java.name, Float::class.java.name, Double::class.java.name, Long::class.java.name, Date::class.java.name)
     private val CHARACTER_TYPE = Arrays.asList("java.lang.String", "chat", String::class.java.name, Char::class.java.name)
+    private val DATE_TYPE = Arrays.asList("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
 
-    public fun isCharacterType(typeName: String): Boolean {
-
-        return CHARACTER_TYPE.contains(typeName)
-    }
-
-    private fun isDateType(typeName: String): Boolean {
-
-        return Date::class.java.name == typeName
-    }
-
-    fun isSimpleType(typeName: String): Boolean {
-
-        return SIMPLE_TYPE.contains(typeName)
+    fun isAdapterType(typeName: String): Boolean {
+        return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName)
     }
 
     fun getDefaultValue(fieldType: String): Any {
         return when {
-            isCharacterType(fieldType) -> "''"
-            isSimpleType(fieldType) -> 0
+            CHARACTER_TYPE.contains(fieldType) -> "''"
+            NUMBER_TYPE.contains(fieldType) -> 0
             else -> "''"
         }
     }
 
+    fun convertFieldValue(fieldValue: Any): Any {
+        return convertFieldValue(fieldValue::class.java.name,fieldValue)
+    }
     /**
      * 根据相应的类型返回第二个参数的类型
      */
-    fun convertFieldValue(fieldType: String, fieldValue: Any?): Any {
-
-        return if (isCharacterType(fieldType)) {
-            "'${fieldValue?.toString()}'"
-        } else if (isDateType(fieldType)) {
-            if (fieldValue == null) "" else "'${DateUtils.formatDate((fieldValue as Date))}'"
-        } else if (isSimpleType(fieldType)) {
-            if (fieldValue == null) 0 else Integer.parseInt(fieldValue.toString())
-        } else {
-            "'${fieldValue?.toString()}'"
+    fun convertFieldValue(fieldType: String, fieldValue: Any): Any {
+        return when {
+            NUMBER_TYPE.contains(fieldType) -> fieldValue
+            CHARACTER_TYPE.contains(fieldType) -> "'$fieldValue'"
+            Date::class.java.name == fieldType -> "'${DateUtils.formatDate((fieldValue as Date), "yyyy-MM-dd HH:mm:ss")}'"
+            LocalDateTime::class.java.name == fieldType -> "'${(fieldValue as LocalDateTime).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))}'"
+            LocalDate::class.java.name == fieldType -> "'${(fieldValue as LocalDate).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}'"
+            LocalTime::class.java.name == fieldType -> "'${(fieldValue as LocalTime).format(DateTimeFormatter.ofPattern("HH:mm:ss"))}'"
+            else -> "'$fieldValue'"
         }
     }
 
-    fun checkNumericType(type: Class<*>): Boolean {
-
-        return false
-    }
 }

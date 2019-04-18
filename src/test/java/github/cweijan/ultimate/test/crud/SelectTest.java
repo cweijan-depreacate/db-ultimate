@@ -40,6 +40,7 @@ public class SelectTest extends BaseTest{
     public void testGetBy(){
 
         Admin admin = dbUltimate.getBy(Admin.class, "id", "2");
+
         Log.getLogger().info(admin.toString());
 
     }

@@ -14,7 +14,7 @@ class ComponentInfo(var componentClass: Class<*>) {
 
     var primaryKey: String? = null
 
-    private var primaryFieldName: String? = null
+    private val primaryFieldName: String?
         get() {
             return primaryField?.name
         }
@@ -220,7 +220,6 @@ class ComponentInfo(var componentClass: Class<*>) {
                     componentInfo.foreignKeyMap.put(value.java, foreignKeyInfo)
                 }
 
-                columnInfo.isNumeric = TypeAdapter.checkNumericType(field.type)
                 componentInfo.putColumn(field.name, columnInfo)
             }
 

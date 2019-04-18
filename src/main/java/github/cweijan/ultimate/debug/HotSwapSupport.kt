@@ -12,12 +12,17 @@ object HotSwapSupport {
 
     fun startHotSwapListener(dbConfig: DbConfig) {
 
-        val directory = File(Thread.currentThread().contextClassLoader.getResource("")!!.toURI())
+        try {
+            val directory = File(Thread.currentThread().contextClassLoader.getResource("")!!.toURI())
 
-        val observer = FileAlterationObserver(directory)
-        val monitor = FileAlterationMonitor(TimeUnit.SECONDS.toMillis(5), observer)
-        observer.addListener(ClassReconfig(directory.path, dbConfig))
-        monitor.start()
+            val observer = FileAlterationObserver(directory)
+            val monitor = FileAlterationMonitor(TimeUnit.SECONDS.toMillis(5), observer)
+            observer.addListener(ClassReconfig(directory.path, dbConfig))
+            monitor.start()
+        } catch (e: Exception) {
+//            e.printStackTrace()
+            println("start monitor fail, break hotswap!")
+        }
 
     }
 }

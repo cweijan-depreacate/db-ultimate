@@ -2,6 +2,7 @@ package github.cweijan.ultimate.core
 
 import github.cweijan.ultimate.component.ComponentScan
 import github.cweijan.ultimate.component.TableInfo
+import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.convert.TypeConvert
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
@@ -126,13 +127,35 @@ class DbUltimate(dbConfig: DbConfig) {
     }
 
     @JvmOverloads
-    fun <T : Any> find(component: T, page: Int = 1, pageSize: Int = 0, columns: String = ""): List<T> {
+    fun <T : Any> find(component: T, page: Int = 1, pageSize: Int = 100, columns: String = ""): List<T> {
 
         return find(Operation.build(component), page, pageSize, columns)
     }
 
     @JvmOverloads
-    fun <T> find(operation: Operation<T>, page: Int = 1, pageSize: Int = 0, columns: String = ""): List<T> {
+    fun <T : Any> findByObject(clazz: Class<T>, paramObject: Any, page: Int = 1, pageSize: Int = 100, columns: String = ""): List<T> {
+
+        val operation = Operation.build(clazz)
+        if (paramObject is Map<*, *>) {
+            paramObject.forEach { key, value ->
+                if(value==null){
+                    return@forEach
+                }
+                operation.equals(key.toString(), TypeAdapter.convertFieldValue(value))
+            }
+        } else {
+            for (declaredField in paramObject::class.java.declaredFields) {
+                declaredField.isAccessible = true
+                val fieldValue = declaredField.get(paramObject) ?: continue
+                operation.equals(declaredField.name, TypeAdapter.convertFieldValue(fieldValue))
+            }
+        }
+
+        return find(operation, page, pageSize, columns)
+    }
+
+    @JvmOverloads
+    fun <T> find(operation: Operation<T>, page: Int = 1, pageSize: Int = 100, columns: String = ""): List<T> {
 
         if (pageSize != 0) {
             val start = if (page <= 0) 0 else (page - 1) * pageSize
@@ -156,7 +179,7 @@ class DbUltimate(dbConfig: DbConfig) {
     }
 
     /**
-     * 插入对象,属性为空则插入null值
+     * 插入对象,只插入非空属性
      *
      * @param component 实体对象e
      */
@@ -171,6 +194,16 @@ class DbUltimate(dbConfig: DbConfig) {
         for (t in componentList) {
             insert(t)
         }
+    }
+
+    fun insertOfUpdate(component: Any) {
+        val componentInfo = TableInfo.getComponent(component.javaClass)
+        val sql = if (componentInfo.getPrimaryValue(component) == null) {
+            sqlGenerator.generateInsertSql(component)
+        } else {
+            sqlGenerator.generateUpdateSql(component)
+        }
+        executeSql(sql)
     }
 
     fun <T> delete(operation: Operation<T>) {
