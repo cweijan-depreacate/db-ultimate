@@ -3,7 +3,7 @@ package github.cweijan.ultimate.generator
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
-import github.cweijan.ultimate.core.Operation
+import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
@@ -30,9 +30,9 @@ abstract class BaseSqlGenerator : SqlGenerator {
                 }
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
 
-                values += "${TypeAdapter.convertFieldValue(field.type.name, fieldValue)},"
+                values += "${TypeAdapter.convertToSqlValue(fieldValue)},"
             } catch (e: IllegalAccessException) {
-                Log.logger.error(e.message, e)
+                Log.error(e.message, e)
             }
 
         }
@@ -61,7 +61,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
             if (fieldValue == null || componentInfo.isExcludeField(field) || componentInfo.isPrimaryField(field)) {
                 continue
             }
-            sql += "${field.name}=${TypeAdapter.convertFieldValue(field.type.name, fieldValue)},"
+            sql += "${field.name}=${TypeAdapter.convertToSqlValue(fieldValue)},"
         }
 
         if (sql.lastIndexOf(",") != -1) {
@@ -71,52 +71,52 @@ abstract class BaseSqlGenerator : SqlGenerator {
         return "$sql where ${componentInfo.primaryKey}='$primaryValue'"
     }
 
-    override fun <T> generateDeleteSql(componentInfo: ComponentInfo, operation: Operation<T>): String {
+    override fun <T> generateDeleteSql(componentInfo: ComponentInfo, query: Query<T>): String {
 
-        return "DELETE FROM ${componentInfo.tableName} ${generateOperationSql(operation)}"
+        return "DELETE FROM ${componentInfo.tableName} ${generateOperationSql(query)}"
     }
 
-    override fun <T> generateCountSql(componentInfo: ComponentInfo, operation: Operation<T>): String {
+    override fun <T> generateCountSql(componentInfo: ComponentInfo, query: Query<T>): String {
 
-        return "select count(*) count from ${componentInfo.tableName} ${generateOperationSql(operation)}"
+        return "select count(*) count from ${componentInfo.tableName} ${generateOperationSql(query)}"
     }
 
-    override fun <T> generateUpdateSql(componentInfo: ComponentInfo, operation: Operation<T>): String {
+    override fun <T> generateUpdateSql(componentInfo: ComponentInfo, query: Query<T>): String {
 
         var sql = "UPDATE ${componentInfo.tableName} a set "
 
-        operation.updateList!!.forEach { key, value ->
+        query.updateList!!.forEach { key, value ->
             sql += "$key=?,"
-            operation.addParam(value)
+            query.addParam(value)
         }
         if (sql.lastIndexOf(",") != -1) {
             sql = sql.substring(0, sql.lastIndexOf(","))
         }
-        return "$sql ${generateOperationSql(operation)}"
+        return "$sql ${generateOperationSql(query)}"
     }
 
-    override fun <T> generateSelectSql(componentInfo: ComponentInfo, operation: Operation<T>): String {
+    override fun <T> generateSelectSql(componentInfo: ComponentInfo, query: Query<T>): String {
 
-        val column = operation.getColumn() ?: componentInfo.selectColumns
+        val column = query.getColumn() ?: componentInfo.selectColumns
 
-        val sql = "select $column from ${componentInfo.tableName + generateOperationSql(operation)}"
-        return generatePaginationSql(sql, operation)
+        val sql = "select $column from ${componentInfo.tableName + generateOperationSql(query)}"
+        return generatePaginationSql(sql, query)
     }
 
-    private fun <T> generateOperationSql(operation: Operation<T>): String {
+    private fun <T> generateOperationSql(query: Query<T>): String {
 
         val and = "and"
         val or = "or"
         var sql = ""
 
-        operation.component.autoJoinComponentList.let {
-            it.forEach{autoJoinComponent->operation.join(autoJoinComponent)}
+        query.component.autoJoinComponentList.let {
+            it.forEach{autoJoinComponent->query.join(autoJoinComponent)}
         }
-        sql += generateJoinTablesSql(operation.joinTables)
-        sql += generateOperationSql0(operation.equalsOperation, "=", and, operation)
-        sql += generateOperationSql0(operation.notEqualsOperation, "!=", and, operation)
-        sql += generateOperationSql0(operation.searchOperation, "like", and, operation)
-        sql += generateOperationSql0(operation.orEqualsOperation, "=", or, operation)
+        sql += generateJoinTablesSql(query.joinTables)
+        sql += generateOperationSql0(query.equalsOperation, "=", and, query)
+        sql += generateOperationSql0(query.notEqualsOperation, "!=", and, query)
+        sql += generateOperationSql0(query.searchOperation, "like", and, query)
+        sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
 
         if (sql.startsWith(and)) {
             sql = sql.replaceFirst(and.toRegex(), "")
@@ -127,11 +127,11 @@ abstract class BaseSqlGenerator : SqlGenerator {
             sql = " where$sql"
         }
 
-        if (StringUtils.isNotEmpty(operation.orderBy)) {
-            sql += " order by ${operation.orderBy}"
+        if (StringUtils.isNotEmpty(query.orderBy)) {
+            sql += " order by ${query.orderBy}"
         }
 
-        return operation.alias+sql
+        return query.alias+sql
     }
 
     private fun generateJoinTablesSql(joinTables: MutableList<String>?): String {
@@ -145,20 +145,20 @@ abstract class BaseSqlGenerator : SqlGenerator {
         return sql.toString()
     }
 
-    private fun <T> generateOperationSql0(operationMap: Map<String, List<String>>?, condition: String, separator: String, operation: Operation<T>): String {
+    private fun <T> generateOperationSql0(operationMap: Map<String, List<String>>?, condition: String, separator: String, query: Query<T>): String {
 
         val sql = StringBuilder()
 
         operationMap?.forEach { key, operations ->
             operations.forEach { value ->
                 sql.append("$separator $key $condition ? ")
-                operation.addParam(value)
+                query.addParam(value)
             }
         }
 
         return sql.toString()
     }
 
-    abstract fun <T> generatePaginationSql(sql: String, operation: Operation<T>): String
+    abstract fun <T> generatePaginationSql(sql: String, query: Query<T>): String
 
 }

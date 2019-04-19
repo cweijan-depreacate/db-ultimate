@@ -1,14 +1,14 @@
 package github.cweijan.ultimate.generator.impl
 
-import github.cweijan.ultimate.core.Operation
+import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.generator.BaseSqlGenerator
 
 class MysqlGenerator : BaseSqlGenerator() {
-    override fun <T> generatePaginationSql(sql: String, operation: Operation<T>): String {
+    override fun <T> generatePaginationSql(sql: String, query: Query<T>): String {
 
-        if (null == operation.start && null == operation.limit) return sql
+        if (null == query.offset && null == query.limit) return sql
 
-        return "$sql limit ${operation.start ?: 0},${operation.limit}"
+        return "$sql limit ${query.offset ?: 0},${query.limit}"
 
     }
 }

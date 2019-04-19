@@ -25,11 +25,6 @@ class DbConfig(private var dataSource: DataSource? = null) {
     var develop = DefaultProperties.DEVELOP
     var scanPackage: String? = null
 
-    companion object {
-
-        private val logger = Log.logger
-    }
-
     @JvmOverloads
     fun openConnection(autoCommit: Boolean = true): Connection {
 
@@ -39,7 +34,7 @@ class DbConfig(private var dataSource: DataSource? = null) {
 
         if (dataSource == null) {
             if (showSql) {
-                logger.info("dataSource is null! init hikariDataSource")
+                Log.info("dataSource is null! init hikariDataSource")
             }
             val dataSourceAdapter = HikariDataSourceAdapter(this)
             dataSource = dataSourceAdapter.dataSource
@@ -49,7 +44,7 @@ class DbConfig(private var dataSource: DataSource? = null) {
         try {
             connection.autoCommit = autoCommit
         } catch (e: SQLException) {
-            logger.error("getGenerator jdbc connection fail!", e)
+            Log.error("getGenerator jdbc connection fail!", e)
         }
 
         return connection

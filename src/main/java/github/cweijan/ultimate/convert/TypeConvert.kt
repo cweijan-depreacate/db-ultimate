@@ -2,7 +2,6 @@ package github.cweijan.ultimate.convert
 
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.util.Log
-import github.cweijan.ultimate.util.StringUtils
 import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
@@ -10,8 +9,6 @@ import java.util.*
 import kotlin.collections.HashMap
 
 object TypeConvert {
-
-    private val logger = Log.logger
 
     /**
      * 将resultSet转为java对象,根据列名与field进行映射
@@ -23,10 +20,6 @@ object TypeConvert {
     fun <T> resultSetToBean(resultSet: ResultSet, beanClass: Class<T>, hadNext: Boolean = false): T? {
 
         if (!hadNext && !resultSet.next()) return null
-
-        if (beanClass == Map::class.java) {
-//            return resultSetToMap(resultSet)
-        }
 
         val columns = getColumns(resultSet)
 
@@ -80,10 +73,15 @@ object TypeConvert {
      * @param columns   Field对应的列名
      * @return 转换完成的实体类型
      */
-    private fun <T> toJavaBean(resultSet: ResultSet, clazz: Class<T>, columns: Map<String, String>): T {
+    private fun <T> toJavaBean(resultSet: ResultSet, clazz: Class<T>, columns: HashMap<String, String>): T? {
 
         val fields = clazz.declaredFields
-        val beanInstance = clazz.newInstance()
+        val beanInstance: T
+        try {
+            beanInstance = clazz.newInstance()
+        } catch (e: Exception) {
+            return null
+        }
         if (columns.keys.isEmpty()) return beanInstance
         val component = TableInfo.getComponent(clazz)
         val objectMap = HashMap<Field, Class<*>>();
@@ -101,14 +99,14 @@ object TypeConvert {
             val columnName = columns[component.getColumnNameByFieldName(fieldName)]
 
             try {
-                if (TypeAdapter.isAdapterType(fieldType)) {
-                    field.set(beanInstance,TypeAdapter.convertFieldValue(fieldType,resultSet.getObject(columnName)) )
-                } else {
-                    objectMap[field] = Class.forName(fieldType)
+                when {
+                    TypeAdapter.isDateType(fieldType) -> field.set(beanInstance,TypeAdapter.converToJavaDateValue(field.type,resultSet.getObject(columnName) ) )
+                    TypeAdapter.isAdapterType(fieldType) -> field.set(beanInstance,resultSet.getObject(columnName) )
+                    else -> objectMap[field] = Class.forName(fieldType)
                 }
-                objectMap.remove(field)
+                columns.remove(columnName)
             } catch (e: Exception) {
-                logger.error(e.message, e)
+                Log.error(e.message, e)
             }
 
         }
@@ -122,7 +120,7 @@ object TypeConvert {
      *
      * @param resultSet 查询的结果集
      */
-    private fun getColumns(resultSet: ResultSet): Map<String, String> {
+    private fun getColumns(resultSet: ResultSet): HashMap<String, String> {
 
         val columns = HashMap<String, String>()
 //        val component = TableInfo.getComponent(clazz)
@@ -137,4 +135,5 @@ object TypeConvert {
 
         return columns
     }
+
 }

@@ -26,7 +26,7 @@ class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : F
             if(dbconfig.createNonexistsTable){
                 initialer.createTable(componentInfo)
             }
-            Log.logger.debug("reload component $className")
+            Log.debug("reload component $className")
         }
 
     }
@@ -42,7 +42,7 @@ class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : F
             if(dbconfig.createNonexistsTable){
                 initialer.createTable(componentInfo)
             }
-            Log.logger.debug("init component $className")
+            Log.debug("init component $className")
         }
     }
 
@@ -52,7 +52,7 @@ class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : F
         if(!file.path.endsWith(".class"))return
         val className = file.path.substring(baseClasspath.length + 1).replace("\\", ".").replace(".class", "")
         TableInfo.removeComponent(Class.forName(className))
-        Log.logger.debug("remove component $className")
+        Log.debug("remove component $className")
     }
 
     override fun onStart(fileAlterationObserver: FileAlterationObserver) {

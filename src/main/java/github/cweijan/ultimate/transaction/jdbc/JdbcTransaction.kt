@@ -11,9 +11,7 @@ class JdbcTransaction(var connection: Connection? = null, private var autoCommit
     override fun commit() {
 
         if (connection != null && !connection!!.autoCommit) {
-            if (log.isDebugEnabled) {
-                log.debug("Committing JDBC Connection [$connection]")
-            }
+            Log.debug("Committing JDBC Connection [$connection]")
             connection!!.commit()
         }
     }
@@ -22,9 +20,7 @@ class JdbcTransaction(var connection: Connection? = null, private var autoCommit
     override fun rollback() {
 
         if (connection != null && !connection!!.autoCommit) {
-            if (log.isDebugEnabled) {
-                log.debug("Rolling back JDBC Connection [$connection]")
-            }
+            Log.debug("Rolling back JDBC Connection [$connection]")
             connection!!.rollback()
         }
     }
@@ -33,16 +29,9 @@ class JdbcTransaction(var connection: Connection? = null, private var autoCommit
     override fun close() {
 
         if (connection != null) {
-            if (log.isDebugEnabled) {
-                log.debug("Closing JDBC Connection [$connection]")
-            }
+            Log.debug("Closing JDBC Connection [$connection]")
             connection!!.close()
         }
-    }
-
-    companion object {
-
-        private val log = Log.logger
     }
 
 }

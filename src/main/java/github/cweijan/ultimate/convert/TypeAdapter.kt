@@ -1,9 +1,12 @@
 package github.cweijan.ultimate.convert
 
 import github.cweijan.ultimate.util.DateUtils
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -25,13 +28,34 @@ object TypeAdapter {
         }
     }
 
-    fun convertFieldValue(fieldValue: Any): Any {
-        return convertFieldValue(fieldValue::class.java.name,fieldValue)
+    fun converToJavaDateValue(dateType: Class<*>, timeObject: Any): Any? {
+        if (timeObject::class.java == Date::class.java) {
+            val resultTime = timeObject as Timestamp
+            return when (dateType) {
+                Date::class.java -> return resultTime
+                LocalDateTime::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault())
+                LocalDate::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault()).toLocalDate()
+                LocalTime::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault()).toLocalTime()
+                else -> null
+            }
+        } else {
+            //TODO 这里需要对日期格式进行处理
+            val resultTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(timeObject.toString())
+            return when (dateType) {
+                Date::class.java -> resultTime
+                LocalDateTime::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault())
+                LocalDate::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault()).toLocalDate()
+                LocalTime::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault()).toLocalTime()
+                else -> null
+            }
+        }
     }
+
     /**
-     * 根据相应的类型返回第二个参数的类型
+     * 对值进行sql兼容处理
      */
-    fun convertFieldValue(fieldType: String, fieldValue: Any): Any {
+    fun convertToSqlValue(fieldValue: Any): Any {
+        val fieldType = fieldValue::class.java.name
         return when {
             NUMBER_TYPE.contains(fieldType) -> fieldValue
             CHARACTER_TYPE.contains(fieldType) -> "'$fieldValue'"
@@ -41,6 +65,10 @@ object TypeAdapter {
             LocalTime::class.java.name == fieldType -> "'${(fieldValue as LocalTime).format(DateTimeFormatter.ofPattern("HH:mm:ss"))}'"
             else -> "'$fieldValue'"
         }
+    }
+
+    fun isDateType(fieldType: String?): Boolean {
+        return DATE_TYPE.contains(fieldType)
     }
 
 }

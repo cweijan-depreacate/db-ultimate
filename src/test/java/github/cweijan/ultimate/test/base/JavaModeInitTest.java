@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.test.base;
 
 import github.cweijan.ultimate.core.DbUltimate;
+import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.db.config.DbConfig;
 import github.cweijan.ultimate.test.bean.Admin;
 import org.junit.Test;
@@ -20,7 +21,7 @@ public class JavaModeInitTest{
         dbConfig.setScanPackage("github.cweijan");
         dbConfig.setCreateNonexistsTable(true);
         DbUltimate dbUltimate = new DbUltimate(dbConfig);
-        List<Admin> admins = dbUltimate.find(Admin.class);
+        List<Admin> admins = dbUltimate.find(Query.of(Admin.class));
         System.out.println(admins);
 
     }

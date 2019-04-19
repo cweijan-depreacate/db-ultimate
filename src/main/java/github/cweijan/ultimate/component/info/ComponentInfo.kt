@@ -154,7 +154,7 @@ class ComponentInfo(var componentClass: Class<*>) {
             componentInfo.tableAlias = table.alias
             generateColumns(componentInfo, table.camelcaseToUnderLine)
             TableInfo.putComponent(componentClass, componentInfo)
-            Log.logger.debug("load component ${componentClass.name}, table is $tableName")
+            Log.debug("load component ${componentClass.name}, table is $tableName")
             return componentInfo
         }
 

@@ -3,17 +3,16 @@ package github.cweijan.ultimate.core
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
-import github.cweijan.ultimate.util.Log
 import org.fest.reflect.core.Reflection
 import java.util.*
 
 /**
  * @param isAutoConvert convertCamelToUnderScore
  */
-class Operation<T>
+class Query<T>
 private constructor(val componentClass: Class<out T>, private var isAutoConvert: Boolean = false) {
 
-    var component:ComponentInfo = TableInfo.getComponent(componentClass)
+    var component: ComponentInfo = TableInfo.getComponent(componentClass)
 
     private val equalsMap: MutableMap<String, MutableList<String>> by lazy {
         return@lazy HashMap<String, MutableList<String>>()
@@ -40,7 +39,9 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
     }
     var orderBy: String? = null
         private set
-    var start: Int? = null
+    var offset: Int? = null
+        private set
+    var page: Int? = null
         private set
     var limit: Int? = null
         private set
@@ -70,31 +71,35 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
             }
         }
 
-    fun addParam(param: String) {
+    fun addParam(param: String?): Query<T> {
 
-        params.add(param)
+        param?.let { params.add(it) }
+
+        return this
     }
 
     fun getParams(): Array<String>? {
         return params.toTypedArray()
     }
 
-    fun join(sql: String) {
+    fun join(sql: String): Query<T> {
 
         val segment = " join $sql "
         joinTables.add(segment)
+        return this
     }
 
-    fun join(clazz: Class<*>) {
+    fun join(clazz: Class<*>): Query<T> {
 
         val foreignComponent = TableInfo.getComponent(clazz)
         val foreignTableName = foreignComponent.tableName
         val foreignKeyInfo = component.getForeignKey(clazz)
 
-        val tableAlias=component.tableAlias?:component.tableName
-        val foreignTableAlias = foreignComponent.tableAlias?:foreignTableName
+        val tableAlias = component.tableAlias ?: component.tableName
+        val foreignTableAlias = foreignComponent.tableAlias ?: foreignTableName
 
         join(" $foreignTableName $foreignTableAlias on $tableAlias.${foreignKeyInfo.foreignKey}=$foreignTableAlias.${foreignKeyInfo.joinKey} ")
+        return this
     }
 
     private fun getOperationList(map: MutableMap<String, MutableList<String>>, key: String): MutableList<String>? {
@@ -116,9 +121,10 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return covertColumn
     }
 
-    fun update(column: String, value: Any) {
+    fun update(column: String, value: Any?): Query<T> {
 
-        updateMap[convert(column)] = value.toString()
+        value?.let { updateMap[convert(column)] = it.toString() }
+        return this
     }
 
     private fun put(map: MutableMap<String, MutableList<String>>, column: String, value: Any?) {
@@ -128,44 +134,57 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         map[column] = operationList
     }
 
-    fun notEquals(column: String, value: Any) {
-
-        put(notEqualsMap, column, value)
+    fun notEquals(column: String, value: Any?): Query<T> {
+        value?.let { put(notEqualsMap, column, it) }
+        return this
     }
 
-    fun equals(column: String, value: Any) {
+    fun equals(column: String, value: Any?): Query<T> {
 
-        put(equalsMap, column, value)
+        value?.let { put(equalsMap, column, it) }
+        return this
     }
 
-    fun like(column: String, content: Any) {
+    fun like(column: String, content: Any?): Query<T> {
 
-        put(likeMap, column, "%$content%")
+        content?.let { put(likeMap, column, "%$it%") }
+        return this
     }
 
-    fun orEquals(column: String, value: Any) {
+    fun orEquals(column: String, value: Any?): Query<T> {
 
-        put(orEqualsMap, column, value)
+        value?.let { put(orEqualsMap, column, it) }
+        return this
     }
 
-    fun limit(limit: Int?) {
+    fun limit(limit: Int?): Query<T> {
 
         this.limit = limit
+        return this
     }
 
-    fun start(start: Int?) {
+    fun start(page: Int?): Query<T> {
 
-        this.start = start
+        this.page = page
+        return this
     }
 
-    fun setColumn(column: String) {
+    fun offset(offset: Int?): Query<T> {
 
-        this.column = convert(column)
+        this.offset = offset
+        return this
     }
 
-    fun orderBy(orderBy: String) {
+    fun setColumn(column: String?): Query<T> {
+
+        column?.let { this.column = convert(column) }
+        return this
+    }
+
+    fun orderBy(orderBy: String?): Query<T> {
 
         this.orderBy = orderBy
+        return this
     }
 
     fun getColumn(): String? {
@@ -177,33 +196,30 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
 
     companion object {
         @JvmStatic
-        fun <T> build(componentClass: Class<T>): Operation<T> {
+        fun <T> of(componentClass: Class<T>): Query<T> {
 
-            return Operation(componentClass)
+            return Query(componentClass)
         }
 
-        @JvmStatic
-        fun <T : Any> build(component: T): Operation<T> {
+    }
 
-            val operation = Operation(component::class.java)
-            val componentInfo = TableInfo.getComponent(component::class.java)
-            val fields = componentInfo.componentClass.declaredFields
-            for (field in fields) {
-                try {
-                    field.isAccessible = true
-                    val fieldValue: Any? = Reflection.field(field.name).ofType(field.type).`in`(component).get()
-                    if (fieldValue == null || componentInfo.isExcludeField(field)) {
-                        continue
-                    }
-                    operation.equals(componentInfo.getColumnNameByFieldName(field.name), TypeAdapter.convertFieldValue(field.type.name, fieldValue))
-                } catch (e: IllegalAccessException) {
-                    Log.logger.error(e.message, e)
+    fun readObject(paramObject: Any):Query<T> {
+        if (paramObject is Map<*, *>) {
+            paramObject.forEach { key, value ->
+                value?.let{
+                    this.equals(component.getColumnNameByFieldName(key as String), TypeAdapter.convertToSqlValue(it))
                 }
-
             }
-            return operation
+        } else {
+            for (field in paramObject::class.java.declaredFields) {
+                field.isAccessible = true
+                val fieldValue = Reflection.field(field.name).ofType(field.type).`in`(paramObject).get() ?: continue
+                if (!component.isExcludeField(field)) {
+                    this.equals(component.getColumnNameByFieldName(field.name), TypeAdapter.convertToSqlValue(fieldValue))
+                }
+            }
         }
-
+        return this
     }
 
 }

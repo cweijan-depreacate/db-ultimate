@@ -2,7 +2,6 @@ package github.cweijan.ultimate.core
 
 import github.cweijan.ultimate.component.ComponentScan
 import github.cweijan.ultimate.component.TableInfo
-import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.convert.TypeConvert
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
@@ -73,41 +72,27 @@ class DbUltimate(dbConfig: DbConfig) {
         return getBySql(sql, null, clazz)
     }
 
-    fun <T> getCount(operation: Operation<T>): Int {
+    fun <T> getCount(query: Query<T>): Int {
 
-        val sql = sqlGenerator.generateCountSql(operation.component, operation)
+        val sql = sqlGenerator.generateCountSql(query.component, query)
 
         return getBySql(sql, Int::class.java)!!
     }
 
-    @JvmOverloads
-    fun <T> get(operation: Operation<T>, columns: String = ""): T? {
+    fun <T> getByQuery(query: Query<T>): T? {
 
-        operation.limit(1)
-        operation.setColumn(columns)
-        val sql = sqlGenerator.generateSelectSql(operation.component, operation)
+        val sql = sqlGenerator.generateSelectSql(query.component, query.limit(1))
 
-        return getBySql(sql, operation.getParams(), operation.componentClass)
+        return getBySql(sql, query.getParams(), query.componentClass)
+    }
+
+    fun <T> getByPrimaryKey(clazz: Class<T>, value: String): T? {
+
+        return getByQuery(Query.of(clazz).equals(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
 
     @JvmOverloads
-    fun <T : Any> get(component: T, columns: String = ""): T? {
-
-        return get(Operation.build(component), columns)
-    }
-
-    @JvmOverloads
-    fun <T> getBy(clazz: Class<T>, column: String, value: String, columns: String? = null): T? {
-
-        val operation = Operation.build(clazz)
-        columns?.let { operation.setColumn(it) }
-
-        operation.equals(TableInfo.getComponent(clazz).getColumnNameByFieldName(column), value)
-
-        return get(operation)
-    }
-
-    fun <T> findBySql(sql: String, params: Array<String>?, clazz: Class<T>): List<T> {
+    fun <T> findBySql(sql: String, params: Array<String>?=null, clazz: Class<T>): List<T> {
 
         val resultSet = sqlExecutor.executeSql(sql, params)
         val beanList = TypeConvert.resultSetToBeanList(resultSet!!, clazz)
@@ -115,68 +100,23 @@ class DbUltimate(dbConfig: DbConfig) {
         return beanList
     }
 
-    fun <T> findBySql(sql: String, clazz: Class<T>): List<T> {
+    fun <T> find(query: Query<T>): List<T> {
 
-        return findBySql(sql, null, clazz)
-    }
-
-    @JvmOverloads
-    fun <T> find(clazz: Class<T>, page: Int = 1, pageSize: Int = 0, columns: String = ""): List<T> {
-
-        return find(Operation.build(clazz), page, pageSize, columns)
-    }
-
-    @JvmOverloads
-    fun <T : Any> find(component: T, page: Int = 1, pageSize: Int = 100, columns: String = ""): List<T> {
-
-        return find(Operation.build(component), page, pageSize, columns)
-    }
-
-    @JvmOverloads
-    fun <T : Any> findByObject(clazz: Class<T>, paramObject: Any, page: Int = 1, pageSize: Int = 100, columns: String = ""): List<T> {
-
-        val operation = Operation.build(clazz)
-        if (paramObject is Map<*, *>) {
-            paramObject.forEach { key, value ->
-                if(value==null){
-                    return@forEach
-                }
-                operation.equals(key.toString(), TypeAdapter.convertFieldValue(value))
-            }
-        } else {
-            for (declaredField in paramObject::class.java.declaredFields) {
-                declaredField.isAccessible = true
-                val fieldValue = declaredField.get(paramObject) ?: continue
-                operation.equals(declaredField.name, TypeAdapter.convertFieldValue(fieldValue))
-            }
+        if (query.page != null && query.limit != 0) {
+            val start = if (query.page!! <= 0) 0 else (query.page!! - 1) * (query.limit?:100)
+            query.offset(start)
         }
 
-        return find(operation, page, pageSize, columns)
+        val sql = sqlGenerator.generateSelectSql(query.component, query)
+        return findBySql(sql, query.getParams(), query.componentClass)
     }
 
-    @JvmOverloads
-    fun <T> find(operation: Operation<T>, page: Int = 1, pageSize: Int = 100, columns: String = ""): List<T> {
+    fun <T : Any> findByObject(query: Query<T>, paramObject: Any): List<T> {
 
-        if (pageSize != 0) {
-            val start = if (page <= 0) 0 else (page - 1) * pageSize
-            operation.start(start)
-            operation.limit(pageSize)
-        }
-        operation.setColumn(columns)
-        val sql = sqlGenerator.generateSelectSql(operation.component, operation)
-        return findBySql(sql, operation.getParams(), operation.componentClass)
+
+        return find(query.readObject(paramObject))
     }
 
-    @JvmOverloads
-    fun <T> findBy(clazz: Class<T>, column: String, value: String, columns: String? = null): List<T> {
-
-        val operation = Operation.build(clazz)
-        columns?.let { operation.setColumn(it) }
-
-        operation.equals(TableInfo.getComponent(clazz).getColumnNameByFieldName(column), value)
-
-        return find(operation)
-    }
 
     /**
      * 插入对象,只插入非空属性
@@ -206,10 +146,10 @@ class DbUltimate(dbConfig: DbConfig) {
         executeSql(sql)
     }
 
-    fun <T> delete(operation: Operation<T>) {
+    fun <T> delete(query: Query<T>) {
 
-        val sql = sqlGenerator.generateDeleteSql(operation.component, operation)
-        executeSql(sql, operation.getParams())
+        val sql = sqlGenerator.generateDeleteSql(query.component, query)
+        executeSql(sql, query.getParams())
     }
 
     fun update(component: Any) {
@@ -218,19 +158,15 @@ class DbUltimate(dbConfig: DbConfig) {
             val sql = sqlGenerator.generateUpdateSql(component)
             executeSql(sql)
         } catch (e: IllegalAccessException) {
-            logger.error(e.message, e)
+            Log.error(e.message, e)
         }
 
     }
 
-    fun <T> update(operation: Operation<T>) {
+    fun <T> update(query: Query<T>) {
 
-        val sql = sqlGenerator.generateUpdateSql(operation.component, operation)
-        executeSql(sql, operation.getParams())
+        val sql = sqlGenerator.generateUpdateSql(query.component, query)
+        executeSql(sql, query.getParams())
     }
 
-    companion object {
-
-        private val logger = Log.logger
-    }
 }

@@ -4,6 +4,7 @@ import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.component.TableInfo;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
 
 import java.sql.SQLException;
@@ -19,7 +20,7 @@ public class DataBaseTest extends BaseTest{
     public void testCheckTableExists(){
 
         boolean exists = dbInitialer.tableExists(TableInfo.INSTANCE.getComponent(Admin.class).getTableName());
-        logger.info(String.valueOf(exists));
+        Log.info(String.valueOf(exists));
 
     }
 

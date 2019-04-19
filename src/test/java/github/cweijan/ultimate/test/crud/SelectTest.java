@@ -3,7 +3,7 @@ package github.cweijan.ultimate.test.crud;
 import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.component.TableInfo;
 import github.cweijan.ultimate.component.info.ComponentInfo;
-import github.cweijan.ultimate.core.Operation;
+import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.test.base.BaseTest;
 import github.cweijan.ultimate.test.bean.Lib;
 import github.cweijan.ultimate.util.Log;
@@ -18,12 +18,12 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGetByEquals(){
 
-        Operation<Admin> operation = Operation.build(Admin.class);
-        operation.equals("test", "test2");
-        operation.orEquals("id", "2");
-        //        operation.setColumn("id, message");
-        Admin admin = dbUltimate.get(operation);
-        logger.info(admin.toString());
+        Query<Admin> query = Query.of(Admin.class);
+        query.equals("test", "test2");
+        query.orEquals("id", "2");
+        //        query.setColumn("id, message");
+        Admin admin = dbUltimate.getByQuery(query);
+        Log.info(admin.toString());
     }
 
     @Test
@@ -32,45 +32,46 @@ public class SelectTest extends BaseTest{
         String sql = "select * from rh_admin";
         Map<String, Object> result = dbUltimate.executeSqlOfMap(sql);
 
-        Log.getLogger().info(result + "");
+        Log.info(result + "");
 
     }
 
     @Test
     public void testGetBy(){
 
-        Admin admin = dbUltimate.getBy(Admin.class, "id", "2");
+        Admin admin = dbUltimate.getByPrimaryKey(Admin.class,  "2");
 
-        Log.getLogger().info(admin.toString());
+        Log.info(admin);
 
     }
 
     @Test
     public void testGet(){
 
-        Admin admin = dbUltimate.get(Operation.build(Admin.class));
+        Admin admin = dbUltimate.getByQuery(Query.of(Admin.class));
         assert admin != null;
-        Date date = admin.getDate();
-        System.out.println(date);
-        Log.getLogger().info(admin.toString());
+//        Date date = admin.getDate();
+//        System.out.println(date);
+        Log.info(admin.toString());
 
     }
 
     @Test
     public void testJoin(){
 
-        Operation<Admin> operation = Operation.build(Admin.class);
-        operation.join(Lib.class);
+        Query<Admin> query = Query.of(Admin.class);
+        query.join(Lib.class);
 
-        Admin admin = dbUltimate.get(operation);
-        Log.getLogger().info(admin + "");
+        Admin admin = dbUltimate.getByQuery(query);
+        Log.info(admin + "");
 
     }
 
     @Test
     public void testFind(){
 
-        List<Admin> admins = dbUltimate.findBy(Admin.class, "id", "2");
+
+        List<Admin> admins = dbUltimate.find(Query.of(Admin.class).equals("id","2"));
         System.out.println(admins);
     }
 
@@ -79,7 +80,7 @@ public class SelectTest extends BaseTest{
 
         Admin admin = new Admin();
         admin.setId(2);
-        List<Admin> admins = dbUltimate.find(admin);
+        List<Admin> admins = dbUltimate.find(Query.of(Admin.class).readObject(admin));
         System.out.println(admins);
 
     }
@@ -89,47 +90,47 @@ public class SelectTest extends BaseTest{
 
         Admin admin = new Admin();
         admin.setId(2);
-        admin = dbUltimate.get(admin);
-        Log.getLogger().info(admin.toString());
+        admin = dbUltimate.getByQuery(Query.of(Admin.class).readObject(admin));
+        Log.info(admin);
 
     }
 
     @Test
     public void findByComponentClass(){
 
-        List<Admin> admins = dbUltimate.find(Admin.class, 0, 20);
-        Log.getLogger().info(admins.toString());
+        List<Admin> admins = dbUltimate.find(Query.of(Admin.class).offset(0).limit(20));
+        Log.info(admins.toString());
 
     }
 
     @Test
     public void testFindAll(){
 
-        Operation<Admin> operation = Operation.build(Admin.class);
-        List<Admin> admins = dbUltimate.find(operation);
+        Query<Admin> query = Query.of(Admin.class);
+        List<Admin> admins = dbUltimate.find(query);
         ComponentInfo component = TableInfo.INSTANCE.getComponent(Admin.class);
-        Log.getLogger().info(admins.toString());
+        Log.info(admins.toString());
     }
 
     @Test
     public void testFindByEquals(){
 
-        Operation<Admin> operation = Operation.build(Admin.class);
-        operation.equals("test", "test2");
-        operation.orEquals("test", "123");
-        //        operation.setColumn("id, message");
-        List<Admin> admins = dbUltimate.find(operation);
-        logger.info(admins.toString());
+        Query<Admin> query = Query.of(Admin.class);
+        query.equals("test", "test2").orEquals("test", "123");
+        //        query.setColumn("id, message");
+        List<Admin> admins = dbUltimate.find(query);
+        Log.info(admins.toString());
 
     }
 
     @Test
     public void testSearch(){
 
-        Operation<Admin> operation = Operation.build(Admin.class);
-        operation.like("test", "2");
-        List<Admin> admins = dbUltimate.find(operation);
-        logger.info(admins.toString());
+        Query<Admin> query = Query.of(Admin.class);
+        query.like("test", "2");
+        List<Admin> admins = dbUltimate.find(query);
+        Log.info(admins.toString());
+        Log.info("hello");
 
     }
 

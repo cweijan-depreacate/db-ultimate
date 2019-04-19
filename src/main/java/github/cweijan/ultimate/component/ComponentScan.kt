@@ -44,7 +44,7 @@ object ComponentScan {
         val resources = Thread.currentThread().contextClassLoader.getResources(packageName.replace('.', '/'))
         while (resources.hasMoreElements()) {
             val resource = resources.nextElement()
-            Log.logger.debug("scan component classes for path ${resource.path}")
+            Log.debug("scan component classes for path ${resource.path}")
             findClasses(File(resource.file), packageName)
         }
 
@@ -72,7 +72,7 @@ object ComponentScan {
                         ComponentInfo.init(clazz)
                     }
                 } catch (e: ClassNotFoundException) {
-                    Log.logger.error("fail load $packageName.${file.name.substring(0, file.name.length - 6)}!")
+                    Log.error("fail load $packageName.${file.name.substring(0, file.name.length - 6)}!")
                     continue
                 }
             }

@@ -5,9 +5,7 @@ import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
-import github.cweijan.ultimate.util.DbUtils
 import github.cweijan.ultimate.util.Log
-
 import java.lang.reflect.Field
 import java.sql.Connection
 import java.sql.SQLException
@@ -20,10 +18,6 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
     private var connection: Connection = dbConfig.openConnection()
-
-    companion object {
-        private val logger = Log.logger
-    }
 
     /**
      * 创建Bean所对应的表
@@ -45,7 +39,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
         if (componentInfo == null || tableExists(componentInfo.tableName)) return
 
         if (componentInfo.nonExistsColumn()) {
-            logger.debug("${componentInfo.componentClass.name} dont have any columns, skip create table ")
+            Log.debug("${componentInfo.componentClass.name} dont have any columns, skip create table ")
             return
         }
 
@@ -72,10 +66,10 @@ class DBInitialer(private val dbConfig: DbConfig) {
         try {
             sqlExecutor.executeSql(sql)
         } catch (e: Exception) {
-            logger.error("create table ${componentInfo.tableName} fail!")
+            Log.error("create table ${componentInfo.tableName} fail!")
             return
         }
-        logger.info("auto create component table ${componentInfo.tableName}")
+        Log.info("auto create component table ${componentInfo.tableName}")
     }
 
     /**
@@ -88,7 +82,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
         try {
             return connection.metaData.getTables(null, null, tableName, null).next()
         } catch (e: SQLException) {
-            logger.error(e.message, e)
+            Log.error(e.message, e)
         }
 
         return true

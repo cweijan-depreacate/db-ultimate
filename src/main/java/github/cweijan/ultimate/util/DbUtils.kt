@@ -6,8 +6,6 @@ import java.sql.SQLException
 
 object DbUtils {
 
-    private val logger = Log.logger
-
     /**
      * Get table all column metadata
      */
@@ -19,7 +17,7 @@ object DbUtils {
             preparedStatement.executeQuery()
             return preparedStatement.metaData
         } catch (e: Exception) {
-            logger.error(e.message, e)
+            Log.error(e.message, e)
         }
 
         return null
@@ -35,7 +33,7 @@ object DbUtils {
                 throw java.lang.IllegalArgumentException("connection is valid!")
             }
         } catch (e: SQLException) {
-            logger.error(e.message, e)
+            Log.error(e.message, e)
         }
 
     }
@@ -48,12 +46,10 @@ object DbUtils {
         try {
             if (connection != null && !connection.isClosed) {
                 connection.close()
-                if (logger.isDebugEnabled) {
-                    logger.debug("closed connection $connection")
-                }
+                Log.debug("closed connection $connection")
             }
         } catch (e: SQLException) {
-            logger.error(e.message, e)
+            Log.error(e.message, e)
         }
 
     }

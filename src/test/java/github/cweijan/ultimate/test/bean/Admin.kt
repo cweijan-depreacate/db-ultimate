@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.test.bean
 
 import github.cweijan.ultimate.annotation.*
+import java.time.LocalDateTime
 
 import java.util.Date
 
@@ -14,21 +15,21 @@ class Admin {
     @Column
     private var message: String? = null
 
+    @Column("message")
     var msd:String?=null
 
     var helloWorldTest:String?=null
 
     @Column("create_date")
-    var date: Date? = null
+    var date: LocalDateTime? = null
 
-    //    @Exclude
+//        @Exclude
     var test: String? = null
 
-    @Exclude
     var lib: Lib? = null
 
     override fun toString(): String {
-        return "Admin(id=$id, message=$message, msd=$msd, helloWorldTest=$helloWorldTest, date=$date, test=$test, lib=$lib)"
+        return "Admin(id=$id, message=$message, msd=$msd, helloWorldTest=$helloWorldTest, date=${date}, test=$test, lib=$lib)"
     }
 
 }

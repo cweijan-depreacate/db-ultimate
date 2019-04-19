@@ -43,7 +43,7 @@ class SqlExecutor(private val dbConfig: DbConfig) {
 
             }
         } catch (e: Exception) {
-            logger.error("Fail Execute SQL : $sql   \n ${e.message} ")
+            Log.error("Fail Execute SQL : $sql   \n ${e.message} ")
             transaction.rollback()
             throw e
         }finally {
@@ -52,18 +52,13 @@ class SqlExecutor(private val dbConfig: DbConfig) {
             }
         }
         if (dbConfig.showSql) {
-            logger.info("Execute SQL : $sql")
+            Log.info("Execute SQL : $sql")
             if (params != null) {
-                IntStream.range(0, params.size).forEach { index -> logger.debug(" param ${index + 1} : ${params[index]} ") }
+                IntStream.range(0, params.size).forEach { index -> Log.debug(" param ${index + 1} : ${params[index]} ") }
             }
         }
 
         return resultSet
     }
 
-    companion object {
-
-        private val logger = Log.logger
-
-    }
 }

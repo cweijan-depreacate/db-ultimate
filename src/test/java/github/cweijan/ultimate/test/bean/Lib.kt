@@ -11,4 +11,9 @@ class Lib {
     var message: String? = null
     var test: String? = null
     var msd:String?=null
+    override fun toString(): String {
+        return "Lib(id=$id, message=$message, test=$test, msd=$msd)"
+    }
+
 }
+
