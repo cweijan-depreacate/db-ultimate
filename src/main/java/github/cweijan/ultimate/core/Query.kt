@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.core
 
+import github.cweijan.ultimate.annotation.query.*
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
@@ -42,7 +43,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         private set
     var page: Int? = null
         private set
-    var limit: Int? = null
+    var pageSize: Int? = null
         private set
     var tableAlias: String? = null
 
@@ -144,7 +145,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return this
     }
 
-    fun like(column: String, content: Any?): Query<T> {
+    fun search(column: String, content: Any?): Query<T> {
 
         content?.let { put(likeMap, column, "%$it%") }
         return this
@@ -156,13 +157,13 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return this
     }
 
-    fun limit(limit: Int?): Query<T> {
+    fun pageSize(limit: Int?): Query<T> {
 
-        this.limit = limit
+        this.pageSize = limit
         return this
     }
 
-    fun start(page: Int?): Query<T> {
+    fun page(page: Int?): Query<T> {
 
         this.page = page
         return this
@@ -206,14 +207,25 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         if (paramObject is Map<*, *>) {
             paramObject.forEach { key, value ->
                 value?.let {
-                    this.equals(key!!.toString(), TypeAdapter.convertToSqlValue(componentClass,key.toString(),it))
+                    this.equals(key!!.toString(), TypeAdapter.convertToSqlValue(componentClass, key.toString(), it))
                 }
             }
         } else {
             for (field in paramObject::class.java.declaredFields) {
                 field.isAccessible = true
+                val fieldName = field.name
                 field.get(paramObject)?.let {
-                    this.equals(field.name, TypeAdapter.convertToSqlValue(componentClass,field.name,it))
+                    field.annotations.forEach { annotation ->
+                        when (annotation) {
+                            Page::class.java -> this.page(it.toString().toInt())
+                            Offset::class.java -> this.offset(it.toString().toInt())
+                            PageSize::class.java -> this.pageSize(it.toString().toInt())
+                            NotEquals::class.java -> this.notEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
+                            OrEquals::class.java -> this.orEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
+                            Search::class.java -> this.search(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
+                            else -> this.equals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
+                        }
+                    }
                 }
             }
         }

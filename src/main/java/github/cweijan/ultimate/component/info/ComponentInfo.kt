@@ -127,7 +127,7 @@ class ComponentInfo(var componentClass: Class<*>) {
 
     fun isQueryExcludeField(field: Field?): Boolean {
         val columnInfo = fieldColumnInfoMap[field?.name]
-        return null != columnInfo && columnInfo.excludeQuery
+        return null != columnInfo && columnInfo.excludeResult
     }
 
     fun isInsertExcludeField(field: Field?): Boolean {
@@ -198,11 +198,11 @@ class ComponentInfo(var componentClass: Class<*>) {
                 field.getAnnotation(Exclude::class.java)?.run {
                     columnInfo.excludeInsert = this.excludeInsert
                     columnInfo.excludeUpdate = this.excludeUpdate
-                    columnInfo.excludeQuery = this.excludeQuery
+                    columnInfo.excludeResult = this.excludeResult
                     columnInfo.excludeTable = this.excludeTable
                 }
-                field.getAnnotation(ExcludeQuery::class.java)?.run {
-                    columnInfo.excludeQuery = this.value
+                field.getAnnotation(ExcludeResult::class.java)?.run {
+                    columnInfo.excludeResult = this.value
                 }
 
                 //生成日期格式化信息

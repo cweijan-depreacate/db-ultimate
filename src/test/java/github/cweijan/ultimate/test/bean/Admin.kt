@@ -23,7 +23,7 @@ class Admin {
     @Column("create_date")
     var date: LocalDateTime? = null
 
-//        @ExcludeQuery
+//        @ExcludeResult
     var test: String? = null
 
     var lib: Lib? = null

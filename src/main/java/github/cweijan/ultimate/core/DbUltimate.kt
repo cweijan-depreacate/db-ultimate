@@ -77,7 +77,7 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun <T> getByQuery(query: Query<T>): T? {
 
-        val sql = sqlGenerator.generateSelectSql(query.component, query.limit(1))
+        val sql = sqlGenerator.generateSelectSql(query.component, query.pageSize(1))
 
         return getBySql(sql, query.getParams(), query.componentClass)
     }
@@ -98,8 +98,8 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun <T> find(query: Query<T>): List<T> {
 
-        if (query.page != null && query.limit != 0) {
-            val start = if (query.page!! <= 0) 0 else (query.page!! - 1) * (query.limit ?: 100)
+        if (query.page != null && query.pageSize != 0) {
+            val start = if (query.page!! <= 0) 0 else (query.page!! - 1) * (query.pageSize ?: 100)
             query.offset(start)
         }
 

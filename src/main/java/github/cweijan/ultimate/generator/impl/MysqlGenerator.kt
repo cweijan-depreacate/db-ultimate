@@ -6,9 +6,9 @@ import github.cweijan.ultimate.generator.BaseSqlGenerator
 class MysqlGenerator : BaseSqlGenerator() {
     override fun <T> generatePaginationSql(sql: String, query: Query<T>): String {
 
-        if (null == query.offset && null == query.limit) return sql
+        if (null == query.offset && null == query.pageSize) return sql
 
-        return "$sql limit ${query.offset ?: 0},${query.limit}"
+        return "$sql pageSize ${query.offset ?: 0},${query.pageSize}"
 
     }
 }

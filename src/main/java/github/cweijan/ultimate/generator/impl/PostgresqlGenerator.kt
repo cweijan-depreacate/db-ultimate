@@ -6,8 +6,8 @@ import github.cweijan.ultimate.generator.BaseSqlGenerator
 class PostgresqlGenerator : BaseSqlGenerator() {
     override fun <T> generatePaginationSql(sql: String, query: Query<T>): String {
 
-        if (null == query.offset && null == query.limit) return sql
+        if (null == query.offset && null == query.pageSize) return sql
 
-        return "$sql limit ${query.limit} offset ${query.offset ?: 0}"
+        return "$sql pageSize ${query.pageSize} offset ${query.offset ?: 0}"
     }
 }

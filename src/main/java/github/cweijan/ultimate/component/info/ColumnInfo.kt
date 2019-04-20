@@ -13,6 +13,6 @@ class ColumnInfo {
     var excludeAnnotaionValue:Exclude?=null
     var excludeInsert: Boolean = false
     var excludeUpdate: Boolean = false
-    var excludeQuery: Boolean = false
+    var excludeResult: Boolean = false
     var excludeTable: Boolean = false
 }

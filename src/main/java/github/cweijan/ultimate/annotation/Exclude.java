@@ -13,6 +13,6 @@ import java.lang.annotation.Target;
 public @interface Exclude{
     boolean excludeInsert () default true;
     boolean excludeUpdate () default true;
-    boolean excludeQuery() default true;
+    boolean excludeResult() default true;
     boolean excludeTable() default true;
 }

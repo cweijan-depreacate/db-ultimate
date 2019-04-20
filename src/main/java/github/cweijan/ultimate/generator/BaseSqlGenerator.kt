@@ -7,7 +7,6 @@ import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
-import org.fest.reflect.core.Reflection
 
 //import org.fest.reflect.core.Reflection.*
 
@@ -20,21 +19,12 @@ abstract class BaseSqlGenerator : SqlGenerator {
         var values = ""
         val fields = componentInfo.componentClass.declaredFields
         for (field in fields) {
-            try {
-                field.isAccessible = true
-
-                val fieldValue: Any? = Reflection.field(field.name).ofType(field.type).`in`(component).get()
-
-                if (fieldValue == null || componentInfo.isInsertExcludeField(field)) {
-                    continue
-                }
+            field.isAccessible = true
+            if (componentInfo.isInsertExcludeField(field)) continue
+            field.get(component)?.run {
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
-
-                values += "${TypeAdapter.convertToSqlValue(componentInfo.componentClass,field.name,fieldValue)},"
-            } catch (e: IllegalAccessException) {
-                Log.error(e.message, e)
+                values += "${TypeAdapter.convertToSqlValue(componentInfo.componentClass, field.name, this)},"
             }
-
         }
         if (columns.lastIndexOf(",") != -1) {
             columns = columns.substring(0, columns.lastIndexOf(","))
@@ -57,11 +47,12 @@ abstract class BaseSqlGenerator : SqlGenerator {
         val fields = component.javaClass.declaredFields
         for (field in fields) {
             field.isAccessible = true
-            val fieldValue: Any? = Reflection.field(field.name).ofType(field.type).`in`(component).get()
-            if (fieldValue == null || componentInfo.isUpdateExcludeField(field) || componentInfo.getColumnInfoByFieldName(field.name).isAutoIncrement) {
+            if (componentInfo.isUpdateExcludeField(field) || componentInfo.getColumnInfoByFieldName(field.name).isAutoIncrement) {
                 continue
             }
-            sql += "${field.name}=${TypeAdapter.convertToSqlValue(component.javaClass,field.name,fieldValue)},"
+            field.get(component)?.run {
+                sql += "${field.name}=${TypeAdapter.convertToSqlValue(component.javaClass, field.name, this)},"
+            }
         }
 
         if (sql.lastIndexOf(",") != -1) {
@@ -110,12 +101,12 @@ abstract class BaseSqlGenerator : SqlGenerator {
         var sql = ""
 
         query.component.autoJoinComponentList.let {
-            it.forEach{autoJoinComponent->query.join(autoJoinComponent)}
+            it.forEach { autoJoinComponent -> query.join(autoJoinComponent) }
         }
         sql += generateJoinTablesSql(query.joinTables)
         sql += generateOperationSql0(query.equalsOperation, "=", and, query)
         sql += generateOperationSql0(query.notEqualsOperation, "!=", and, query)
-        sql += generateOperationSql0(query.searchOperation, "like", and, query)
+        sql += generateOperationSql0(query.searchOperation, "search", and, query)
         sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
 
         if (sql.startsWith(and)) {
@@ -131,7 +122,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
             sql += " order by ${query.orderBy}"
         }
 
-        return query.alias+sql
+        return query.alias + sql
     }
 
     private fun generateJoinTablesSql(joinTables: MutableList<String>?): String {

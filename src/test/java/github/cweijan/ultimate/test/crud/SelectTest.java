@@ -10,7 +10,6 @@ import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -107,7 +106,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void findByComponentClass(){
 
-        List<Admin> admins = dbUltimate.find(Query.of(Admin.class).offset(0).limit(20));
+        List<Admin> admins = dbUltimate.find(Query.of(Admin.class).offset(0).pageSize(20));
         Log.info(admins.toString());
 
     }
@@ -137,7 +136,7 @@ public class SelectTest extends BaseTest{
     public void testSearch(){
 
         Query<Admin> query = Query.of(Admin.class);
-        query.like("test", "2");
+        query.search("test", "2");
         List<Admin> admins = dbUltimate.find(query);
         Log.info(admins.toString());
         Log.info("hello");

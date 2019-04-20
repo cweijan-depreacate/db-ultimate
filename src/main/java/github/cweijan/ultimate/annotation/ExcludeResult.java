@@ -6,10 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- 配置在field上面,表明不参与实体映射
+ 配置在field上面,将排除出sql查询结果
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ExcludeQuery{
+public @interface ExcludeResult{
     boolean value() default true;
 }
