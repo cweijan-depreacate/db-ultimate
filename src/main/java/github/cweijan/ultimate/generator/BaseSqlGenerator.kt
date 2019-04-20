@@ -33,7 +33,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
             values = values.substring(0, values.lastIndexOf(","))
         }
 
-        return "insert into " + componentInfo.tableName + "(" + columns + ") values(" + values + ");"
+        return "save into " + componentInfo.tableName + "(" + columns + ") values(" + values + ");"
     }
 
     @Throws(IllegalAccessException::class)
@@ -76,7 +76,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
         var sql = "UPDATE ${componentInfo.tableName} a set "
 
-        query.updateList!!.forEach { key, value ->
+        query.updateList.forEach { key, value ->
             sql += "$key=?,"
             query.addParam(value)
         }
@@ -106,8 +106,10 @@ abstract class BaseSqlGenerator : SqlGenerator {
         sql += generateJoinTablesSql(query.joinTables)
         sql += generateOperationSql0(query.equalsOperation, "=", and, query)
         sql += generateOperationSql0(query.notEqualsOperation, "!=", and, query)
-        sql += generateOperationSql0(query.searchOperation, "search", and, query)
+        sql += generateOperationSql0(query.searchOperation, "like", and, query)
         sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
+        sql += generateOperationSql0(query.ofNotEqualsOperation, "!=", or, query)
+        sql += generateOperationSql0(query.ofSearchOperation, "like", or, query)
 
         if (sql.startsWith(and)) {
             sql = sql.replaceFirst(and.toRegex(), "")

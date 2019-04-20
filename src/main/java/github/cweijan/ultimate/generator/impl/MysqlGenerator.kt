@@ -8,7 +8,7 @@ class MysqlGenerator : BaseSqlGenerator() {
 
         if (null == query.offset && null == query.pageSize) return sql
 
-        return "$sql pageSize ${query.offset ?: 0},${query.pageSize}"
+        return "$sql limit ${query.offset ?: 0},${query.pageSize}"
 
     }
 }

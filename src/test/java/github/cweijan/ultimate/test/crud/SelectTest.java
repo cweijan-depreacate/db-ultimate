@@ -65,6 +65,11 @@ public class SelectTest extends BaseTest{
     }
 
     @Test
+    public void testStatic(){
+
+    }
+
+    @Test
     public void testJoin(){
 
         Query<Admin> query = Query.of(Admin.class);
@@ -77,10 +82,16 @@ public class SelectTest extends BaseTest{
 
     @Test
     public void testFind(){
-
-
         List<Admin> admins = dbUltimate.find(Query.of(Admin.class).equals("id","2"));
         System.out.println(admins);
+    }
+
+    @Test
+    public void testFindByQuery(){
+
+        List<Admin> adminList = Query.of(Admin.class).list();
+        System.out.println(adminList.size());
+        System.out.println(adminList);
     }
 
     @Test

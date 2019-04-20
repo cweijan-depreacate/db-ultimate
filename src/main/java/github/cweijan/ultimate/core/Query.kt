@@ -5,6 +5,7 @@ import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
 import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * @param isAutoConvert convertCamelToUnderScore
@@ -13,19 +14,6 @@ class Query<T>
 private constructor(val componentClass: Class<out T>, private var isAutoConvert: Boolean = false) {
 
     var component: ComponentInfo = TableInfo.getComponent(componentClass)
-
-    private val equalsMap: MutableMap<String, MutableList<String>> by lazy {
-        return@lazy HashMap<String, MutableList<String>>()
-    }
-    private val orEqualsMap: MutableMap<String, MutableList<String>>by lazy {
-        return@lazy HashMap<String, MutableList<String>>()
-    }
-    private val notEqualsMap: MutableMap<String, MutableList<String>>by lazy {
-        return@lazy HashMap<String, MutableList<String>>()
-    }
-    private val likeMap: MutableMap<String, MutableList<String>>by lazy {
-        return@lazy HashMap<String, MutableList<String>>()
-    }
 
     private val params: MutableList<String> by lazy {
         return@lazy ArrayList<String>()
@@ -45,31 +33,42 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         private set
     var pageSize: Int? = null
         private set
-    var tableAlias: String? = null
-
-    val updateList: Map<String, String>?
-        get() = updateMap
-
-    val notEqualsOperation: Map<String, List<String>>?
-        get() = notEqualsMap
-
-    val equalsOperation: Map<String, List<String>>?
-        get() = equalsMap
-
-    val orEqualsOperation: Map<String, List<String>>?
-        get() = orEqualsMap
-
-    val searchOperation: Map<String, List<String>>?
-        get() = likeMap
-
-    val alias: String?
+    var alias: String? = null
         get() {
             return when {
-                this.tableAlias != null -> " $tableAlias"
+                field != null -> " $field"
                 component.tableAlias != null -> " " + component.tableAlias
                 else -> ""
             }
         }
+
+    val updateList: MutableMap<String, String>by lazy {
+        return@lazy HashMap<String, String>()
+    }
+
+    val notEqualsOperation: MutableMap<String, MutableList<String>>by lazy{
+        HashMap<String, MutableList<String>>()
+    }
+
+    val ofNotEqualsOperation: MutableMap<String, MutableList<String>>by lazy{
+        HashMap<String, MutableList<String>>()
+    }
+
+    val equalsOperation: MutableMap<String, MutableList<String>>by lazy{
+        HashMap<String, MutableList<String>>()
+    }
+
+    val orEqualsOperation: MutableMap<String, MutableList<String>>by lazy{
+        HashMap<String, MutableList<String>>()
+    }
+
+    val searchOperation: MutableMap<String, MutableList<String>>by lazy{
+        HashMap<String, MutableList<String>>()
+    }
+
+    val ofSearchOperation: MutableMap<String, MutableList<String>> by lazy{
+        HashMap<String, MutableList<String>>()
+    }
 
     fun addParam(param: String?): Query<T> {
 
@@ -135,25 +134,35 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
     }
 
     fun notEquals(column: String, value: Any?): Query<T> {
-        value?.let { put(notEqualsMap, column, it) }
+        value?.let { put(notEqualsOperation, column, it) }
+        return this
+    }
+
+    fun ofNotEquals(column: String, value: Any?): Query<T> {
+        value?.let { put(ofNotEqualsOperation, column, it) }
+        return this
+    }
+
+    fun ofSearch(column: String, value: Any?): Query<T> {
+        value?.let { put(ofSearchOperation, column, it) }
         return this
     }
 
     fun equals(column: String, value: Any?): Query<T> {
 
-        value?.let { put(equalsMap, column, it) }
+        value?.let { put(equalsOperation, column, it) }
         return this
     }
 
     fun search(column: String, content: Any?): Query<T> {
 
-        content?.let { put(likeMap, column, "%$it%") }
+        content?.let { put(searchOperation, column, "%$it%") }
         return this
     }
 
     fun orEquals(column: String, value: Any?): Query<T> {
 
-        value?.let { put(orEqualsMap, column, it) }
+        value?.let { put(orEqualsOperation, column, it) }
         return this
     }
 
@@ -194,15 +203,6 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return column
     }
 
-    companion object {
-        @JvmStatic
-        fun <T> of(componentClass: Class<T>): Query<T> {
-
-            return Query(componentClass)
-        }
-
-    }
-
     fun readObject(paramObject: Any): Query<T> {
         if (paramObject is Map<*, *>) {
             paramObject.forEach { key, value ->
@@ -221,8 +221,10 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
                             Offset::class.java -> this.offset(it.toString().toInt())
                             PageSize::class.java -> this.pageSize(it.toString().toInt())
                             NotEquals::class.java -> this.notEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
+                            OrNotEquals::class.java->this.ofNotEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
                             OrEquals::class.java -> this.orEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
                             Search::class.java -> this.search(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
+                            OrSearch::class.java -> this.ofSearch(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
                             else -> this.equals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
                         }
                     }
@@ -230,6 +232,33 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
             }
         }
         return this
+    }
+
+    fun list():List<T>{
+        return ultimate.find(this)
+    }
+
+    fun get():T?{
+        return ultimate.getByQuery(this)
+    }
+
+    fun update(){
+        ultimate.update(this)
+    }
+    fun delete(){
+        ultimate.delete(this)
+    }
+
+    companion object {
+        @JvmStatic
+        fun <T> of(componentClass: Class<T>): Query<T> {
+
+            return Query(componentClass)
+        }
+
+        @JvmStatic
+        lateinit var ultimate: DbUltimate
+
     }
 
 }

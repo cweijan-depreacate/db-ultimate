@@ -10,7 +10,7 @@ group = 'github.cweijan'
 
 sourceCompatibility = 1.8
 
-version '1.27'
+version '1.31'
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
@@ -20,6 +20,9 @@ repositories {
     mavenCentral()
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
 
 shadowJar {
     dependencies {

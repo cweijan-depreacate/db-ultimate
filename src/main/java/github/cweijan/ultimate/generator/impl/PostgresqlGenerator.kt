@@ -8,6 +8,6 @@ class PostgresqlGenerator : BaseSqlGenerator() {
 
         if (null == query.offset && null == query.pageSize) return sql
 
-        return "$sql pageSize ${query.pageSize} offset ${query.offset ?: 0}"
+        return "$sql limit ${query.pageSize} offset ${query.offset ?: 0}"
     }
 }

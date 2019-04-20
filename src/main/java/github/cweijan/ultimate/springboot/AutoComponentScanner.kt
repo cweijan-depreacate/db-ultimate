@@ -13,9 +13,8 @@ class AutoComponentScanner : ImportBeanDefinitionRegistrar {
 
         val annotationAttributes = importingClassMetadata.getAnnotationAttributes(TableComponentScan::class.java.name)
 
-        val scanPackages = AnnotationAttributes.fromMap(annotationAttributes)?.getStringArray("value")
-        if (scanPackages != null) {
-            ComponentScan.scan(scanPackages.asList())
+        AnnotationAttributes.fromMap(annotationAttributes)?.getStringArray("value")?.run{
+            ComponentScan.scan(this.asList())
         }
 
     }
