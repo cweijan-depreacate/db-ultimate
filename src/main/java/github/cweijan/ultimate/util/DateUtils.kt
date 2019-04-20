@@ -1,13 +1,19 @@
 package github.cweijan.ultimate.util
 
+import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.HashMap
 
 object DateUtils {
 
     private const val PATTERN = "yyyy-MM-dd HH:mm:ss"
-    private val defaultDateFormat by lazy {
-        return@lazy SimpleDateFormat(PATTERN);
+    private val formatCache by lazy {
+        return@lazy HashMap<String, SimpleDateFormat>()
+    }
+    private val timeFormatCache by lazy {
+        return@lazy HashMap<String, DateTimeFormatter>()
     }
 
     /**
@@ -19,9 +25,7 @@ object DateUtils {
     @JvmStatic
     fun parseDate(date: String, pattern: String = PATTERN): Date? {
 
-        return if (pattern == PATTERN) {
-            return defaultDateFormat.parse(date)
-        } else SimpleDateFormat(pattern).parse(date)
+        return getDateFormat(pattern).parse(date)
 
     }
 
@@ -34,9 +38,8 @@ object DateUtils {
     @JvmOverloads
     @JvmStatic
     fun formatDate(date: Date, pattern: String = PATTERN): String {
-        return if (pattern == PATTERN) {
-            return defaultDateFormat.format(date)
-        } else SimpleDateFormat(pattern).format(date)
+
+        return getDateFormat(pattern).format(date)
     }
 
     /**
@@ -51,7 +54,7 @@ object DateUtils {
         val calendar = Calendar.getInstance()
         calendar.add(Calendar.DATE, intervalDay)
 
-        return SimpleDateFormat(pattern).format(calendar.time)
+        return getDateFormat(pattern).format(calendar.time)
     }
 
     /**
@@ -72,6 +75,20 @@ object DateUtils {
     fun timestamp(): String {
 
         return getIntervalDay(0, "yyyyMMddHHmmssSSS")
+    }
+
+    @JvmStatic
+    fun getDateTimeFormatter(dateFormat: String): DateTimeFormatter {
+        timeFormatCache[dateFormat]?.run { return this }
+        timeFormatCache[dateFormat] = DateTimeFormatter.ofPattern(dateFormat)
+        return timeFormatCache[dateFormat]!!
+    }
+
+    @JvmStatic
+    fun getDateFormat(dateFormat: String): SimpleDateFormat {
+        formatCache[dateFormat]?.run { return this }
+        formatCache[dateFormat]=SimpleDateFormat(dateFormat)
+        return formatCache[dateFormat]!!
     }
 
 }

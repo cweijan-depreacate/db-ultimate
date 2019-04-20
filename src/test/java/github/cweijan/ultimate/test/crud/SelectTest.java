@@ -119,6 +119,7 @@ public class SelectTest extends BaseTest{
         query.equals("test", "test2").orEquals("test", "123");
         //        query.setColumn("id, message");
         List<Admin> admins = dbUltimate.find(query);
+
         Log.info(admins.toString());
 
     }

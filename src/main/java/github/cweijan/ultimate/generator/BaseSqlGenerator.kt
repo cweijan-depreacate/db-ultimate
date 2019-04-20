@@ -25,12 +25,12 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
                 val fieldValue: Any? = Reflection.field(field.name).ofType(field.type).`in`(component).get()
 
-                if (fieldValue == null || componentInfo.isExcludeField(field)) {
+                if (fieldValue == null || componentInfo.isInsertExcludeField(field)) {
                     continue
                 }
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
 
-                values += "${TypeAdapter.convertToSqlValue(fieldValue)},"
+                values += "${TypeAdapter.convertToSqlValue(componentInfo.componentClass,field.name,fieldValue)},"
             } catch (e: IllegalAccessException) {
                 Log.error(e.message, e)
             }
@@ -58,10 +58,10 @@ abstract class BaseSqlGenerator : SqlGenerator {
         for (field in fields) {
             field.isAccessible = true
             val fieldValue: Any? = Reflection.field(field.name).ofType(field.type).`in`(component).get()
-            if (fieldValue == null || componentInfo.isExcludeField(field) || componentInfo.isPrimaryField(field)) {
+            if (fieldValue == null || componentInfo.isUpdateExcludeField(field) || componentInfo.getColumnInfoByFieldName(field.name).isAutoIncrement) {
                 continue
             }
-            sql += "${field.name}=${TypeAdapter.convertToSqlValue(fieldValue)},"
+            sql += "${field.name}=${TypeAdapter.convertToSqlValue(component.javaClass,field.name,fieldValue)},"
         }
 
         if (sql.lastIndexOf(",") != -1) {

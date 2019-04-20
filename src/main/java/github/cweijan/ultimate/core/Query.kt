@@ -203,19 +203,18 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
 
     }
 
-    fun readObject(paramObject: Any):Query<T> {
+    fun readObject(paramObject: Any): Query<T> {
         if (paramObject is Map<*, *>) {
             paramObject.forEach { key, value ->
-                value?.let{
-                    this.equals(component.getColumnNameByFieldName(key as String), TypeAdapter.convertToSqlValue(it))
+                value?.let {
+                    this.equals(key!!.toString(), TypeAdapter.convertToSqlValue(componentClass,key.toString(),it))
                 }
             }
         } else {
             for (field in paramObject::class.java.declaredFields) {
                 field.isAccessible = true
-                val fieldValue = Reflection.field(field.name).ofType(field.type).`in`(paramObject).get() ?: continue
-                if (!component.isExcludeField(field)) {
-                    this.equals(component.getColumnNameByFieldName(field.name), TypeAdapter.convertToSqlValue(fieldValue))
+                Reflection.field(field.name).ofType(field.type).`in`(paramObject).get()?.let {
+                    this.equals(field.name, TypeAdapter.convertToSqlValue(componentClass,field.name,it))
                 }
             }
         }

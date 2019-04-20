@@ -92,7 +92,7 @@ object TypeConvert {
             field.isAccessible = true
             val fieldName = field.name
             val fieldType = field.type.name
-            if (component.isExcludeField(field) ||
+            if (component.isQueryExcludeField(field) ||
                     (!columns.containsKey(component.getColumnNameByFieldName(fieldName)) && TypeAdapter.isAdapterType(fieldType))) {
                 continue
             }
@@ -100,7 +100,7 @@ object TypeConvert {
 
             try {
                 when {
-                    TypeAdapter.isDateType(fieldType) -> field.set(beanInstance,TypeAdapter.converToJavaDateValue(field.type,resultSet.getObject(columnName) ) )
+                    TypeAdapter.isDateType(fieldType) -> field.set(beanInstance,TypeAdapter.converToJavaDateValue(component.componentClass,field.name,resultSet.getObject(columnName) ) )
                     TypeAdapter.isAdapterType(fieldType) -> field.set(beanInstance,resultSet.getObject(columnName) )
                     else -> objectMap[field] = Class.forName(fieldType)
                 }
@@ -123,13 +123,10 @@ object TypeConvert {
     private fun getColumns(resultSet: ResultSet): HashMap<String, String> {
 
         val columns = HashMap<String, String>()
-//        val component = TableInfo.getComponent(clazz)
         val metaData: ResultSetMetaData = resultSet.metaData
 
         // 获取resultSet字段类型
         for (i in 1..metaData.columnCount) {
-//            val fieldName = component.getFieldNameByColumnName(metaData.getColumnLabel(i)) ?: ""
-//            if (StringUtils.isEmpty(fieldName)) continue
             columns[metaData.getColumnLabel(i)] = metaData.getColumnLabel(i)
         }
 

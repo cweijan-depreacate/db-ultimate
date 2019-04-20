@@ -47,7 +47,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
         for (field in componentInfo.componentClass.declaredFields) {
 
-            if (componentInfo.isExcludeField(field)) {
+            if (componentInfo.isTableExcludeField(field)) {
                 continue
             }
             field.isAccessible = true

@@ -59,7 +59,8 @@ class DbUltimate(dbConfig: DbConfig) {
 
     }
 
-    fun <T> getBySql(sql: String, params: Array<String>?, clazz: Class<T>): T? {
+    @JvmOverloads
+    fun <T> getBySql(sql: String, params: Array<String>? = null, clazz: Class<T>): T? {
 
         val resultSet = sqlExecutor.executeSql(sql, params)
         val bean = TypeConvert.resultSetToBean(resultSet!!, clazz)
@@ -67,16 +68,11 @@ class DbUltimate(dbConfig: DbConfig) {
         return bean
     }
 
-    fun <T> getBySql(sql: String, clazz: Class<T>): T? {
-
-        return getBySql(sql, null, clazz)
-    }
-
     fun <T> getCount(query: Query<T>): Int {
 
         val sql = sqlGenerator.generateCountSql(query.component, query)
 
-        return getBySql(sql, Int::class.java)!!
+        return getBySql(sql, null, Int::class.java)!!
     }
 
     fun <T> getByQuery(query: Query<T>): T? {
@@ -92,7 +88,7 @@ class DbUltimate(dbConfig: DbConfig) {
     }
 
     @JvmOverloads
-    fun <T> findBySql(sql: String, params: Array<String>?=null, clazz: Class<T>): List<T> {
+    fun <T> findBySql(sql: String, params: Array<String>? = null, clazz: Class<T>): List<T> {
 
         val resultSet = sqlExecutor.executeSql(sql, params)
         val beanList = TypeConvert.resultSetToBeanList(resultSet!!, clazz)
@@ -103,20 +99,13 @@ class DbUltimate(dbConfig: DbConfig) {
     fun <T> find(query: Query<T>): List<T> {
 
         if (query.page != null && query.limit != 0) {
-            val start = if (query.page!! <= 0) 0 else (query.page!! - 1) * (query.limit?:100)
+            val start = if (query.page!! <= 0) 0 else (query.page!! - 1) * (query.limit ?: 100)
             query.offset(start)
         }
 
         val sql = sqlGenerator.generateSelectSql(query.component, query)
         return findBySql(sql, query.getParams(), query.componentClass)
     }
-
-    fun <T : Any> findByObject(query: Query<T>, paramObject: Any): List<T> {
-
-
-        return find(query.readObject(paramObject))
-    }
-
 
     /**
      * 插入对象,只插入非空属性
@@ -144,6 +133,14 @@ class DbUltimate(dbConfig: DbConfig) {
             sqlGenerator.generateUpdateSql(component)
         }
         executeSql(sql)
+    }
+
+    fun <T> batchDelete(query: Query<T>, privateKeyList: List<Any>) {
+        privateKeyList.forEach { privateKey->query.equals(query.component.primaryKey!!,privateKey) }
+    }
+
+    fun <T> batchDelete(query: Query<T>, privateKeys: Array<Any>) {
+        privateKeys.forEach { privateKey->query.equals(query.component.primaryKey!!,privateKey) }
     }
 
     fun <T> delete(query: Query<T>) {

@@ -2,7 +2,6 @@ package github.cweijan.ultimate.component.info
 
 import github.cweijan.ultimate.annotation.*
 import github.cweijan.ultimate.component.TableInfo
-import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.exception.ColumnNotExistsException
 import github.cweijan.ultimate.exception.ForeignKeyNotSetException
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
@@ -28,13 +27,6 @@ class ComponentInfo(var componentClass: Class<*>) {
     var tableAlias: String? = null
 
     /**
-     * exclude column list
-     */
-    private val excludeColumnList by lazy {
-        return@lazy ArrayList<String>()
-    }
-
-    /**
      * 属性名与ColumnInfo的映射
      */
     private val fieldColumnInfoMap by lazy {
@@ -58,7 +50,7 @@ class ComponentInfo(var componentClass: Class<*>) {
     /**
      * 自动关联的外键列表
      */
-    val autoJoinComponentList by lazy{
+    val autoJoinComponentList by lazy {
         return@lazy ArrayList<Class<*>>();
     }
 
@@ -72,6 +64,17 @@ class ComponentInfo(var componentClass: Class<*>) {
 
         return fieldColumnInfoMap[fieldName]?.columnName
                 ?: throw ColumnNotExistsException("column field $fieldName is not exists!")
+    }
+
+    /**
+     * 根据属性名找列的详细信息
+     *
+     * @param fieldName 列名
+     * @return 对应的属性名
+     */
+    fun getColumnInfoByFieldName(fieldName: String): ColumnInfo {
+
+        return fieldColumnInfoMap[fieldName] ?: throw ColumnNotExistsException("column field $fieldName is not exists!")
     }
 
     /**
@@ -122,8 +125,24 @@ class ComponentInfo(var componentClass: Class<*>) {
         return null != field && field.name == primaryFieldName
     }
 
-    fun isExcludeField(field: Field?): Boolean {
-        return null != field && excludeColumnList.contains(field.name)
+    fun isQueryExcludeField(field: Field?): Boolean {
+        val columnInfo = fieldColumnInfoMap[field?.name]
+        return null != columnInfo && columnInfo.excludeQuery
+    }
+
+    fun isInsertExcludeField(field: Field?): Boolean {
+        val columnInfo = fieldColumnInfoMap[field?.name]
+        return null != columnInfo && columnInfo.excludeInsert
+    }
+
+    fun isUpdateExcludeField(field: Field?): Boolean {
+        val columnInfo = fieldColumnInfoMap[field?.name]
+        return null != columnInfo && columnInfo.excludeUpdate
+    }
+
+    fun isTableExcludeField(field: Field?): Boolean {
+        val columnInfo = fieldColumnInfoMap[field?.name]
+        return null != columnInfo && columnInfo.excludeTable
     }
 
     private fun putColumn(fieldName: String, columnInfo: ColumnInfo) {
@@ -171,12 +190,25 @@ class ComponentInfo(var componentClass: Class<*>) {
 
             for (field in fields) {
                 field.isAccessible = true
-                //是否是exclude
-                if (field.getAnnotation(Exclude::class.java) != null) {
-                    componentInfo.excludeColumnList.add(field.name)
-                    continue
-                }
+
                 columnInfo = ColumnInfo()
+                columnInfo.fieldType=field.type
+
+                //生成exclude信息
+                field.getAnnotation(Exclude::class.java)?.run {
+                    columnInfo.excludeInsert = this.excludeInsert
+                    columnInfo.excludeUpdate = this.excludeUpdate
+                    columnInfo.excludeQuery = this.excludeQuery
+                    columnInfo.excludeTable = this.excludeTable
+                }
+                field.getAnnotation(ExcludeQuery::class.java)?.run {
+                    columnInfo.excludeQuery = this.value
+                }
+
+                //生成日期格式化信息
+                field.getAnnotation(DateFormat::class.java)?.run {
+                    columnInfo.dateFormat = this.value
+                }
 
                 //生成column name
                 val columnAnnotation = field.getAnnotation(Column::class.java)
@@ -196,7 +228,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                     columnInfo.columnName = columnInfo.columnName.replace(regex, replacement).toLowerCase()
                 }
 
-                //生成primary key column info
+                //generate primary key column info
                 val primaryAnnotation = field.getAnnotation(Primary::class.java)
                 if (primaryAnnotation != null || (field.name == "id" && StringUtils.isEmpty(componentInfo.primaryKey))) {
                     componentInfo.primaryKey = columnInfo.columnName
@@ -204,16 +236,15 @@ class ComponentInfo(var componentClass: Class<*>) {
                     columnInfo.isAutoIncrement = primaryAnnotation?.autoIncrement ?: false
                 }
 
-                //生成foreign key column info
-                val foreignKeyAnnotation = field.getAnnotation(ForeignKey::class.java)
-                foreignKeyAnnotation?.run {
+                //generate foreign key column info
+                field.getAnnotation(ForeignKey::class.java)?.run {
                     var joinColumnName = joinColumn
                     if (camelcaseToUnderLine) {
                         val regex = Regex("([a-z])([A-Z]+)")
                         val replacement = "$1_$2"
                         joinColumnName = joinColumn.replace(regex, replacement).toLowerCase()
                     }
-                    if(autoJoin){
+                    if (autoJoin) {
                         componentInfo.autoJoinComponentList.add(value.java)
                     }
                     val foreignKeyInfo = ForeignKeyInfo(columnInfo.columnName, joinColumnName)
