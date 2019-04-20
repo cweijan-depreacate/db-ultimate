@@ -12,7 +12,7 @@ public class InsertTest extends BaseTest{
     @Test
     public void testInsertLib(){
         Lib lib = new Lib();
-        lib.setId(12);
+//        lib.setId(12);
         lib.setMessage("cweijan");
         dbUltimate.insert(lib);
     }

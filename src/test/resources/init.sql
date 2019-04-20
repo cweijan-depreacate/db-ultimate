@@ -1,6 +1,6 @@
 /*
 SQLyog Ultimate v12.5.1 (64 bit)
-MySQL - 5.6.42-log : Database - ultimate
+MySQL - 5.6.42-log : Database - core
 *********************************************************************
 */
 

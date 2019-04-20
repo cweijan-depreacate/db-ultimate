@@ -26,7 +26,7 @@ class DbUltimate(dbConfig: DbConfig) {
         }
         ComponentScan.scan(dbConfig.scanPackage!!.split(","))
         DBInitialer(dbConfig).initalerTable()
-        Query.ultimate=this
+        Query.core=this
     }
 
     @JvmOverloads

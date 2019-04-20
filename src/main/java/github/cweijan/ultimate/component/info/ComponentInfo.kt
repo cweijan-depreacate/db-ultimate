@@ -60,10 +60,9 @@ class ComponentInfo(var componentClass: Class<*>) {
      * @param fieldName 列名
      * @return 对应的属性名
      */
-    fun getColumnNameByFieldName(fieldName: String): String {
+    fun getColumnNameByFieldName(fieldName: String): String? {
 
         return fieldColumnInfoMap[fieldName]?.columnName
-                ?: throw ColumnNotExistsException("column field $fieldName is not exists!")
     }
 
     /**

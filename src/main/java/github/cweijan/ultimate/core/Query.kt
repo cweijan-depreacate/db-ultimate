@@ -18,9 +18,6 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
     private val params: MutableList<String> by lazy {
         return@lazy ArrayList<String>()
     }
-    private val updateMap: MutableMap<String, String>by lazy {
-        return@lazy HashMap<String, String>()
-    }
     private var column: String? = null
     val joinTables: MutableList<String> by lazy {
         return@lazy ArrayList<String>()
@@ -42,7 +39,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
             }
         }
 
-    val updateList: MutableMap<String, String>by lazy {
+    val updateMap: MutableMap<String, String>by lazy {
         return@lazy HashMap<String, String>()
     }
 
@@ -122,13 +119,13 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
 
     fun update(column: String, value: Any?): Query<T> {
 
-        value?.let { updateMap[convert(column)] = it.toString() }
+        value?.let { updateMap[component.getColumnNameByFieldName(column)?:convert(column)] = it.toString() }
         return this
     }
 
     private fun put(map: MutableMap<String, MutableList<String>>, column: String, value: Any?) {
 
-        val operationList = getOperationList(map, convert(column))
+        val operationList = getOperationList(map, component.getColumnNameByFieldName(column)?:convert(column))
         operationList!!.add(value!!.toString())
         map[column] = operationList
     }
@@ -235,18 +232,18 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
     }
 
     fun list():List<T>{
-        return ultimate.find(this)
+        return core.find(this)
     }
 
     fun get():T?{
-        return ultimate.getByQuery(this)
+        return core.getByQuery(this)
     }
 
-    fun update(){
-        ultimate.update(this)
+    fun executeUpdate(){
+        core.update(this)
     }
     fun delete(){
-        ultimate.delete(this)
+        core.delete(this)
     }
 
     companion object {
@@ -257,7 +254,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         }
 
         @JvmStatic
-        lateinit var ultimate: DbUltimate
+        lateinit var core: DbUltimate
 
     }
 

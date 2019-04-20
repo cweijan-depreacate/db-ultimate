@@ -22,7 +22,7 @@ open class UltimateAutoConfiguration {
     open fun createUltimate(): DbUltimate? {
 
         if (null == dbConfig || !dbConfig.enable) {
-            Log.debug("Db-ultimate is disabled, skip..")
+            Log.debug("Db-core is disabled, skip..")
             return null
         }
 
@@ -32,7 +32,7 @@ open class UltimateAutoConfiguration {
         }
 
         if (null == dbConfig.username || null == dbConfig.password || null == dbConfig.driver || null == dbConfig.url) {
-            Log.error("db config not set! skip init db-ultimate!")
+            Log.error("db config not set! skip init db-core!")
             return null
         }
 

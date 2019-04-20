@@ -5,7 +5,6 @@ import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
-import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
 
 //import org.fest.reflect.core.Reflection.*
@@ -33,7 +32,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
             values = values.substring(0, values.lastIndexOf(","))
         }
 
-        return "save into " + componentInfo.tableName + "(" + columns + ") values(" + values + ");"
+        return "insert into " + componentInfo.tableName + "(" + columns + ") values(" + values + ");"
     }
 
     @Throws(IllegalAccessException::class)
@@ -47,15 +46,17 @@ abstract class BaseSqlGenerator : SqlGenerator {
         val fields = component.javaClass.declaredFields
         for (field in fields) {
             field.isAccessible = true
-            if (componentInfo.isUpdateExcludeField(field) || componentInfo.getColumnInfoByFieldName(field.name).isAutoIncrement) {
+            if (componentInfo.isUpdateExcludeField(field)) {
                 continue
             }
             field.get(component)?.run {
-                sql += "${field.name}=${TypeAdapter.convertToSqlValue(component.javaClass, field.name, this)},"
+                sql += "${componentInfo.getColumnNameByFieldName(field.name)}=${TypeAdapter.convertToSqlValue(component.javaClass, field.name, this)},"
             }
         }
 
-        if (sql.lastIndexOf(",") != -1) {
+        if (sql.lastIndexOf(",") == -1) {
+            throw RuntimeException("Cannot find any update value!")
+        }else{
             sql = sql.substring(0, sql.lastIndexOf(","))
         }
 
@@ -69,14 +70,14 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
     override fun <T> generateCountSql(componentInfo: ComponentInfo, query: Query<T>): String {
 
-        return "select count(*) count from ${componentInfo.tableName} ${generateOperationSql(query)}"
+        return "select count(*) count from ${componentInfo.tableName} ${generateOperationSql(query,true)}"
     }
 
     override fun <T> generateUpdateSql(componentInfo: ComponentInfo, query: Query<T>): String {
 
         var sql = "UPDATE ${componentInfo.tableName} a set "
 
-        query.updateList.forEach { key, value ->
+        query.updateMap.forEach { key, value ->
             sql += "$key=?,"
             query.addParam(value)
         }
@@ -90,11 +91,11 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
         val column = query.getColumn() ?: componentInfo.selectColumns
 
-        val sql = "select $column from ${componentInfo.tableName + generateOperationSql(query)}"
+        val sql = "select $column from ${componentInfo.tableName + generateOperationSql(query,true)}"
         return generatePaginationSql(sql, query)
     }
 
-    private fun <T> generateOperationSql(query: Query<T>): String {
+    private fun <T> generateOperationSql(query: Query<T>, useAlias: Boolean = false): String {
 
         val and = "and"
         val or = "or"
@@ -124,7 +125,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
             sql += " order by ${query.orderBy}"
         }
 
-        return query.alias + sql
+        return if (useAlias) query.alias + sql else sql
     }
 
     private fun generateJoinTablesSql(joinTables: MutableList<String>?): String {
