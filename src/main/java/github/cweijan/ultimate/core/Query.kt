@@ -3,7 +3,6 @@ package github.cweijan.ultimate.core
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
-import org.fest.reflect.core.Reflection
 import java.util.*
 
 /**
@@ -213,7 +212,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         } else {
             for (field in paramObject::class.java.declaredFields) {
                 field.isAccessible = true
-                Reflection.field(field.name).ofType(field.type).`in`(paramObject).get()?.let {
+                field.get(paramObject)?.let {
                     this.equals(field.name, TypeAdapter.convertToSqlValue(componentClass,field.name,it))
                 }
             }

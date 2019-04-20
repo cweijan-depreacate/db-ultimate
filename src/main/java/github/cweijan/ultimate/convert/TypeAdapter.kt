@@ -44,7 +44,11 @@ object TypeAdapter {
      * 对值进行sql兼容处理
      */
     fun convertToSqlValue(componentClass: Class<*>,fieldName:String,fieldValue: Any): Any {
-        val dateFormat = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName).dateFormat
+        val dateFormat: String = try {
+            TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName).dateFormat
+        } catch (e: Exception) {
+            DateUtils.DEFAULT_PATTERN
+        }
         val fieldType = fieldValue::class.java.name
         return when {
             NUMBER_TYPE.contains(fieldType) -> fieldValue

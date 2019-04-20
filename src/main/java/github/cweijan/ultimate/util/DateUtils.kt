@@ -1,6 +1,5 @@
 package github.cweijan.ultimate.util
 
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -8,7 +7,7 @@ import kotlin.collections.HashMap
 
 object DateUtils {
 
-    private const val PATTERN = "yyyy-MM-dd HH:mm:ss"
+    public const val DEFAULT_PATTERN = "yyyy-MM-dd HH:mm:ss"
     private val formatCache by lazy {
         return@lazy HashMap<String, SimpleDateFormat>()
     }
@@ -23,7 +22,7 @@ object DateUtils {
      */
     @JvmOverloads
     @JvmStatic
-    fun parseDate(date: String, pattern: String = PATTERN): Date? {
+    fun parseDate(date: String, pattern: String = DEFAULT_PATTERN): Date? {
 
         return getDateFormat(pattern).parse(date)
 
@@ -37,7 +36,7 @@ object DateUtils {
      */
     @JvmOverloads
     @JvmStatic
-    fun formatDate(date: Date, pattern: String = PATTERN): String {
+    fun formatDate(date: Date, pattern: String = DEFAULT_PATTERN): String {
 
         return getDateFormat(pattern).format(date)
     }
@@ -63,7 +62,7 @@ object DateUtils {
      */
     @JvmOverloads
     @JvmStatic
-    fun now(pattern: String = PATTERN): String {
+    fun now(pattern: String = DEFAULT_PATTERN): String {
 
         return getIntervalDay(0, pattern)
     }

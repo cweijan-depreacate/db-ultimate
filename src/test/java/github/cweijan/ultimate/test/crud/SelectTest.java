@@ -9,6 +9,7 @@ import github.cweijan.ultimate.test.bean.Lib;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,14 @@ public class SelectTest extends BaseTest{
 //        System.out.println(date);
         Log.info(admin.toString());
 
+    }
+
+    @Test
+    public void testQuery(){
+
+        Admin admin = new Admin();
+        admin.setDate(LocalDateTime.now());
+        Query<Lib> libQuery = Query.of(Lib.class).readObject(admin);
     }
 
     @Test
