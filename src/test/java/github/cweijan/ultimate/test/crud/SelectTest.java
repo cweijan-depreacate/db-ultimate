@@ -21,7 +21,7 @@ public class SelectTest extends BaseTest{
 
         Query<Admin> query = Query.of(Admin.class);
         query.equals("test", "test2");
-        query.orEquals("id", "2");
+//        query.orEquals("id", "2");
         //        query.setColumn("id, message");
         Admin admin = dbUltimate.getByQuery(query);
         Log.info(admin.toString());
@@ -66,7 +66,7 @@ public class SelectTest extends BaseTest{
     public void testQuery(){
 
         Admin admin = new Admin();
-        admin.setId(1);
+//        admin.setId(1);
         admin.setMessage("滚");
         List<Lib> list = Query.of(Lib.class).readObject(admin).list();
         Log.info(list.size());
@@ -75,10 +75,8 @@ public class SelectTest extends BaseTest{
     @Test
     public void testJoin(){
 
-        Query<Admin> query = Query.of(Admin.class);
-        query.join(Lib.class);
+        List<AdminC> adminList = Query.of(AdminC.class).join(Lib.class).equals("ad.id", "1").list();
 
-        List<Admin> adminList = query.list();
         Log.info(adminList);
 
     }

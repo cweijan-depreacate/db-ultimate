@@ -26,7 +26,7 @@ object ComponentScan {
 
     fun isComponent(clazz: Class<*>): Boolean {
 
-        val table = clazz.getAnnotation(Table::class.java)
+        val table = ComponentInfo.getComponentClass(clazz)
 
         return null != table
     }

@@ -22,7 +22,7 @@ public class InsertTest extends BaseTest{
 
         Admin admin = new Admin();
 //        admin.setMessage("hello");
-        admin.setTest("test");
+//        admin.setTest("test");
 //        admin.setDate(new Date());
         dbUltimate.insert(admin);
 

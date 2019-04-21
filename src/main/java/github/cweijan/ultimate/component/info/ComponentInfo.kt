@@ -8,6 +8,7 @@ import github.cweijan.ultimate.exception.ForeignKeyNotSetException
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
+import javafx.scene.control.Tab
 import java.lang.reflect.Field
 
 class ComponentInfo(var componentClass: Class<*>) {
@@ -161,7 +162,7 @@ class ComponentInfo(var componentClass: Class<*>) {
         fun init(componentClass: Class<*>, scanMode: Boolean = true): ComponentInfo? {
 
             if (TableInfo.isAlreadyInit(componentClass) && scanMode) return null
-            val table = componentClass.getAnnotation(Table::class.java) ?: return null
+            val table = getComponentClass(componentClass) ?: return null
             var tableName = table.value
             if (tableName == "") {
                 tableName = componentClass.simpleName.toLowerCase()
@@ -175,6 +176,14 @@ class ComponentInfo(var componentClass: Class<*>) {
             TableInfo.putComponent(componentClass, componentInfo)
             Log.debug("load component ${componentClass.name}, table is $tableName")
             return componentInfo
+        }
+
+        fun getComponentClass(componentClass: Class<*>): Table? {
+            return if (componentClass.superclass != null) {
+                getComponentClass(componentClass.superclass) ?: componentClass.getAnnotation(Table::class.java)
+            } else {
+                componentClass.getAnnotation(Table::class.java)
+            }
         }
 
         /**
@@ -191,7 +200,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                 field.isAccessible = true
 
                 columnInfo = ColumnInfo()
-                columnInfo.fieldType=field.type
+                columnInfo.fieldType = field.type
 
                 //生成exclude信息
                 field.getAnnotation(Exclude::class.java)?.run {

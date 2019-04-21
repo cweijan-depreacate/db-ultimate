@@ -210,7 +210,6 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
                 field.isAccessible = true
                 var fieldName = field.name
                 field.get(paramObject)?.let {
-                    // TODO 基础类型默认为0,需要可是否有办法解决
                     var haveCondition = false
                     field.getAnnotation(NotQuery::class.java)?.run { return@let }
                     field.getAnnotation(Page::class.java)?.run { haveCondition = true; page(it.toString().toInt()) }
