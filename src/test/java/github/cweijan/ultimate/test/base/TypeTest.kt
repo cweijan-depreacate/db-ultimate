@@ -6,7 +6,8 @@ class TypeTest : BaseTest() {
 
     @Test
     fun testDefaultInt(){
-
+        var name=""
+        println(name==""?:"sldfjasdf")
     }
 
     @Test

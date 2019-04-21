@@ -1,6 +1,9 @@
 package github.cweijan.ultimate.core
 
 import github.cweijan.ultimate.annotation.query.*
+import github.cweijan.ultimate.annotation.query.pagination.Offset
+import github.cweijan.ultimate.annotation.query.pagination.Page
+import github.cweijan.ultimate.annotation.query.pagination.PageSize
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
@@ -121,7 +124,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
     private fun put(map: MutableMap<String, MutableList<String>>, column: String, value: Any?) {
 
         val operationList = getOperationList(map, component.getColumnNameByFieldName(column) ?: convert(column))
-        operationList!!.add(value!!.toString())
+        operationList!!.add(TypeAdapter.covertDateValue(componentClass,column,value!!))
         map[column] = operationList
     }
 
@@ -142,7 +145,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
     }
 
     fun orSearch(column: String, value: Any?): Query<T> {
-        value?.let { put(orSearchOperation, column, it) }
+        value?.let { put(orSearchOperation, column, "%$it%") }
         return this
     }
 
@@ -199,27 +202,26 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         if (paramObject is Map<*, *>) {
             paramObject.forEach { key, value ->
                 value?.let {
-                    this.equals(key!!.toString(), TypeAdapter.convertToSqlValue(componentClass, key.toString(), it))
+                    this.equals(key!!.toString(), it)
                 }
             }
         } else {
             for (field in paramObject::class.java.declaredFields) {
                 field.isAccessible = true
-                val fieldName = field.name
+                var fieldName = field.name
                 field.get(paramObject)?.let {
-                    field.annotations.forEach { annotation ->
-                        when (annotation) {
-                            Page::class.java -> this.page(it.toString().toInt())
-                            Offset::class.java -> this.offset(it.toString().toInt())
-                            PageSize::class.java -> this.pageSize(it.toString().toInt())
-                            NotEquals::class.java -> this.notEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
-                            OrNotEquals::class.java -> this.orNotEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
-                            OrEquals::class.java -> this.orEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
-                            Search::class.java -> this.search(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
-                            OrSearch::class.java -> this.orSearch(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
-                            else -> this.equals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
-                        }
-                    }
+                    var haveCondition = false
+                    field.getAnnotation(NotQuery::class.java)?.run { return@let }
+                    field.getAnnotation(Page::class.java)?.run { haveCondition = true; page(it.toString().toInt()) }
+                    field.getAnnotation(Offset::class.java)?.run { haveCondition = true; offset(it.toString().toInt()) }
+                    field.getAnnotation(PageSize::class.java)?.run { haveCondition = true; pageSize(it.toString().toInt()) }
+                    field.getAnnotation(Equals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; equals(fieldName, it) }
+                    field.getAnnotation(OrEquals::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orEquals(fieldName, it) }
+                    field.getAnnotation(NotEquals::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; notEquals(fieldName, it) }
+                    field.getAnnotation(OrNotEquals::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orNotEquals(fieldName, it) }
+                    field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; search(fieldName, it) }
+                    field.getAnnotation(OrSearch::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orSearch(fieldName, it) }
+                    if (!haveCondition) equals(fieldName, it)
                 }
             }
         }

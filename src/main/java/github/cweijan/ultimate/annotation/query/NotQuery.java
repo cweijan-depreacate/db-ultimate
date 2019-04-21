@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface OrEquals{
-    String value() default "";
+public @interface NotQuery{
+
 }

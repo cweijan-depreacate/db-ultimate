@@ -1,10 +1,10 @@
 package github.cweijan.ultimate.test.crud;
 
-import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.component.TableInfo;
 import github.cweijan.ultimate.component.info.ComponentInfo;
 import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.test.base.BaseTest;
+import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.test.bean.Lib;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGet(){
 
-        Admin admin = Query.of(Admin.class).equals("id",1).get();
+        Admin admin = Query.of(Admin.class).equals("id", 1).get();
         Log.info(admin);
 
     }
@@ -57,8 +57,10 @@ public class SelectTest extends BaseTest{
     public void testQuery(){
 
         Admin admin = new Admin();
-        admin.setDate(LocalDateTime.now());
-        Query<Lib> libQuery = Query.of(Lib.class).readObject(admin);
+        admin.setId(1);
+        admin.setMessage("滚");
+        List<Lib> list = Query.of(Lib.class).readObject(admin).list();
+        Log.info(list.size());
     }
 
     @Test
@@ -67,8 +69,8 @@ public class SelectTest extends BaseTest{
         Query<Admin> query = Query.of(Admin.class);
         query.join(Lib.class);
 
-        Admin admin = dbUltimate.getByQuery(query);
-        Log.info(admin);
+        List<Admin> adminList = query.list();
+        Log.info(adminList);
 
     }
 
@@ -127,10 +129,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testFindByEquals(){
 
-        Query<Admin> query = Query.of(Admin.class);
-        query.equals("test", "test2").orEquals("test", "123");
-        //        query.setColumn("id, message");
-        List<Admin> admins = dbUltimate.find(query);
+        List<Admin> admins = Query.of(Admin.class).equals("id", "8").list();
 
         Log.info(admins.toString());
 

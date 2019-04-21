@@ -1,4 +1,4 @@
-package github.cweijan.ultimate.annotation.query;
+package github.cweijan.ultimate.annotation.query.pagination;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

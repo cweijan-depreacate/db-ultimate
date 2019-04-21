@@ -14,6 +14,17 @@ class DbConfig(private var dataSource: DataSource? = null) {
     var createNonexistsTable: Boolean = false
 
     var url: String? = null
+        set(value) {
+            field = if (value?.indexOf("characterEncoding=utf-8") == -1) {
+                if (value.indexOf("?") == -1) {
+                    "$value?characterEncoding=utf-8"
+                } else {
+                    "$value&characterEncoding=utf-8"
+                }
+            } else {
+                value
+            }
+        }
     var username: String? = null
     var password: String? = null
     var driver: String? = null

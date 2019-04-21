@@ -27,7 +27,7 @@ object TypeAdapter {
     }
 
     fun converToJavaDateValue(componentClass: Class<*>, fieldName:String, timeObject: Any): Any? {
-        val columnInfo = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)
+        val columnInfo = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)!!
         val dateFormat = columnInfo.dateFormat
         val dateType = columnInfo.fieldType
         val resultTime = DateUtils.getDateFormat(dateFormat).parse(timeObject.toString())
@@ -41,17 +41,27 @@ object TypeAdapter {
     }
 
     /**
+     * covertDateValue
+     */
+
+    fun covertDateValue(componentClass: Class<*>,fieldName:String,fieldValue: Any): String {
+        val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat?:DateUtils.DEFAULT_PATTERN
+        return when (fieldValue::class.java.name) {
+            Date::class.java.name -> DateUtils.getDateFormat(dateFormat).format((fieldValue as Date))
+            LocalDateTime::class.java.name -> (fieldValue as LocalDateTime).format(DateUtils.getDateTimeFormatter(dateFormat))
+            LocalDate::class.java.name -> (fieldValue as LocalDate).format(DateUtils.getDateTimeFormatter(dateFormat))
+            LocalTime::class.java.name -> (fieldValue as LocalTime).format(DateUtils.getDateTimeFormatter(dateFormat))
+            else -> "$fieldValue"
+        }
+    }
+    /**
      * 对值进行sql兼容处理
      */
-    fun convertToSqlValue(componentClass: Class<*>,fieldName:String,fieldValue: Any): Any {
-        val dateFormat: String = try {
-            TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName).dateFormat
-        } catch (e: Exception) {
-            DateUtils.DEFAULT_PATTERN
-        }
+    fun convertToSqlValue(componentClass: Class<*>,fieldName:String,fieldValue: Any): String {
+        val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat?:DateUtils.DEFAULT_PATTERN
         val fieldType = fieldValue::class.java.name
         return when {
-            NUMBER_TYPE.contains(fieldType) -> fieldValue
+            NUMBER_TYPE.contains(fieldType) -> "$fieldValue"
             CHARACTER_TYPE.contains(fieldType) -> "'$fieldValue'"
             Date::class.java.name == fieldType -> "'${DateUtils.getDateFormat(dateFormat).format((fieldValue as Date))}'"
             LocalDateTime::class.java.name == fieldType -> "'${(fieldValue as LocalDateTime).format(DateUtils.getDateTimeFormatter(dateFormat))}'"

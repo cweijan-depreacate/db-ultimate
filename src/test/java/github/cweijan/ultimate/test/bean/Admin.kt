@@ -1,6 +1,9 @@
 package github.cweijan.ultimate.test.bean
 
 import github.cweijan.ultimate.annotation.*
+import github.cweijan.ultimate.annotation.query.Equals
+import github.cweijan.ultimate.annotation.query.OrSearch
+import github.cweijan.ultimate.annotation.query.Search
 import java.time.LocalDateTime
 
 import java.util.Date
@@ -13,7 +16,8 @@ class Admin {
     var id: Int = 0
 
     @Column
-    private var message: String? = null
+    @Search("msd")
+    var message: String? = null
 
     @Column("msd")
     var msd:String?=null

@@ -10,7 +10,6 @@ public class ComponentTest extends BaseTest{
 
     @Test
     public void testBuildModel(){
-
     }
 
     @Test
