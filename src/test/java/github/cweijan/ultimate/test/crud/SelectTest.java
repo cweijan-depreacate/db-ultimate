@@ -39,7 +39,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGetBy(){
 
-        Admin admin = dbUltimate.getByPrimaryKey(Admin.class,  "2");
+        Admin admin = dbUltimate.getByPrimaryKey(Admin.class, "2");
 
         Log.info(admin);
 
@@ -48,11 +48,8 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGet(){
 
-        Admin admin = dbUltimate.getByQuery(Query.of(Admin.class));
-        assert admin != null;
-//        Date date = admin.getDate();
-//        System.out.println(date);
-        Log.info(admin.toString());
+        Admin admin = Query.of(Admin.class).equals("id",1).get();
+        Log.info(admin);
 
     }
 
@@ -65,25 +62,21 @@ public class SelectTest extends BaseTest{
     }
 
     @Test
-    public void testStatic(){
-
-    }
-
-    @Test
     public void testJoin(){
 
         Query<Admin> query = Query.of(Admin.class);
         query.join(Lib.class);
 
         Admin admin = dbUltimate.getByQuery(query);
-        Log.info(admin + "");
+        Log.info(admin);
 
     }
 
     @Test
     public void testFind(){
-        List<Admin> admins = dbUltimate.find(Query.of(Admin.class).equals("id","2"));
-        System.out.println(admins);
+
+        List<Admin> admins = Query.of(Admin.class).equals("id", "2").orEquals("id", "3").orSearch("id", 4).list();
+        System.out.println(admins.size());
     }
 
     @Test

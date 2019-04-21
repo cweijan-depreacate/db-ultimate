@@ -100,8 +100,8 @@ object TypeConvert {
 
             try {
                 when {
-                    TypeAdapter.isDateType(fieldType) -> field.set(beanInstance,TypeAdapter.converToJavaDateValue(component.componentClass,field.name,resultSet.getObject(columnName) ) )
-                    TypeAdapter.isAdapterType(fieldType) -> field.set(beanInstance,resultSet.getObject(columnName) )
+                    TypeAdapter.isDateType(fieldType) -> field.set(beanInstance, TypeAdapter.converToJavaDateValue(component.componentClass, field.name, resultSet.getObject(columnName)))
+                    TypeAdapter.isAdapterType(fieldType) -> field.set(beanInstance, resultSet.getObject(columnName))
                     else -> objectMap[field] = Class.forName(fieldType)
                 }
                 columns.remove(columnName)

@@ -43,27 +43,27 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return@lazy HashMap<String, String>()
     }
 
-    val notEqualsOperation: MutableMap<String, MutableList<String>>by lazy{
+    val notEqualsOperation: MutableMap<String, MutableList<String>>by lazy {
         HashMap<String, MutableList<String>>()
     }
 
-    val ofNotEqualsOperation: MutableMap<String, MutableList<String>>by lazy{
+    val orNotEqualsOperation: MutableMap<String, MutableList<String>>by lazy {
         HashMap<String, MutableList<String>>()
     }
 
-    val equalsOperation: MutableMap<String, MutableList<String>>by lazy{
+    val equalsOperation: MutableMap<String, MutableList<String>>by lazy {
         HashMap<String, MutableList<String>>()
     }
 
-    val orEqualsOperation: MutableMap<String, MutableList<String>>by lazy{
+    val orEqualsOperation: MutableMap<String, MutableList<String>>by lazy {
         HashMap<String, MutableList<String>>()
     }
 
-    val searchOperation: MutableMap<String, MutableList<String>>by lazy{
+    val searchOperation: MutableMap<String, MutableList<String>>by lazy {
         HashMap<String, MutableList<String>>()
     }
 
-    val ofSearchOperation: MutableMap<String, MutableList<String>> by lazy{
+    val orSearchOperation: MutableMap<String, MutableList<String>> by lazy {
         HashMap<String, MutableList<String>>()
     }
 
@@ -78,13 +78,6 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return params.toTypedArray()
     }
 
-    fun join(sql: String): Query<T> {
-
-        val segment = " join $sql "
-        joinTables.add(segment)
-        return this
-    }
-
     fun join(clazz: Class<*>): Query<T> {
 
         val foreignComponent = TableInfo.getComponent(clazz)
@@ -94,7 +87,9 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         val tableAlias = component.tableAlias ?: component.tableName
         val foreignTableAlias = foreignComponent.tableAlias ?: foreignTableName
 
-        join(" $foreignTableName $foreignTableAlias on $tableAlias.${foreignKeyInfo.foreignKey}=$foreignTableAlias.${foreignKeyInfo.joinKey} ")
+        val segment = " join $foreignTableName $foreignTableAlias on $tableAlias.${foreignKeyInfo.foreignKey}=$foreignTableAlias.${foreignKeyInfo.joinKey} "
+        joinTables.add(segment)
+
         return this
     }
 
@@ -119,13 +114,13 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
 
     fun update(column: String, value: Any?): Query<T> {
 
-        value?.let { updateMap[component.getColumnNameByFieldName(column)?:convert(column)] = it.toString() }
+        value?.let { updateMap[component.getColumnNameByFieldName(column) ?: convert(column)] = it.toString() }
         return this
     }
 
     private fun put(map: MutableMap<String, MutableList<String>>, column: String, value: Any?) {
 
-        val operationList = getOperationList(map, component.getColumnNameByFieldName(column)?:convert(column))
+        val operationList = getOperationList(map, component.getColumnNameByFieldName(column) ?: convert(column))
         operationList!!.add(value!!.toString())
         map[column] = operationList
     }
@@ -135,25 +130,25 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return this
     }
 
-    fun ofNotEquals(column: String, value: Any?): Query<T> {
-        value?.let { put(ofNotEqualsOperation, column, it) }
-        return this
-    }
-
-    fun ofSearch(column: String, value: Any?): Query<T> {
-        value?.let { put(ofSearchOperation, column, it) }
-        return this
-    }
-
-    fun equals(column: String, value: Any?): Query<T> {
-
-        value?.let { put(equalsOperation, column, it) }
+    fun orNotEquals(column: String, value: Any?): Query<T> {
+        value?.let { put(orNotEqualsOperation, column, it) }
         return this
     }
 
     fun search(column: String, content: Any?): Query<T> {
 
         content?.let { put(searchOperation, column, "%$it%") }
+        return this
+    }
+
+    fun orSearch(column: String, value: Any?): Query<T> {
+        value?.let { put(orSearchOperation, column, it) }
+        return this
+    }
+
+    fun equals(column: String, value: Any?): Query<T> {
+
+        value?.let { put(equalsOperation, column, it) }
         return this
     }
 
@@ -218,10 +213,10 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
                             Offset::class.java -> this.offset(it.toString().toInt())
                             PageSize::class.java -> this.pageSize(it.toString().toInt())
                             NotEquals::class.java -> this.notEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
-                            OrNotEquals::class.java->this.ofNotEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
+                            OrNotEquals::class.java -> this.orNotEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
                             OrEquals::class.java -> this.orEquals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
                             Search::class.java -> this.search(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
-                            OrSearch::class.java -> this.ofSearch(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
+                            OrSearch::class.java -> this.orSearch(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
                             else -> this.equals(fieldName, TypeAdapter.convertToSqlValue(componentClass, fieldName, it))
                         }
                     }
@@ -231,18 +226,19 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return this
     }
 
-    fun list():List<T>{
+    fun list(): List<T> {
         return core.find(this)
     }
 
-    fun get():T?{
+    fun get(): T? {
         return core.getByQuery(this)
     }
 
-    fun executeUpdate(){
+    fun executeUpdate() {
         core.update(this)
     }
-    fun delete(){
+
+    fun delete() {
         core.delete(this)
     }
 

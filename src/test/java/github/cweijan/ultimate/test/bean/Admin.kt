@@ -9,13 +9,13 @@ import java.util.Date
 class Admin {
 
     @Primary
-    @ForeignKey(Lib::class)
+    @ForeignKey(value=Lib::class)
     var id: Int = 0
 
     @Column
     private var message: String? = null
 
-    @Column("message")
+    @Column("msd")
     var msd:String?=null
 
     var helloWorldTest:String?=null

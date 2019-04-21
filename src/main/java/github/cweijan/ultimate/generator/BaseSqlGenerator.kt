@@ -109,8 +109,8 @@ abstract class BaseSqlGenerator : SqlGenerator {
         sql += generateOperationSql0(query.notEqualsOperation, "!=", and, query)
         sql += generateOperationSql0(query.searchOperation, "like", and, query)
         sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
-        sql += generateOperationSql0(query.ofNotEqualsOperation, "!=", or, query)
-        sql += generateOperationSql0(query.ofSearchOperation, "like", or, query)
+        sql += generateOperationSql0(query.orNotEqualsOperation, "!=", or, query)
+        sql += generateOperationSql0(query.orSearchOperation, "like", or, query)
 
         if (sql.startsWith(and)) {
             sql = sql.replaceFirst(and.toRegex(), "")

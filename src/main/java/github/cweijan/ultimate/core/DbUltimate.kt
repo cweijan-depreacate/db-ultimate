@@ -7,6 +7,7 @@ import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.debug.HotSwapSupport
+import github.cweijan.ultimate.exception.TooManyResultException
 import github.cweijan.ultimate.generator.GeneratorAdapter
 import github.cweijan.ultimate.generator.SqlGenerator
 import github.cweijan.ultimate.util.Log
@@ -26,7 +27,7 @@ class DbUltimate(dbConfig: DbConfig) {
         }
         ComponentScan.scan(dbConfig.scanPackage!!.split(","))
         DBInitialer(dbConfig).initalerTable()
-        Query.core=this
+        Query.core = this
     }
 
     @JvmOverloads
@@ -63,10 +64,18 @@ class DbUltimate(dbConfig: DbConfig) {
     @JvmOverloads
     fun <T> getBySql(sql: String, params: Array<String>? = null, clazz: Class<T>): T? {
 
-        val resultSet = sqlExecutor.executeSql(sql, params)
-        val bean = TypeConvert.resultSetToBean(resultSet!!, clazz)
-        resultSet.close()
-        return bean
+        val resultSet = sqlExecutor.executeSql(sql, params)!!
+        resultSet.last()
+        var rowCount = resultSet.row
+        resultSet.beforeFirst()
+        if (rowCount > 1) {
+            resultSet.close()
+            throw TooManyResultException("Expect 1 result,but fond $rowCount")
+        } else {
+            val bean = TypeConvert.resultSetToBean(resultSet, clazz)
+            resultSet.close()
+            return bean
+        }
     }
 
     fun <T> getCount(query: Query<T>): Int {
@@ -78,7 +87,7 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun <T> getByQuery(query: Query<T>): T? {
 
-        val sql = sqlGenerator.generateSelectSql(query.component, query.pageSize(1))
+        val sql = sqlGenerator.generateSelectSql(query.component, query)
 
         return getBySql(sql, query.getParams(), query.componentClass)
     }
@@ -137,11 +146,11 @@ class DbUltimate(dbConfig: DbConfig) {
     }
 
     fun <T> batchDelete(query: Query<T>, privateKeyList: List<Any>) {
-        privateKeyList.forEach { privateKey->query.equals(query.component.primaryKey!!,privateKey) }
+        privateKeyList.forEach { privateKey -> query.equals(query.component.primaryKey!!, privateKey) }
     }
 
     fun <T> batchDelete(query: Query<T>, privateKeys: Array<Any>) {
-        privateKeys.forEach { privateKey->query.equals(query.component.primaryKey!!,privateKey) }
+        privateKeys.forEach { privateKey -> query.equals(query.component.primaryKey!!, privateKey) }
     }
 
     fun <T> delete(query: Query<T>) {
