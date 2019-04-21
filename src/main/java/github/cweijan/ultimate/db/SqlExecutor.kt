@@ -28,7 +28,7 @@ class SqlExecutor(private val dbConfig: DbConfig) {
         var resultSet: ResultSet? = null
 
         val preparedStatement: PreparedStatement = connection.prepareStatement(sql)
-        val transaction = JdbcTransaction(connection)
+//        val transaction = JdbcTransaction(connection)
         if (params != null) {
             IntStream.range(0, params.size).forEach { index ->
                 preparedStatement.setObject(index + 1, params[index])
@@ -39,16 +39,15 @@ class SqlExecutor(private val dbConfig: DbConfig) {
                 resultSet = preparedStatement.executeQuery()
             } else {
                 preparedStatement.executeUpdate()
-                transaction.commit()
-
+//                transaction.commit()
             }
         } catch (e: Exception) {
             Log.error("Fail Execute SQL : $sql   \n ${e.message} ")
-            transaction.rollback()
+//            transaction.rollback()
             throw e
         }finally {
             if(!sql.trim().startsWith("select")){
-                transaction.close()
+//                transaction.close()
             }
         }
         if (dbConfig.showSql) {

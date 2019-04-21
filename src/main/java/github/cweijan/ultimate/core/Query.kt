@@ -117,7 +117,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
 
     fun update(column: String, value: Any?): Query<T> {
 
-        value?.let { updateMap[component.getColumnNameByFieldName(column) ?: convert(column)] = it.toString() }
+        value?.let { updateMap[component.getColumnNameByFieldName(column) ?: convert(column)] = TypeAdapter.covertToDateString(componentClass,column,it) }
         return this
     }
 
