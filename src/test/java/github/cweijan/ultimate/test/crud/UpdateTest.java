@@ -6,6 +6,8 @@ import github.cweijan.ultimate.test.base.BaseTest;
 import github.cweijan.ultimate.test.bean.Lib;
 import org.junit.Test;
 
+import java.time.LocalDateTime;
+
 public class UpdateTest extends BaseTest{
 
     @Test
@@ -29,6 +31,7 @@ public class UpdateTest extends BaseTest{
         Admin admin = new Admin();
         admin.setId(2);
         admin.setMsd("cweijain");
+        admin.setDate(LocalDateTime.now());
         dbUltimate.update(admin);
 
     }

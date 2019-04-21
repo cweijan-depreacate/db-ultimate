@@ -5,6 +5,7 @@ import github.cweijan.ultimate.component.info.ComponentInfo;
 import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.test.base.BaseTest;
 import github.cweijan.ultimate.test.bean.Admin;
+import github.cweijan.ultimate.test.bean.AdminC;
 import github.cweijan.ultimate.test.bean.Lib;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
@@ -49,6 +50,14 @@ public class SelectTest extends BaseTest{
     public void testGet(){
 
         Admin admin = Query.of(Admin.class).equals("id", 1).get();
+        Log.info(admin);
+
+    }
+
+    @Test
+    public void testChildenClass(){
+
+        AdminC admin = Query.of(AdminC.class).equals("id", 1).get();
         Log.info(admin);
 
     }

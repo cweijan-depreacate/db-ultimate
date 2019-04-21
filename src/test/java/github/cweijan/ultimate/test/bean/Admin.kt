@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 import java.util.Date
 
 @Table(value="rh_admin",selectColumns = "*",alias = "ad",camelcaseToUnderLine = true)
-class Admin {
+open class Admin {
 
     @Primary
     @ForeignKey(value=Lib::class)
@@ -19,7 +19,7 @@ class Admin {
     @Search("msd")
     var message: String? = null
 
-    @Column("msd")
+    @Column("message")
     var msd:String?=null
 
     var helloWorldTest:String?=null

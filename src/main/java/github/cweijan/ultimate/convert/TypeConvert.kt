@@ -75,7 +75,6 @@ object TypeConvert {
      */
     private fun <T> toJavaBean(resultSet: ResultSet, clazz: Class<T>, columns: HashMap<String, String>): T? {
 
-        val fields = clazz.declaredFields
         val beanInstance: T
         try {
             beanInstance = clazz.newInstance()
@@ -87,7 +86,7 @@ object TypeConvert {
         val objectMap = HashMap<Field, Class<*>>();
 
         // 为对象进行赋值
-        for (field in fields) {
+        for (field in TypeAdapter.getAllField(clazz)) {
 
             field.isAccessible = true
             val fieldName = field.name
@@ -100,7 +99,7 @@ object TypeConvert {
 
             try {
                 when {
-                    TypeAdapter.isDateType(fieldType) -> field.set(beanInstance, TypeAdapter.converToJavaDateValue(component.componentClass, field.name, resultSet.getObject(columnName)))
+                    TypeAdapter.isDateType(fieldType) -> field.set(beanInstance, TypeAdapter.converToJavaDateObject(component.componentClass, field.name, resultSet.getObject(columnName)))
                     TypeAdapter.isAdapterType(fieldType) -> field.set(beanInstance, resultSet.getObject(columnName))
                     else -> objectMap[field] = Class.forName(fieldType)
                 }

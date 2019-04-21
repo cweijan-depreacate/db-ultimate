@@ -16,8 +16,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
         val componentInfo = TableInfo.getComponent(component.javaClass)
         var columns = ""
         var values = ""
-        val fields = componentInfo.componentClass.declaredFields
-        for (field in fields) {
+        for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
             field.isAccessible = true
             if (componentInfo.isInsertExcludeField(field)) continue
             field.get(component)?.run {
@@ -43,8 +42,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
         primaryValue ?: throw PrimaryValueNotSetException("primary value must set!")
         var sql = "UPDATE ${componentInfo.tableName} a set "
 
-        val fields = component.javaClass.declaredFields
-        for (field in fields) {
+        for (field in TypeAdapter.getAllField(component.javaClass)) {
             field.isAccessible = true
             if (componentInfo.isUpdateExcludeField(field)) {
                 continue
@@ -56,7 +54,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
         if (sql.lastIndexOf(",") == -1) {
             throw RuntimeException("Cannot find any update value!")
-        }else{
+        } else {
             sql = sql.substring(0, sql.lastIndexOf(","))
         }
 
@@ -70,7 +68,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
     override fun <T> generateCountSql(componentInfo: ComponentInfo, query: Query<T>): String {
 
-        return "select count(*) count from ${componentInfo.tableName} ${generateOperationSql(query,true)}"
+        return "select count(*) count from ${componentInfo.tableName} ${generateOperationSql(query, true)}"
     }
 
     override fun <T> generateUpdateSql(componentInfo: ComponentInfo, query: Query<T>): String {
@@ -91,7 +89,7 @@ abstract class BaseSqlGenerator : SqlGenerator {
 
         val column = query.getColumn() ?: componentInfo.selectColumns
 
-        val sql = "select $column from ${componentInfo.tableName + generateOperationSql(query,true)}"
+        val sql = "select $column from ${componentInfo.tableName + generateOperationSql(query, true)}"
         return generatePaginationSql(sql, query)
     }
 

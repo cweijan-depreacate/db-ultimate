@@ -124,7 +124,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
     private fun put(map: MutableMap<String, MutableList<String>>, column: String, value: Any?) {
 
         val operationList = getOperationList(map, component.getColumnNameByFieldName(column) ?: convert(column))
-        operationList!!.add(TypeAdapter.covertDateValue(componentClass,column,value!!))
+        operationList!!.add(TypeAdapter.covertToDateString(componentClass,column,value!!))
         map[column] = operationList
     }
 
@@ -206,10 +206,11 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
                 }
             }
         } else {
-            for (field in paramObject::class.java.declaredFields) {
+            for (field in TypeAdapter.getAllField(paramObject::class.java)) {
                 field.isAccessible = true
                 var fieldName = field.name
                 field.get(paramObject)?.let {
+                    // TODO 基础类型默认为0,需要可是否有办法解决
                     var haveCondition = false
                     field.getAnnotation(NotQuery::class.java)?.run { return@let }
                     field.getAnnotation(Page::class.java)?.run { haveCondition = true; page(it.toString().toInt()) }

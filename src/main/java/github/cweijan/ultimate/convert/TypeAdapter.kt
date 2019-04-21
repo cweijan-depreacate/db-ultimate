@@ -2,11 +2,13 @@ package github.cweijan.ultimate.convert
 
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.util.DateUtils
+import java.lang.reflect.Field
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.util.*
+import kotlin.collections.ArrayList
 
 object TypeAdapter {
 
@@ -18,6 +20,16 @@ object TypeAdapter {
         return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName)
     }
 
+    fun getAllField(componentClass: Class<*>?):List<Field>{
+
+        val arrayList = ArrayList<Field>()
+        if(componentClass==null)return arrayList
+        arrayList.addAll(componentClass.declaredFields)
+        arrayList.addAll(getAllField(componentClass.superclass))
+
+        return arrayList
+    }
+
     fun getDefaultValue(fieldType: String): Any {
         return when {
             CHARACTER_TYPE.contains(fieldType) -> "''"
@@ -26,7 +38,7 @@ object TypeAdapter {
         }
     }
 
-    fun converToJavaDateValue(componentClass: Class<*>, fieldName:String, timeObject: Any): Any? {
+    fun converToJavaDateObject(componentClass: Class<*>, fieldName:String, timeObject: Any): Any? {
         val columnInfo = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)!!
         val dateFormat = columnInfo.dateFormat
         val dateType = columnInfo.fieldType
@@ -41,10 +53,10 @@ object TypeAdapter {
     }
 
     /**
-     * covertDateValue
+     * covertToDateString
      */
 
-    fun covertDateValue(componentClass: Class<*>,fieldName:String,fieldValue: Any): String {
+    fun covertToDateString(componentClass: Class<*>, fieldName:String, fieldValue: Any): String {
         val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat?:DateUtils.DEFAULT_PATTERN
         return when (fieldValue::class.java.name) {
             Date::class.java.name -> DateUtils.getDateFormat(dateFormat).format((fieldValue as Date))
@@ -55,7 +67,7 @@ object TypeAdapter {
         }
     }
     /**
-     * 对值进行sql兼容处理
+     * 对值进行sql兼容处理,用于insert和update语句
      */
     fun convertToSqlValue(componentClass: Class<*>,fieldName:String,fieldValue: Any): String {
         val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat?:DateUtils.DEFAULT_PATTERN

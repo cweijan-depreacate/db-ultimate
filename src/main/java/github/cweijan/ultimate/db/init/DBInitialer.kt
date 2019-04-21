@@ -45,7 +45,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
         var sql = "create table ${componentInfo.tableName}("
 
-        for (field in componentInfo.componentClass.declaredFields) {
+        for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
 
             if (componentInfo.isTableExcludeField(field)) {
                 continue

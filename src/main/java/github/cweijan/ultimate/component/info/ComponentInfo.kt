@@ -2,6 +2,7 @@ package github.cweijan.ultimate.component.info
 
 import github.cweijan.ultimate.annotation.*
 import github.cweijan.ultimate.component.TableInfo
+import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.exception.ColumnNotExistsException
 import github.cweijan.ultimate.exception.ForeignKeyNotSetException
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
@@ -184,10 +185,9 @@ class ComponentInfo(var componentClass: Class<*>) {
          */
         private fun generateColumns(componentInfo: ComponentInfo, camelcaseToUnderLine: Boolean = true) {
 
-            val fields = componentInfo.componentClass.declaredFields
             var columnInfo: ColumnInfo
 
-            for (field in fields) {
+            for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
                 field.isAccessible = true
 
                 columnInfo = ColumnInfo()
