@@ -21,7 +21,7 @@ public class UpdateTest extends BaseTest{
     @Test
     public void testUpdateByQuery(){
 
-        Query.of(Lib.class).update("test", "lib").equals("id", 2).executeUpdate();
+        Query.of(Lib.class).update("test", "lib").eq("id", 2).executeUpdate();
 
     }
 
@@ -30,7 +30,8 @@ public class UpdateTest extends BaseTest{
 
         Admin admin = new Admin();
         admin.setId(2);
-        admin.setMsd("cweijain");
+        Query.of(Admin.class).executeDelete();
+//        admin.setMsd("cweijain");
         admin.setDate(LocalDateTime.now());
         dbUltimate.update(admin);
 

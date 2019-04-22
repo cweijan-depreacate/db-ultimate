@@ -10,7 +10,6 @@ import github.cweijan.ultimate.test.bean.Lib;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +19,7 @@ public class SelectTest extends BaseTest{
     public void testGetByEquals(){
 
         Query<Admin> query = Query.of(Admin.class);
-        query.equals("test", "test2");
+        query.eq("test", "test2");
 //        query.orEquals("id", "2");
         //        query.setColumn("id, message");
         Admin admin = dbUltimate.getByQuery(query);
@@ -49,7 +48,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGet(){
 
-        Admin admin = Query.of(Admin.class).equals("id", 1).get();
+        Admin admin = Query.of(Admin.class).eq("id", 1).get();
         Log.info(admin);
 
     }
@@ -57,7 +56,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testChildenClass(){
 
-        AdminC admin = Query.of(AdminC.class).equals("id", 1).get();
+        AdminC admin = Query.of(AdminC.class).eq("id", 1).get();
         Log.info(admin);
 
     }
@@ -75,7 +74,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testJoin(){
 
-        List<AdminC> adminList = Query.of(AdminC.class).join(Lib.class).equals("ad.id", "1").list();
+        List<AdminC> adminList = Query.of(AdminC.class).join(Lib.class).eq("ad.id", "1").list();
 
         Log.info(adminList);
 
@@ -84,7 +83,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testFind(){
 
-        List<Admin> admins = Query.of(Admin.class).equals("id", "2").orEquals("id", "3").orSearch("id", 4).list();
+        List<Admin> admins = Query.of(Admin.class).eq("id", "2").orEq("id", "3").orSearch("id", 4).list();
         System.out.println(admins.size());
     }
 
@@ -136,7 +135,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testFindByEquals(){
 
-        List<Admin> admins = Query.of(Admin.class).equals("id", "8").list();
+        List<Admin> admins = Query.of(Admin.class).eq("id", "8").list();
 
         Log.info(admins.toString());
 

@@ -117,7 +117,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
 
     fun update(column: String, value: Any?): Query<T> {
 
-        value?.let { updateMap[component.getColumnNameByFieldName(column) ?: convert(column)] = TypeAdapter.covertToDateString(componentClass,column,it) }
+        value?.let { updateMap[component.getColumnNameByFieldName(column) ?: convert(column)] = it.toString() }
         return this
     }
 
@@ -128,12 +128,12 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         map[column] = operationList
     }
 
-    fun notEquals(column: String, value: Any?): Query<T> {
+    fun notEq(column: String, value: Any?): Query<T> {
         value?.let { put(notEqualsOperation, column, it) }
         return this
     }
 
-    fun orNotEquals(column: String, value: Any?): Query<T> {
+    fun orNotEq(column: String, value: Any?): Query<T> {
         value?.let { put(orNotEqualsOperation, column, it) }
         return this
     }
@@ -149,13 +149,13 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return this
     }
 
-    fun equals(column: String, value: Any?): Query<T> {
+    fun eq(column: String, value: Any?): Query<T> {
 
         value?.let { put(equalsOperation, column, it) }
         return this
     }
 
-    fun orEquals(column: String, value: Any?): Query<T> {
+    fun orEq(column: String, value: Any?): Query<T> {
 
         value?.let { put(orEqualsOperation, column, it) }
         return this
@@ -202,7 +202,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         if (paramObject is Map<*, *>) {
             paramObject.forEach { key, value ->
                 value?.let {
-                    this.equals(key!!.toString(), it)
+                    this.eq(key!!.toString(), it)
                 }
             }
         } else {
@@ -215,13 +215,13 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
                     field.getAnnotation(Page::class.java)?.run { haveCondition = true; page(it.toString().toInt()) }
                     field.getAnnotation(Offset::class.java)?.run { haveCondition = true; offset(it.toString().toInt()) }
                     field.getAnnotation(PageSize::class.java)?.run { haveCondition = true; pageSize(it.toString().toInt()) }
-                    field.getAnnotation(Equals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; equals(fieldName, it) }
-                    field.getAnnotation(OrEquals::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orEquals(fieldName, it) }
-                    field.getAnnotation(NotEquals::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; notEquals(fieldName, it) }
-                    field.getAnnotation(OrNotEquals::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orNotEquals(fieldName, it) }
+                    field.getAnnotation(Equals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; eq(fieldName, it) }
+                    field.getAnnotation(OrEquals::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orEq(fieldName, it) }
+                    field.getAnnotation(NotEquals::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; notEq(fieldName, it) }
+                    field.getAnnotation(OrNotEquals::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orNotEq(fieldName, it) }
                     field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; search(fieldName, it) }
                     field.getAnnotation(OrSearch::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orSearch(fieldName, it) }
-                    if (!haveCondition) equals(fieldName, it)
+                    if (!haveCondition) eq(fieldName, it)
                 }
             }
         }
@@ -240,7 +240,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         core.update(this)
     }
 
-    fun delete() {
+    fun executeDelete() {
         core.delete(this)
     }
 

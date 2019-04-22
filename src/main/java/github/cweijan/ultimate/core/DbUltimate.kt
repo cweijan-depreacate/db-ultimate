@@ -66,7 +66,7 @@ class DbUltimate(dbConfig: DbConfig) {
 
         val resultSet = sqlExecutor.executeSql(sql, params)!!
         resultSet.last()
-        var rowCount = resultSet.row
+        val rowCount = resultSet.row
         resultSet.beforeFirst()
         if (rowCount > 1) {
             resultSet.close()
@@ -94,7 +94,7 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun <T> getByPrimaryKey(clazz: Class<T>, value: String): T? {
 
-        return getByQuery(Query.of(clazz).equals(TableInfo.getComponent(clazz).primaryKey!!, value))
+        return getByQuery(Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
 
     @JvmOverloads
@@ -146,11 +146,11 @@ class DbUltimate(dbConfig: DbConfig) {
     }
 
     fun <T> batchDelete(query: Query<T>, privateKeyList: List<Any>) {
-        privateKeyList.forEach { privateKey -> query.equals(query.component.primaryKey!!, privateKey) }
+        privateKeyList.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey) }
     }
 
     fun <T> batchDelete(query: Query<T>, privateKeys: Array<Any>) {
-        privateKeys.forEach { privateKey -> query.equals(query.component.primaryKey!!, privateKey) }
+        privateKeys.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey) }
     }
 
     fun <T> delete(query: Query<T>) {

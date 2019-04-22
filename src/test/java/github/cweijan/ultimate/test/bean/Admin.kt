@@ -19,8 +19,8 @@ open class Admin {
     @Search("msd")
     var message: String? = null
 
-    @Column("message")
-    var msd:String?=null
+//    @Column("message")
+//    open var msd:String?=null
 
     var helloWorldTest:String?=null
 
@@ -28,12 +28,12 @@ open class Admin {
     var date: LocalDateTime? = null
 
 //        @ExcludeResult
-    var test: String? = null
+//    var test: String? = null
 
     var lib: Lib? = null
 
     override fun toString(): String {
-        return "Admin(id=$id, message=$message, msd=$msd, helloWorldTest=$helloWorldTest, date=${date}, test=$test, lib=$lib)"
+        return "Admin(id=$id, message=$message,  helloWorldTest=$helloWorldTest, date=$date)"
     }
 
 }

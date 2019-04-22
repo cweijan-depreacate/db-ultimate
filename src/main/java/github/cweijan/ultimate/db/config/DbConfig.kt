@@ -8,7 +8,7 @@ import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
 
-@ConfigurationProperties(prefix = "ultimate.jdbc")
+@ConfigurationProperties(prefix = "core.jdbc")
 class DbConfig(private var dataSource: DataSource? = null) {
 
     var createNonexistsTable: Boolean = false

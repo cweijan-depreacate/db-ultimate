@@ -11,7 +11,7 @@ public class DeleteTest extends BaseTest{
     public void deleteByEquals(){
 
         Query<Admin> query = Query.of(Admin.class);
-        query.equals("id", "7");
+        query.eq("id", "7");
         dbUltimate.delete(query);
 
     }
