@@ -117,14 +117,14 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
 
     fun update(column: String, value: Any?): Query<T> {
 
-        value?.let { updateMap[component.getColumnNameByFieldName(column) ?: convert(column)] = it.toString() }
+        value?.let { updateMap[component.getColumnNameByFieldName(column) ?: convert(column)] = TypeAdapter.convertToDateString(componentClass,column,it) }
         return this
     }
 
     private fun put(map: MutableMap<String, MutableList<String>>, column: String, value: Any?) {
 
         val operationList = getOperationList(map, component.getColumnNameByFieldName(column) ?: convert(column))
-        operationList!!.add(TypeAdapter.covertToDateString(componentClass,column,value!!))
+        operationList!!.add(TypeAdapter.convertToDateString(componentClass,column,value!!))
         map[column] = operationList
     }
 

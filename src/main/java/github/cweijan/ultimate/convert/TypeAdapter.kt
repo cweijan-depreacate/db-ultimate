@@ -38,7 +38,7 @@ object TypeAdapter {
         }
     }
 
-    fun converToJavaDateObject(componentClass: Class<*>, fieldName:String, timeObject: Any): Any? {
+    fun convertToJavaDateObject(componentClass: Class<*>, fieldName:String, timeObject: Any): Any? {
         val columnInfo = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)!!
         val dateFormat = columnInfo.dateFormat
         val dateType = columnInfo.fieldType
@@ -53,10 +53,9 @@ object TypeAdapter {
     }
 
     /**
-     * covertToDateString
+     * convertToDateString
      */
-
-    fun covertToDateString(componentClass: Class<*>, fieldName:String, fieldValue: Any): String {
+    fun convertToDateString(componentClass: Class<*>, fieldName:String, fieldValue: Any): String {
         val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat?:DateUtils.DEFAULT_PATTERN
         return when (fieldValue::class.java.name) {
             Date::class.java.name -> DateUtils.getDateFormat(dateFormat).format((fieldValue as Date))

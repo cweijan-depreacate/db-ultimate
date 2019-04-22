@@ -1,9 +1,7 @@
 package github.cweijan.ultimate.db
 
-import github.cweijan.ultimate.transaction.jdbc.JdbcTransaction
-import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.db.config.DbConfig
-
+import github.cweijan.ultimate.util.Log
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -28,7 +26,6 @@ class SqlExecutor(private val dbConfig: DbConfig) {
         var resultSet: ResultSet? = null
 
         val preparedStatement: PreparedStatement = connection.prepareStatement(sql)
-        val transaction = JdbcTransaction(connection)
         if (params != null) {
             IntStream.range(0, params.size).forEach { index ->
                 preparedStatement.setObject(index + 1, params[index])
@@ -39,17 +36,10 @@ class SqlExecutor(private val dbConfig: DbConfig) {
                 resultSet = preparedStatement.executeQuery()
             } else {
                 preparedStatement.executeUpdate()
-                transaction.commit()
-
             }
         } catch (e: Exception) {
             Log.error("Fail Execute SQL : $sql   \n ${e.message} ")
-            transaction.rollback()
             throw e
-        }finally {
-            if(!sql.trim().startsWith("select")){
-                transaction.close()
-            }
         }
         if (dbConfig.showSql) {
             Log.info("Execute SQL : $sql")

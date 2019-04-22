@@ -2,17 +2,17 @@ package github.cweijan.ultimate.db.config
 
 import github.cweijan.ultimate.db.HikariDataSourceAdapter
 import github.cweijan.ultimate.util.Log
-import github.cweijan.ultimate.util.StringUtils
 import org.springframework.boot.context.properties.ConfigurationProperties
 import java.sql.Connection
-import java.sql.SQLException
 import javax.sql.DataSource
 
-@ConfigurationProperties(prefix = "core.jdbc")
-class DbConfig(private var dataSource: DataSource? = null) {
+@ConfigurationProperties(prefix = "ultimate.jdbc")
+class DbConfig(var dataSource: DataSource? = null) {
 
     var createNonexistsTable: Boolean = false
-
+    var username: String? = null
+    var password: String? = null
+    var driver: String? = null
     var url: String? = null
         set(value) {
             field = if (value?.indexOf("characterEncoding=utf-8") == -1) {
@@ -25,9 +25,6 @@ class DbConfig(private var dataSource: DataSource? = null) {
                 value
             }
         }
-    var username: String? = null
-    var password: String? = null
-    var driver: String? = null
 
     var maximumPoolSize = DefaultProperties.MAXIUM_POOL_SIZE
     var minimumIdle = DefaultProperties.MINIUM_IDEL_SIZE
@@ -36,29 +33,19 @@ class DbConfig(private var dataSource: DataSource? = null) {
     var develop = DefaultProperties.DEVELOP
     var scanPackage: String? = null
 
-    @JvmOverloads
-    fun openConnection(autoCommit: Boolean = true): Connection {
-
-        if (StringUtils.isEmpty(url)) {
-            throw IllegalArgumentException("JDBC_URL must be not empty!")
-        }
+    private val threadLocal = ThreadLocal<Connection>()
+    val currentConnection: Connection? = threadLocal.get()
+    fun openConnection(): Connection {
 
         if (dataSource == null) {
-            if (showSql) {
-                Log.info("dataSource is null! init hikariDataSource")
-            }
+            Log.debug("dataSource is null! init hikariDataSource")
             val dataSourceAdapter = HikariDataSourceAdapter(this)
             dataSource = dataSourceAdapter.dataSource
         }
 
-        val connection = dataSource!!.connection
-        try {
-            connection.autoCommit = autoCommit
-        } catch (e: SQLException) {
-            Log.error("getGenerator jdbc connection fail!", e)
-        }
+        threadLocal.get() ?: threadLocal.set(dataSource!!.connection)
 
-        return connection
+        return threadLocal.get()
     }
 
 }

@@ -10,7 +10,7 @@ import github.cweijan.ultimate.generator.impl.PostgresqlGenerator
  */
 class GeneratorAdapter(config: DbConfig) {
 
-    private val driverName: String = config.driver!!
+    private val driverName: String? = config.driver
 
     val generator: SqlGenerator
         get() {
@@ -20,7 +20,7 @@ class GeneratorAdapter(config: DbConfig) {
                 DriverConstant.ORACLE_DRIVER_NAME -> OracleGenerator()
                 DriverConstant.POSTGRESQL_DRIVER_NAME -> PostgresqlGenerator()
                 DriverConstant.SQLITE_DRIVER_NAME -> PostgresqlGenerator()
-                else -> throw RuntimeException("init Generator fail!")
+                else ->MysqlGenerator()
             }
         }
 
