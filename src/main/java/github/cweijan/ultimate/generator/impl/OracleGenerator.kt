@@ -10,6 +10,10 @@ import java.time.LocalTime
 import java.util.*
 
 class OracleGenerator : BaseSqlGenerator() {
+    override fun generateUniqueSqlFragment(tableName: String, columnName: String, columnDefinition: String): String? {
+        TODO("not implemented")
+    }
+
     override fun generateAutoIncrementSqlFragment(tableName: String?, columnName: String?): String {
         TODO("Not Support Oracle Increment")
     }

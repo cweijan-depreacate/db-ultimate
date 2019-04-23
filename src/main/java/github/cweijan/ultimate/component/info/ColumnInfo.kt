@@ -7,6 +7,7 @@ class ColumnInfo {
     var length: Int? = null
     var nullable: Boolean = false
     var autoIncrement: Boolean = false
+    var unique: Boolean=false
     var comment: String?=null
     var defaultValue: String?=null
     var dateFormat: String = "yyyy-MM-dd HH:mm:ss"

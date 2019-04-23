@@ -10,9 +10,12 @@ import java.time.LocalTime
 import java.util.*
 
 class MysqlGenerator : BaseSqlGenerator() {
+    override fun generateUniqueSqlFragment(tableName: String, columnName: String, columnDefinition: String): String? {
+        return "UNIQUE INDEX ($columnName)"
+    }
 
-    override fun generateAutoIncrementSqlFragment(tableName: String?, columnName: String?): String {
-        if (tableName != null || columnName != null) return ""
+    override fun generateAutoIncrementSqlFragment(tableName: String?, columnName: String?): String? {
+        if (tableName != null || columnName != null) return null
         return " AUTO_INCREMENT "
     }
 

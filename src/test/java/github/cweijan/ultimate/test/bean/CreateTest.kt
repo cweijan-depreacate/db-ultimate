@@ -14,13 +14,13 @@ class CreateTest {
     @Primary(value = "id", autoIncrement = true, comment = "主键", length = 3)
     var id: Int? = null
 
-    @Column(value = "name1", comment = "姓名", defaultValue = "cwj", nullable = true, length = 30)
+    @Column(value = "name1", comment = "姓名", defaultValue = "cwj", nullable = true, length = 30,unique = true)
     var name: String? = null
 
     @Column(value = "ag", comment = "年龄", defaultValue = "10", nullable = false, length = 30)
     var age: Int? = null
 
-    @Column(length = 5)
+    @Column(length = 5,unique = true)
     var fl: Float? = null
 
     var d1: LocalDateTime? = null

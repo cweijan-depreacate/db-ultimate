@@ -16,14 +16,14 @@ class DbConfig() {
     var driver: String? = null
     var url: String? = null
         set(value) {
-            field = if (value?.indexOf("characterEncoding=utf-8") == -1) {
-                if (value.indexOf("?") == -1) {
-                    "$value?characterEncoding=utf-8"
-                } else {
-                    "$value&characterEncoding=utf-8"
-                }
-            } else {
-                value
+            field = when {
+                value?.indexOf("characterEncoding=utf-8") == -1 ->
+                    if (value.indexOf("?") == -1) {
+                        "$value?characterEncoding=utf-8"
+                    } else {
+                        "$value&characterEncoding=utf-8"
+                    }
+                else -> value
             }
         }
     var dataSource: DataSource? = null

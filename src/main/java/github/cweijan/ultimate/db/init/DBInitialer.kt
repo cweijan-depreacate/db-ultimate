@@ -9,6 +9,7 @@ import github.cweijan.ultimate.generator.GeneratorAdapter
 import github.cweijan.ultimate.generator.TableInitSqlGenetator
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
+import org.springframework.transaction.annotation.Transactional
 import java.sql.Connection
 import java.sql.SQLException
 
@@ -46,7 +47,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
         }
 
         var sql = "create table ${componentInfo.tableName}("
-        var autoIncrementSql: String? = null
+        val uniques = ArrayList<String>()
 
         TypeAdapter.getAllField(componentInfo.componentClass).let { fields ->
             fields.forEachIndexed { index, field ->
@@ -55,18 +56,18 @@ class DBInitialer(private val dbConfig: DbConfig) {
                 }
                 field.isAccessible = true
                 val columnInfo = componentInfo.getColumnInfoByFieldName(field.name)!!
-                sql += "${columnInfo.columnName} ${initSqlGenetator.getColumnTypeByField(field, columnInfo.length)}"
+                var columnDefination = "${columnInfo.columnName} ${initSqlGenetator.getColumnTypeByField(field, columnInfo.length)}"
                 //生成主键或者非空片段
-                sql += when {
+                columnDefination += when {
                     componentInfo.primaryKey == field.name -> " PRIMARY KEY "
                     columnInfo.nullable -> ""
                     else -> " NOT NULL "
                 }
                 if (field.name == componentInfo.primaryKey && columnInfo.autoIncrement) {
-                    sql += initSqlGenetator.generateAutoIncrementSqlFragment()
+                    columnDefination += initSqlGenetator.generateAutoIncrementSqlFragment()
                 }
                 //生成默认值片段
-                sql += when {
+                columnDefination += when {
                     columnInfo.nullable -> ""
                     field.name == componentInfo.primaryKey -> ""
                     else -> initSqlGenetator.generateDefaultSqlFragment(
@@ -79,26 +80,28 @@ class DBInitialer(private val dbConfig: DbConfig) {
                 }
                 //生成注释片段
                 columnInfo.comment?.let {
-                    sql += initSqlGenetator.generateCommentSqlFragment(it)
+                    columnDefination += initSqlGenetator.generateCommentSqlFragment(it)
                 }
                 if (index != fields.size - 1) {
-                    sql += ","
+                    columnDefination += ","
                 }
-                //生成自增补丁
-                if (field.name == componentInfo.primaryKey && columnInfo.autoIncrement) {
-                    autoIncrementSql = initSqlGenetator.generateAutoIncrementSqlFragment(componentInfo.tableName, columnInfo.columnName)
+                //生成唯一索引补丁
+                if (columnInfo.unique) {
+                    uniques.add(initSqlGenetator.generateUniqueSqlFragment(componentInfo.tableName, columnInfo.columnName, columnDefination)!!)
                 }
+
+                //拼接sql
+                sql += columnDefination
             }
         }
 
+        uniques.forEach { uniqueSql -> sql += ",$uniqueSql" }
         sql += " );"
-        sql += autoIncrementSql
-
 
         try {
             sqlExecutor.executeSql(sql)
         } catch (e: Exception) {
-            Log.error("Create table ${componentInfo.tableName} fail!")
+            Log.error("Create table ${componentInfo.tableName} error!", e)
             return
         }
         Log.info("Auto create component table ${componentInfo.tableName}")

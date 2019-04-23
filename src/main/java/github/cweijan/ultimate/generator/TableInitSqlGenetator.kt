@@ -8,8 +8,10 @@ interface TableInitSqlGenetator {
 
     fun generateDefaultSqlFragment(defaultValue:Any?):String
 
-    fun generateAutoIncrementSqlFragment(tableName: String?=null,columnName:String?=null):String
+    fun generateAutoIncrementSqlFragment(tableName: String?=null,columnName:String?=null):String?
 
     fun generateCommentSqlFragment(comment: String): String?
+
+    fun generateUniqueSqlFragment(tableName: String,columnName: String,columnDefinition: String): String?
 
 }

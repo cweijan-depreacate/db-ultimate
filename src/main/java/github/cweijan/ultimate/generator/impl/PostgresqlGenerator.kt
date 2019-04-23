@@ -10,8 +10,12 @@ import java.time.LocalTime
 import java.util.*
 
 class PostgresqlGenerator : BaseSqlGenerator() {
-    override fun generateAutoIncrementSqlFragment(tableName: String?, columnName: String?): String {
-        if(tableName==null||columnName==null)return ""
+    override fun generateUniqueSqlFragment(tableName: String, columnName: String, columnDefinition: String): String? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun generateAutoIncrementSqlFragment(tableName: String?, columnName: String?): String? {
+        if(tableName==null||columnName==null)return null
         return "\n"+"""CREATE SEQUENCE ${tableName}_${columnName}_seq
             INCREMENT 1
             START 1

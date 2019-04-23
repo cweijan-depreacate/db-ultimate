@@ -225,6 +225,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                         columnInfo.defaultValue = if (StringUtils.isNotEmpty(this.defaultValue)) this.defaultValue else null
                         columnInfo.nullable = this.nullable
                         columnInfo.length = if (columnInfo.length != 0) this.length else null
+                        columnInfo.unique=this.unique
                     }
                 } else {
                     columnInfo.columnName = field.name
