@@ -7,6 +7,8 @@ import github.cweijan.ultimate.annotation.query.pagination.PageSize
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
+import github.cweijan.ultimate.excel.ExcelOperator
+import github.cweijan.ultimate.excel.ExcludeExcel
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -117,14 +119,17 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
 
     fun update(column: String, value: Any?): Query<T> {
 
-        value?.let { updateMap[component.getColumnNameByFieldName(column) ?: convert(column)] = TypeAdapter.convertToDateString(componentClass,column,it) }
+        value?.let {
+            updateMap[component.getColumnNameByFieldName(column) ?: convert(column)] =
+                    TypeAdapter.convertToDateString(componentClass, column, it)
+        }
         return this
     }
 
     private fun put(map: MutableMap<String, MutableList<String>>, column: String, value: Any?) {
 
         val operationList = getOperationList(map, component.getColumnNameByFieldName(column) ?: convert(column))
-        operationList!!.add(TypeAdapter.convertToDateString(componentClass,column,value!!))
+        operationList!!.add(TypeAdapter.convertToDateString(componentClass, column, value!!))
         map[column] = operationList
     }
 
@@ -198,6 +203,24 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return column
     }
 
+    fun ouputExcel(exportPath: String): Boolean {
+
+        val dataList = list()
+        val values = Array(dataList.size) { ArrayList<Any?>() }
+        val headers = component.fieldColumnInfoMap.keys.filter { key ->
+            val field = componentClass.getDeclaredField(key)
+            field.getAnnotation(ExcludeExcel::class.java)?.run { return@filter false }
+            field.isAccessible = true
+            dataList.forEachIndexed { dataIndex, data ->
+                values[dataIndex].add(
+                        TypeAdapter.convertToDateString(componentClass, field.name, field.get(data) ?: ""))
+            }
+            return@filter true
+        }.map { key -> component.fieldColumnInfoMap[key]!!.excelHeader }.toTypedArray()
+
+        return ExcelOperator.outputExcel(headers, values, exportPath)
+    }
+
     fun readObject(paramObject: Any): Query<T> {
         if (paramObject is Map<*, *>) {
             paramObject.forEach { key, value ->
@@ -216,11 +239,11 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
                     field.getAnnotation(Offset::class.java)?.run { haveCondition = true; offset(it.toString().toInt()) }
                     field.getAnnotation(PageSize::class.java)?.run { haveCondition = true; pageSize(it.toString().toInt()) }
                     field.getAnnotation(Equals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; eq(fieldName, it) }
-                    field.getAnnotation(OrEquals::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orEq(fieldName, it) }
+                    field.getAnnotation(OrEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orEq(fieldName, it) }
                     field.getAnnotation(NotEquals::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; notEq(fieldName, it) }
-                    field.getAnnotation(OrNotEquals::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orNotEq(fieldName, it) }
+                    field.getAnnotation(OrNotEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orNotEq(fieldName, it) }
                     field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; search(fieldName, it) }
-                    field.getAnnotation(OrSearch::class.java)?.run {if (this.value != "") fieldName = this.value; haveCondition = true; orSearch(fieldName, it) }
+                    field.getAnnotation(OrSearch::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orSearch(fieldName, it) }
                     if (!haveCondition) eq(fieldName, it)
                 }
             }
@@ -257,3 +280,4 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
     }
 
 }
+

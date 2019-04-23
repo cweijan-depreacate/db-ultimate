@@ -36,6 +36,13 @@ public class SelectTest extends BaseTest{
     }
 
     @Test
+    public void testExportExcel(){
+
+        Query.of(Admin.class).ouputExcel("D://test.xls");
+
+    }
+
+    @Test
     public void testGetBy(){
 
         Admin admin = dbUltimate.getByPrimaryKey(Admin.class, "2");

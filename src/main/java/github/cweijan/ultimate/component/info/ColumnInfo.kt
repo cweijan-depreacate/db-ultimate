@@ -4,6 +4,7 @@ class ColumnInfo {
 
     lateinit var columnName: String
     lateinit var fieldType: Class<*>
+    lateinit var excelHeader: String
     var length: Int? = null
     var nullable: Boolean = false
     var autoIncrement: Boolean = false

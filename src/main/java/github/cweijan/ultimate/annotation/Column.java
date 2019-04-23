@@ -19,6 +19,8 @@ public @interface Column{
 
     boolean nullable() default false;
 
+    String excelHeader() default "";
+
     int length() default 0;
 
 }

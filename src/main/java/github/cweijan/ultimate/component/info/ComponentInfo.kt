@@ -29,7 +29,7 @@ class ComponentInfo(var componentClass: Class<*>) {
     /**
      * 属性名与ColumnInfo的映射
      */
-    private val fieldColumnInfoMap by lazy {
+    val fieldColumnInfoMap by lazy {
         return@lazy HashMap<String, ColumnInfo>()
     }
 
@@ -225,11 +225,14 @@ class ComponentInfo(var componentClass: Class<*>) {
                         columnInfo.defaultValue = if (StringUtils.isNotEmpty(this.defaultValue)) this.defaultValue else null
                         columnInfo.nullable = this.nullable
                         columnInfo.length = if (columnInfo.length != 0) this.length else null
-                        columnInfo.unique=this.unique
+                        columnInfo.unique = this.unique
+                        columnInfo.excelHeader = if (this.excelHeader == "") columnInfo.columnName else this.excelHeader
                     }
                 } else {
                     columnInfo.columnName = field.name
+                    columnInfo.excelHeader = field.name
                 }
+
 
                 if (camelcaseToUnderLine) {
                     val regex = Regex("([a-z])([A-Z]+)")
