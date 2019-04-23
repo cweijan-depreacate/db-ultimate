@@ -6,10 +6,11 @@ import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.StringUtils
+import java.lang.reflect.Field
 
 //import org.fest.reflect.core.Reflection.*
 
-abstract class BaseSqlGenerator : SqlGenerator {
+abstract class BaseSqlGenerator : SqlGenerator,TableInitSqlGenetator {
 
     override fun generateInsertSql(component: Any): String {
 
@@ -149,6 +150,10 @@ abstract class BaseSqlGenerator : SqlGenerator {
         }
 
         return sql.toString()
+    }
+
+    override fun generateCommentSqlFragment(comment: String): String? {
+        return null
     }
 
     abstract fun <T> generatePaginationSql(sql: String, query: Query<T>): String

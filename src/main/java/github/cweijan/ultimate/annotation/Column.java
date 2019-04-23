@@ -1,9 +1,6 @@
 package github.cweijan.ultimate.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  对field添加更多描述
@@ -13,6 +10,10 @@ import java.lang.annotation.Target;
 public @interface Column{
 
     String value() default "";
+
+    String comment() default "";
+
+    String defaultValue() default "";
 
     boolean nullable() default false;
 

@@ -3,12 +3,10 @@ package github.cweijan.ultimate.component.info
 import github.cweijan.ultimate.annotation.*
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.convert.TypeAdapter
-import github.cweijan.ultimate.exception.ColumnNotExistsException
 import github.cweijan.ultimate.exception.ForeignKeyNotSetException
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
-import javafx.scene.control.Tab
 import java.lang.reflect.Field
 
 class ComponentInfo(var componentClass: Class<*>) {
@@ -218,13 +216,15 @@ class ComponentInfo(var componentClass: Class<*>) {
                     columnInfo.dateFormat = this.value
                 }
 
-                //生成column name
+                //生成column info
                 val columnAnnotation = field.getAnnotation(Column::class.java)
-                if (StringUtils.isNotEmpty(columnAnnotation?.value)) {
-                    columnInfo.columnName = columnAnnotation.value
-                    columnInfo.isNullable = columnAnnotation.nullable
-                    if (columnAnnotation.length != 0) {
-                        columnInfo.length = columnAnnotation.length
+                if (columnAnnotation != null) {
+                    columnAnnotation.run {
+                        columnInfo.columnName = if (StringUtils.isNotEmpty(this.value)) this.value else field.name
+                        columnInfo.comment = if (StringUtils.isNotEmpty(this.comment)) this.comment else null
+                        columnInfo.defaultValue = if (StringUtils.isNotEmpty(this.defaultValue)) this.defaultValue else null
+                        columnInfo.nullable = this.nullable
+                        columnInfo.length = if (columnInfo.length != 0) this.length else null
                     }
                 } else {
                     columnInfo.columnName = field.name
@@ -241,7 +241,13 @@ class ComponentInfo(var componentClass: Class<*>) {
                 if (primaryAnnotation != null || (field.name == "id" && StringUtils.isEmpty(componentInfo.primaryKey))) {
                     componentInfo.primaryKey = columnInfo.columnName
                     componentInfo.primaryField = field
-                    columnInfo.isAutoIncrement = primaryAnnotation?.autoIncrement ?: false
+                    primaryAnnotation.run {
+                        columnInfo.autoIncrement = this?.autoIncrement ?: false
+                        columnInfo.columnName = if (StringUtils.isNotEmpty(this.value)) this.value else field.name
+                        columnInfo.comment = if (StringUtils.isNotEmpty(this.comment)) this.comment else null
+                        columnInfo.length = if (columnInfo.length != 0) this.length else null
+                    }
+
                 }
 
                 //generate foreign key column info

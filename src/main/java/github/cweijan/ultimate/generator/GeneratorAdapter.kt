@@ -14,7 +14,6 @@ class GeneratorAdapter(config: DbConfig) {
 
     val generator: SqlGenerator
         get() {
-
             return when (driverName) {
                 DriverConstant.MYSQL_DRIVER_NAME -> MysqlGenerator()
                 DriverConstant.ORACLE_DRIVER_NAME -> OracleGenerator()
