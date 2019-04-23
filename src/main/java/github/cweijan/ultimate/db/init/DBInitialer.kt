@@ -17,7 +17,7 @@ import java.util.*
 class DBInitialer(private val dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
-    private var connection: Connection = dbConfig.openConnection()
+    private var connection: Connection = dbConfig.getConnection()
 
     /**
      * 创建Bean所对应的表
@@ -34,7 +34,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
     fun createTable(componentInfo: ComponentInfo?) {
 
-        if (connection.isClosed) connection = dbConfig.openConnection()
+        if (connection.isClosed) connection = dbConfig.getConnection()
 
         if (componentInfo == null || tableExists(componentInfo.tableName)) return
 

@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'maven'
     id "org.jetbrains.kotlin.jvm" version "1.3.10"
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
 
 
@@ -9,12 +10,21 @@ group = 'github.cweijan'
 
 sourceCompatibility = 1.8
 
-version '1.32'
+version '1.33'
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
-
+shadowJar {
+    dependencies {
+        include(dependency("com.zaxxer:HikariCP"))
+        include(dependency("org.jetbrains.kotlin:kotlin-stdlib"))
+        include(dependency("org.jetbrains.kotlin:kotlin-reflect"))
+//        include(dependency("org.easytesting:fest-reflect"))
+//        include(dependency("org.easytesting:fest-util"))
+        include(dependency("commons-io:commons-io"))
+    }
+}
 repositories {
     mavenCentral()
 }
@@ -41,7 +51,6 @@ dependencies {
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.3.10'
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
     
-
     testCompile(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.0.4.RELEASE') {
         exclude module: 'logback-classic'
     }

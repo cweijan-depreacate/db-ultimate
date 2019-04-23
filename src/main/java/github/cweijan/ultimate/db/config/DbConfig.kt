@@ -3,11 +3,12 @@ package github.cweijan.ultimate.db.config
 import github.cweijan.ultimate.db.HikariDataSourceAdapter
 import github.cweijan.ultimate.util.Log
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.jdbc.datasource.DataSourceUtils
 import java.sql.Connection
 import javax.sql.DataSource
 
 @ConfigurationProperties(prefix = "ultimate.jdbc")
-class DbConfig(var dataSource: DataSource? = null) {
+class DbConfig() {
 
     var createNonexistsTable: Boolean = false
     var username: String? = null
@@ -25,6 +26,15 @@ class DbConfig(var dataSource: DataSource? = null) {
                 value
             }
         }
+    var dataSource: DataSource? = null
+        get() {
+            if (field == null) {
+                Log.debug("dataSource is null! init hikariDataSource")
+                val dataSourceAdapter = HikariDataSourceAdapter(this)
+                field = dataSourceAdapter.dataSource
+            }
+            return field
+        }
 
     var maximumPoolSize = DefaultProperties.MAXIUM_POOL_SIZE
     var minimumIdle = DefaultProperties.MINIUM_IDEL_SIZE
@@ -33,19 +43,6 @@ class DbConfig(var dataSource: DataSource? = null) {
     var develop = DefaultProperties.DEVELOP
     var scanPackage: String? = null
 
-    private val threadLocal = ThreadLocal<Connection>()
-    val currentConnection: Connection? = threadLocal.get()
-    fun openConnection(): Connection {
-
-        if (dataSource == null) {
-            Log.debug("dataSource is null! init hikariDataSource")
-            val dataSourceAdapter = HikariDataSourceAdapter(this)
-            dataSource = dataSourceAdapter.dataSource
-        }
-
-        threadLocal.get() ?: threadLocal.set(dataSource!!.connection)
-
-        return threadLocal.get()
-    }
+    fun getConnection(): Connection = DataSourceUtils.doGetConnection(dataSource!!)
 
 }

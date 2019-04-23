@@ -2,6 +2,7 @@ package github.cweijan.ultimate.db
 
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.util.Log
+import org.springframework.jdbc.datasource.DataSourceUtils
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -18,7 +19,7 @@ class SqlExecutor(private val dbConfig: DbConfig) {
      */
     fun executeSql(sql: String, params: Array<String>? = null): ResultSet? {
 
-        return executeSql(sql, params, dbConfig.openConnection())
+        return executeSql(sql, params, dbConfig.getConnection())
     }
 
     private fun executeSql(sql: String, params: Array<String>?, connection: Connection): ResultSet? {
