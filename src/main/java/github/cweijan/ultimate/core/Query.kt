@@ -319,15 +319,15 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return column
     }
 
-    fun toJson(): String {
+    fun toJson(): String? {
         return Json.objectToJson(list())
     }
 
-    fun getFromJson(json:String):T{
+    fun getFromJson(json:String):T?{
         return Json.jsonToObject(json,componentClass)
     }
 
-    fun listFromJson(json:String):List<T>{
+    fun listFromJson(json:String):List<T>?{
         return Json.jsonToList(json,componentClass)
     }
 
