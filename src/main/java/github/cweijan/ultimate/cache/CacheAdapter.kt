@@ -1,10 +1,11 @@
 package github.cweijan.ultimate.cache
 
 import github.cweijan.ultimate.cache.impl.StandCacheImpl
+import github.cweijan.ultimate.db.config.CacheConfig
 
 object CacheAdapter {
-    fun getCacheEngine(cacheType: String?=null): CacheEngine{
-        return when (cacheType) {
+    fun getCacheEngine(cacheConfig: CacheConfig?=null): CacheEngine{
+        return when (cacheConfig) {
             else -> StandCacheImpl()
         }
     }

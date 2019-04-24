@@ -6,6 +6,7 @@ import github.cweijan.ultimate.component.ComponentScan
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.convert.TypeConvert
 import github.cweijan.ultimate.db.SqlExecutor
+import github.cweijan.ultimate.db.config.CacheConfig
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.debug.HotSwapSupport
@@ -18,7 +19,9 @@ import java.sql.ResultSet
 /**
  * 核心Api,用于Crud操作
  */
-class DbUltimate(dbConfig: DbConfig) {
+class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
+
+    constructor(dbConfig: DbConfig) : this(dbConfig, null)
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
     var sqlGenerator: SqlGenerator = GeneratorAdapter.getSqlGenerator(dbConfig.driver)
@@ -29,7 +32,7 @@ class DbUltimate(dbConfig: DbConfig) {
         }
         ComponentScan.scan(dbConfig.scanPackage!!.split(","))
         DBInitialer(dbConfig).initalerTable()
-        cache = CacheAdapter.getCacheEngine(null)
+        cache = CacheAdapter.getCacheEngine(cacheConfig)
         Query.core = this
     }
 
@@ -175,6 +178,7 @@ class DbUltimate(dbConfig: DbConfig) {
     companion object {
         @JvmStatic
         lateinit var cache: CacheEngine
+
     }
 
 }

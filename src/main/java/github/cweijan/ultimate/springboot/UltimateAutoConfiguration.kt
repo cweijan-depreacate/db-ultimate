@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.springboot
 
 import github.cweijan.ultimate.core.DbUltimate
+import github.cweijan.ultimate.db.config.CacheConfig
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.util.Log
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,7 +14,7 @@ import org.springframework.transaction.PlatformTransactionManager
 import javax.sql.DataSource
 
 @Configuration
-@EnableConfigurationProperties(DbConfig::class)
+@EnableConfigurationProperties(DbConfig::class,CacheConfig::class)
 open class UltimateAutoConfiguration {
 
     @Autowired
