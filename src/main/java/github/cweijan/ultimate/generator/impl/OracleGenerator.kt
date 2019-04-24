@@ -11,7 +11,7 @@ import java.util.*
 
 class OracleGenerator : BaseSqlGenerator() {
     override fun generateUniqueSqlFragment(tableName: String, columnName: String, columnDefinition: String): String? {
-        TODO("not implemented")
+        return " CONSTRAINT ${columnName}_uk UNIQUE ($columnName) "
     }
 
     override fun generateAutoIncrementSqlFragment(tableName: String?, columnName: String?): String {

@@ -5,17 +5,18 @@ import github.cweijan.ultimate.db.init.DBInitialer;
 import github.cweijan.ultimate.db.config.DbConfig;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 
 public class BaseTest{
 
-    protected DbConfig dbConfig;
-    protected DbUltimate dbUltimate;
-    protected DBInitialer dbInitialer;
+    protected static DbConfig dbConfig;
+    protected static DbUltimate dbUltimate;
+    protected static DBInitialer dbInitialer;
 
-    @Before
-    public void initConfig(){
+    @BeforeClass
+    public static void initConfig(){
 
         dbConfig = new DbConfig();
         dbConfig.setUrl("jdbc:mysql://localhost:3306/ultimate");

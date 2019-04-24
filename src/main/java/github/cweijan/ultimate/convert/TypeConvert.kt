@@ -60,7 +60,7 @@ object TypeConvert {
         val columns = md.columnCount
         val row = HashMap<String, Any>(columns)
         for (i in 1..columns) {
-            row[md.getColumnName(i)] = resultSet.getObject(i)
+            row[md.getColumnLabel(i)] = resultSet.getObject(i)
         }
         return row;
     }

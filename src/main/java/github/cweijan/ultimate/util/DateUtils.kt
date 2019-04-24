@@ -73,7 +73,16 @@ object DateUtils {
     @JvmStatic
     fun timestamp(): String {
 
-        return getIntervalDay(0, "yyyyMMddHHmmssSSS")
+        return (System.currentTimeMillis() / 1000).toString()
+    }
+
+    /**
+     *
+     * @return int 返回时间戳 (10位)
+     */
+    fun timestampForInt(): Int {
+
+        return (System.currentTimeMillis() / 1000).toInt()
     }
 
     @JvmStatic
@@ -86,7 +95,7 @@ object DateUtils {
     @JvmStatic
     fun getDateFormat(dateFormat: String): SimpleDateFormat {
         formatCache[dateFormat]?.run { return this }
-        formatCache[dateFormat]=SimpleDateFormat(dateFormat)
+        formatCache[dateFormat] = SimpleDateFormat(dateFormat)
         return formatCache[dateFormat]!!
     }
 

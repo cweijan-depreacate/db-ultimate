@@ -1,5 +1,7 @@
 package github.cweijan.ultimate.core
 
+import github.cweijan.ultimate.cache.CacheAdapter
+import github.cweijan.ultimate.cache.CacheEngine
 import github.cweijan.ultimate.component.ComponentScan
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.convert.TypeConvert
@@ -19,7 +21,7 @@ import java.sql.ResultSet
 class DbUltimate(dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
-    private var sqlGenerator: SqlGenerator = GeneratorAdapter(dbConfig).generator
+    var sqlGenerator: SqlGenerator = GeneratorAdapter.getSqlGenerator(dbConfig.driver)
 
     init {
         if (dbConfig.develop) {
@@ -27,6 +29,7 @@ class DbUltimate(dbConfig: DbConfig) {
         }
         ComponentScan.scan(dbConfig.scanPackage!!.split(","))
         DBInitialer(dbConfig).initalerTable()
+        cache = CacheAdapter.getCacheEngine(null)
         Query.core = this
     }
 
@@ -44,13 +47,13 @@ class DbUltimate(dbConfig: DbConfig) {
     }
 
     @JvmOverloads
-    fun <T> executeSqlOfMap(sql: String, params: Array<String>? = null): Map<String, Any>? {
+    fun executeSqlOfMap(sql: String, params: Array<String>? = null): Map<String, Any>? {
 
         return TypeConvert.resultSetToMap(sqlExecutor.executeSql(sql, params)!!)
     }
 
     @JvmOverloads
-    fun <T> executeSqlOfMapList(sql: String, params: Array<String>? = null): List<Map<String, Any>> {
+    fun executeSqlOfMapList(sql: String, params: Array<String>? = null): List<Map<String, Any>> {
 
         return TypeConvert.resultSetToMapList(sqlExecutor.executeSql(sql, params)!!)
     }
@@ -80,14 +83,14 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun <T> getCount(query: Query<T>): Int {
 
-        val sql = sqlGenerator.generateCountSql(query.component, query)
+        val sql = sqlGenerator.generateCountSql(query)
 
         return getBySql(sql, null, Int::class.java)!!
     }
 
     fun <T> getByQuery(query: Query<T>): T? {
 
-        val sql = sqlGenerator.generateSelectSql(query.component, query)
+        val sql = sqlGenerator.generateSelectSql(query)
 
         return getBySql(sql, query.getParams(), query.componentClass)
     }
@@ -97,24 +100,18 @@ class DbUltimate(dbConfig: DbConfig) {
         return getByQuery(Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
 
-    @JvmOverloads
-    fun <T> findBySql(sql: String, params: Array<String>? = null, clazz: Class<T>): List<T> {
-
-        val resultSet = sqlExecutor.executeSql(sql, params)
-        val beanList = TypeConvert.resultSetToBeanList(resultSet!!, clazz)
-        resultSet.close()
-        return beanList
-    }
-
     fun <T> find(query: Query<T>): List<T> {
 
-        if (query.page != null && query.pageSize != 0) {
-            val start = if (query.page!! <= 0) 0 else (query.page!! - 1) * (query.pageSize ?: 100)
-            query.offset(start)
-        }
+        val sql = sqlGenerator.generateSelectSql(query)
 
-        val sql = sqlGenerator.generateSelectSql(query.component, query)
-        return findBySql(sql, query.getParams(), query.componentClass)
+        val key = "${query.component.tableName}_$sql"
+        if (query.usingCache) cache.getAndReCache<List<T>>(key)?.run { return this }
+        val resultSet = sqlExecutor.executeSql(sql, query.getParams())
+        val beanList = TypeConvert.resultSetToBeanList(resultSet!!, query.componentClass)
+        resultSet.close()
+        if (query.usingCache) cache.set(key, beanList, query.cacheExpireSecond)
+
+        return beanList
     }
 
     /**
@@ -137,12 +134,11 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun insertOfUpdate(component: Any) {
         val componentInfo = TableInfo.getComponent(component.javaClass)
-        val sql = if (componentInfo.getPrimaryValue(component) == null) {
-            sqlGenerator.generateInsertSql(component)
+        if (componentInfo.getPrimaryValue(component) == null) {
+            insert(component)
         } else {
-            sqlGenerator.generateUpdateSql(component)
+            update(component)
         }
-        executeSql(sql)
     }
 
     fun <T> batchDelete(query: Query<T>, privateKeyList: List<Any>) {
@@ -155,14 +151,14 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun <T> delete(query: Query<T>) {
 
-        val sql = sqlGenerator.generateDeleteSql(query.component, query)
+        val sql = sqlGenerator.generateDeleteSql(query)
         executeSql(sql, query.getParams())
     }
 
     fun update(component: Any) {
 
         try {
-            val sql = sqlGenerator.generateUpdateSql(component)
+            val sql = sqlGenerator.generateUpdateSqlByObject(component)
             executeSql(sql)
         } catch (e: IllegalAccessException) {
             Log.error(e.message, e)
@@ -172,8 +168,13 @@ class DbUltimate(dbConfig: DbConfig) {
 
     fun <T> update(query: Query<T>) {
 
-        val sql = sqlGenerator.generateUpdateSql(query.component, query)
+        val sql = sqlGenerator.generateUpdateSqlByObject(query)
         executeSql(sql, query.getParams())
+    }
+
+    companion object {
+        @JvmStatic
+        lateinit var cache: CacheEngine
     }
 
 }

@@ -20,7 +20,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
     private var connection: Connection = dbConfig.getConnection()
-    private var initSqlGenetator: TableInitSqlGenetator = GeneratorAdapter(dbConfig).generator as TableInitSqlGenetator
+    private var initSqlGenetator: TableInitSqlGenetator = GeneratorAdapter.getSqlGenerator(dbConfig.driver) as TableInitSqlGenetator
 
     /**
      * 创建Bean所对应的表

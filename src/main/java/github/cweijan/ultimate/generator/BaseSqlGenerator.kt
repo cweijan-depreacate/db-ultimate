@@ -1,16 +1,11 @@
 package github.cweijan.ultimate.generator
 
 import github.cweijan.ultimate.component.TableInfo
-import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
-import github.cweijan.ultimate.util.StringUtils
-import java.lang.reflect.Field
 
-//import org.fest.reflect.core.Reflection.*
-
-abstract class BaseSqlGenerator : SqlGenerator,TableInitSqlGenetator {
+abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {
 
     override fun generateInsertSql(component: Any): String {
 
@@ -36,7 +31,7 @@ abstract class BaseSqlGenerator : SqlGenerator,TableInitSqlGenetator {
     }
 
     @Throws(IllegalAccessException::class)
-    override fun generateUpdateSql(component: Any): String {
+    override fun generateUpdateSqlByObject(component: Any): String {
 
         val componentInfo = TableInfo.getComponent(component.javaClass)
         val primaryValue = componentInfo.getPrimaryValue(component)
@@ -62,33 +57,35 @@ abstract class BaseSqlGenerator : SqlGenerator,TableInitSqlGenetator {
         return "$sql where ${componentInfo.primaryKey}='$primaryValue'"
     }
 
-    override fun <T> generateDeleteSql(componentInfo: ComponentInfo, query: Query<T>): String {
-
-        return "DELETE FROM ${componentInfo.tableName} ${generateOperationSql(query)}"
+    override fun <T> generateDeleteSql(query: Query<T>): String {
+        return "DELETE FROM ${query.component.tableName} ${generateOperationSql(query)}"
     }
 
-    override fun <T> generateCountSql(componentInfo: ComponentInfo, query: Query<T>): String {
-
-        return "select count(*) count from ${componentInfo.tableName} ${generateOperationSql(query, true)}"
+    override fun <T> generateCountSql(query: Query<T>): String {
+        return "select count(*) count from ${query.component.tableName} ${generateOperationSql(query, true)}"
     }
 
-    override fun <T> generateUpdateSql(componentInfo: ComponentInfo, query: Query<T>): String {
+    override fun <T> generateUpdateSqlByObject(query: Query<T>): String {
+        var sql = "UPDATE ${query.component.tableName} a set "
 
-        var sql = "UPDATE ${componentInfo.tableName} a set "
-
-        query.updateMap.forEach { key, value ->
-            sql += "$key=?,"
-            query.addParam(value)
-        }
-        if (sql.lastIndexOf(",") != -1) {
-            sql = sql.substring(0, sql.lastIndexOf(","))
+        if (!query.updateLazy.isInitialized()) throw RuntimeException("Not update column!")
+        query.updateMap.keys.forEachIndexed { index, key ->
+            sql += if (index == 0) "$key=?"
+            else ",$key=?"
+            query.addParam(query.updateMap[key])
         }
         return "$sql ${generateOperationSql(query)}"
     }
 
-    override fun <T> generateSelectSql(componentInfo: ComponentInfo, query: Query<T>): String {
+    override fun <T> generateSelectSql(query: Query<T>): String {
 
-        val column = query.getColumn() ?: componentInfo.selectColumns
+        val componentInfo = query.component
+        if (query.page != null && query.pageSize != 0) {
+            val start = if (query.page!! <= 0) 0 else (query.page!! - 1) * (query.pageSize ?: 100)
+            query.offset(start)
+        }
+
+        val column = query.generateColumns() ?: query.getColumn() ?: componentInfo.selectColumns
 
         val sql = "select $column from ${componentInfo.tableName + generateOperationSql(query, true)}"
         return generatePaginationSql(sql, query)
@@ -96,43 +93,58 @@ abstract class BaseSqlGenerator : SqlGenerator,TableInitSqlGenetator {
 
     private fun <T> generateOperationSql(query: Query<T>, useAlias: Boolean = false): String {
 
-        val and = "and"
-        val or = "or"
+        val and = "AND"
+        val or = "OR"
+        var joinSql: String? = null
         var sql = ""
 
-        query.component.autoJoinComponentList.let {
-            it.forEach { autoJoinComponent -> query.join(autoJoinComponent) }
-        }
-        sql += generateJoinTablesSql(query.joinTables)
-        sql += generateOperationSql0(query.equalsOperation, "=", and, query)
-        sql += generateOperationSql0(query.notEqualsOperation, "!=", and, query)
-        sql += generateOperationSql0(query.searchOperation, "like", and, query)
-        sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
-        sql += generateOperationSql0(query.orNotEqualsOperation, "!=", or, query)
-        sql += generateOperationSql0(query.orSearchOperation, "like", or, query)
+        if (query.component.autoJoinLazy.isInitialized()) query.component.autoJoinComponentList.let { it.forEach { autoJoinComponent -> query.join(autoJoinComponent) } }
+        if (query.joinLazy.isInitialized()) joinSql = generateJoinTablesSql(query.joinTables)
+
+        if (query.eqLazy.isInitialized()) sql += generateOperationSql0(query.equalsOperation, "=", and, query)
+        if (query.orEqLazy.isInitialized()) sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
+
+        if (query.notEqLazy.isInitialized()) sql += generateOperationSql0(query.notEqualsOperation, "!=", and, query)
+        if (query.orNotEqLazy.isInitialized()) sql += generateOperationSql0(query.orNotEqualsOperation, "!=", or, query)
+
+        if (query.greatEqLazy.isInitialized()) sql += generateOperationSql0(query.greatEqualsOperation, ">=", and, query)
+        if (query.lessEqLazy.isInitialized()) sql += generateOperationSql0(query.lessEqualsOperation, "<=", and, query)
+
+        if (query.searchLazy.isInitialized()) sql += generateOperationSql0(query.searchOperation, "LIKE", and, query)
+        if (query.orSearchLazy.isInitialized()) sql += generateOperationSql0(query.orSearchOperation, "LIKE", or, query)
 
         if (sql.startsWith(and)) {
             sql = sql.replaceFirst(and.toRegex(), "")
-            sql = " where$sql"
+            sql = " WHERE$sql"
         }
         if (sql.startsWith(or)) {
             sql = sql.replaceFirst(or.toRegex(), "")
-            sql = " where$sql"
+            sql = " WHERE$sql"
         }
 
-        if (StringUtils.isNotEmpty(query.orderBy)) {
-            sql += " order by ${query.orderBy}"
+        joinSql?.run { sql = this + sql }
+
+        if (query.groupLazy.isInitialized()) query.groupByList.forEachIndexed { index, groupBy ->
+            sql += if (index == 0) " GROUP BY $groupBy" else ",$groupBy"
+        }
+        if (query.havingLazy.isInitialized()) query.havingSqlList.forEachIndexed { index, havingSql ->
+            if (index == 0) sql += " HAVING "
+            sql += havingSql
+        }
+
+        query.orderByList.forEachIndexed { index, orderBy ->
+            sql += if (index == 0) " ORDER BY $orderBy" else ",$orderBy"
         }
 
         return if (useAlias) query.alias + sql else sql
     }
 
-    private fun generateJoinTablesSql(joinTables: MutableList<String>?): String {
+    private fun generateJoinTablesSql(joinTableSqls: MutableList<String>?): String {
 
         val sql = StringBuilder()
 
-        joinTables?.forEach { joinTable ->
-            sql.append(joinTable)
+        joinTableSqls?.forEach { joinTableSql ->
+            sql.append(joinTableSql)
         }
 
         return sql.toString()

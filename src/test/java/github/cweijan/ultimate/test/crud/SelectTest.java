@@ -80,9 +80,9 @@ public class SelectTest extends BaseTest{
     @Test
     public void testJoin(){
 
-//        List<AdminC> adminList = Query.of(AdminC.class).join(Lib.class).eq("ad.id", "1").list();
+        List<Admin> adminList = Query.of(Admin.class).join(Lib.class).eq("ad.id", "1").list();
 
-//        Log.info(adminList);
+        Log.info(adminList);
 
     }
 
@@ -156,6 +156,13 @@ public class SelectTest extends BaseTest{
         Log.info(admins.toString());
         Log.info("hello");
 
+    }
+
+    @Test
+    public void testGeAndLe(){
+
+        List<Admin> list = Query.of(Admin.class).ge("id", 2).le("id", 4).list();
+        Log.info(list);
     }
 
 }

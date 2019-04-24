@@ -9,14 +9,14 @@ interface SqlGenerator {
     fun generateInsertSql(component: Any): String
 
     @Throws(IllegalAccessException::class)
-    fun generateUpdateSql(component: Any): String
+    fun generateUpdateSqlByObject(component: Any): String
 
-    fun <T> generateUpdateSql(componentInfo: ComponentInfo, query: Query<T>): String
+    fun <T> generateUpdateSqlByObject(query: Query<T>): String
 
-    fun <T> generateDeleteSql(componentInfo: ComponentInfo, query: Query<T>): String
+    fun <T> generateDeleteSql(query: Query<T>): String
 
-    fun <T> generateSelectSql(componentInfo: ComponentInfo, query: Query<T>): String
+    fun <T> generateSelectSql(query: Query<T>): String
 
-    fun <T> generateCountSql(componentInfo: ComponentInfo, query: Query<T>): String
+    fun <T> generateCountSql(query: Query<T>): String
 
 }

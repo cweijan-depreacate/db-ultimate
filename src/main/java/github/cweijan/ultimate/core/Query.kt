@@ -12,23 +12,23 @@ import github.cweijan.ultimate.excel.ExcludeExcel
 import java.util.*
 import kotlin.collections.ArrayList
 
+
+
 /**
  * @param isAutoConvert convertCamelToUnderScore
  */
-class Query<T>
-private constructor(val componentClass: Class<out T>, private var isAutoConvert: Boolean = false) {
+open class Query<T>
+internal constructor(val componentClass: Class<out T>, private var isAutoConvert: Boolean = false) {
 
     var component: ComponentInfo = TableInfo.getComponent(componentClass)
 
+    private var column: String? = null
     private val params: MutableList<String> by lazy {
         return@lazy ArrayList<String>()
     }
-    private var column: String? = null
-    val joinTables: MutableList<String> by lazy {
-        return@lazy ArrayList<String>()
-    }
-    var orderBy: String? = null
-        private set
+
+    var usingCache: Boolean = false
+    var cacheExpireSecond: Int? = null
     var offset: Int? = null
         private set
     var page: Int? = null
@@ -44,33 +44,63 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
             }
         }
 
-    val updateMap: MutableMap<String, String>by lazy {
-        return@lazy HashMap<String, String>()
-    }
+    val joinLazy = lazy { return@lazy ArrayList<String>() }
+    val joinTables: MutableList<String> by joinLazy
 
-    val notEqualsOperation: MutableMap<String, MutableList<String>>by lazy {
-        HashMap<String, MutableList<String>>()
-    }
+    val orderByLazy = lazy { return@lazy ArrayList<String>() }
+    val orderByList: MutableList<String> by orderByLazy
 
-    val orNotEqualsOperation: MutableMap<String, MutableList<String>>by lazy {
-        HashMap<String, MutableList<String>>()
-    }
+    val updateLazy = lazy { return@lazy HashMap<String, String>() }
+    val updateMap: MutableMap<String, String>by updateLazy
 
-    val equalsOperation: MutableMap<String, MutableList<String>>by lazy {
-        HashMap<String, MutableList<String>>()
-    }
+    val greatEqLazy = lazy { HashMap<String, MutableList<String>>() }
+    val greatEqualsOperation: MutableMap<String, MutableList<String>>by greatEqLazy
 
-    val orEqualsOperation: MutableMap<String, MutableList<String>>by lazy {
-        HashMap<String, MutableList<String>>()
-    }
+    val lessEqLazy = lazy { HashMap<String, MutableList<String>>() }
+    val lessEqualsOperation: MutableMap<String, MutableList<String>>by lessEqLazy
 
-    val searchOperation: MutableMap<String, MutableList<String>>by lazy {
-        HashMap<String, MutableList<String>>()
-    }
+    val eqLazy = lazy { HashMap<String, MutableList<String>>() }
+    val equalsOperation: MutableMap<String, MutableList<String>>by eqLazy
 
-    val orSearchOperation: MutableMap<String, MutableList<String>> by lazy {
-        HashMap<String, MutableList<String>>()
-    }
+    val orEqLazy = lazy { HashMap<String, MutableList<String>>() }
+    val orEqualsOperation: MutableMap<String, MutableList<String>>by orEqLazy
+
+    val notEqLazy = lazy { HashMap<String, MutableList<String>>() }
+    val notEqualsOperation: MutableMap<String, MutableList<String>>by notEqLazy
+
+    val orNotEqLazy = lazy { HashMap<String, MutableList<String>>() }
+    val orNotEqualsOperation: MutableMap<String, MutableList<String>>by orNotEqLazy
+
+    val searchLazy = lazy { HashMap<String, MutableList<String>>() }
+    val searchOperation: MutableMap<String, MutableList<String>>by searchLazy
+
+    val orSearchLazy = lazy { HashMap<String, MutableList<String>>() }
+    val orSearchOperation: MutableMap<String, MutableList<String>> by orSearchLazy
+
+
+    private val sumLazy = lazy { return@lazy HashMap<String, String>() }
+    private val sumMap: MutableMap<String, String>by sumLazy
+
+    private val countLazy = lazy { return@lazy HashMap<String, String>() }
+    private val countMap: MutableMap<String, String>by countLazy
+
+    private val avgLazy = lazy { return@lazy HashMap<String, String>() }
+    private val avgMap: MutableMap<String, String>by avgLazy
+
+    private val maxLazy = lazy { return@lazy HashMap<String, String>() }
+    private val maxMap: MutableMap<String, String>by maxLazy
+
+    private val minLazy = lazy { return@lazy HashMap<String, String>() }
+    private val minMap: MutableMap<String, String>by minLazy
+
+    private val showColumnLazy = lazy { return@lazy ArrayList<String>() }
+    private val showColumnList: MutableList<String> by showColumnLazy
+
+    val groupLazy = lazy { return@lazy ArrayList<String>() }
+    val groupByList: MutableList<String> by groupLazy
+
+    val havingLazy = lazy { return@lazy ArrayList<String>() }
+    val havingSqlList: MutableList<String> by havingLazy
 
     fun addParam(param: String?): Query<T> {
 
@@ -105,7 +135,7 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return map[key]
     }
 
-    private fun convert(column: String): String {
+    protected fun convert(column: String): String {
         var covertColumn = column
 
         if (isAutoConvert) {
@@ -115,6 +145,71 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         }
 
         return covertColumn
+    }
+
+
+    fun statistic():List<Map<String,Any>>{
+        return core.executeSqlOfMapList(core.sqlGenerator.generateSelectSql(this),this.getParams())
+    }
+
+    @JvmOverloads
+    fun sum(column: String?, sumColumnName: String?=null): Query<T> {
+        column?.let {
+            val columnName = getColumnName(column)
+            sumMap[columnName] = sumColumnName ?: "${columnName}Sum"
+        }
+        return this
+    }
+
+    @JvmOverloads
+    fun countDistinct(column: String?, countColumnName: String?=null): Query<T> {
+        column?.let {
+            val columnName = getColumnName(column)
+            countMap[columnName] = countColumnName ?: "${columnName}CountDistinct"
+        }
+        return this
+    }
+
+    @JvmOverloads
+    fun avg(column: String?, avgColumnName: String?=null): Query<T> {
+        column?.let {
+            val columnName = getColumnName(column)
+            avgMap[columnName] = avgColumnName ?: "${columnName}Avg"
+        }
+        return this
+    }
+
+    @JvmOverloads
+    fun min(column: String?, minColumnName: String?=null): Query<T> {
+        column?.let {
+            val columnName = getColumnName(column)
+            minMap[columnName] = minColumnName ?: "${columnName}Min"
+        }
+        return this
+    }
+
+    @JvmOverloads
+    fun max(column: String?, maxColumnName: String?=null): Query<T> {
+        column?.let {
+            val columnName = getColumnName(column)
+            maxMap[columnName] = maxColumnName ?: "${columnName}Max"
+        }
+        return this
+    }
+
+    fun groupBy(column: String): Query<T> {
+        groupByList.add(getColumnName(column))
+        return this
+    }
+
+    fun addShowColumn(column: String): Query<T> {
+        showColumnList.add(getColumnName(column))
+        return this
+    }
+
+    fun having(havingSql: String): Query<T> {
+        havingSqlList.add(havingSql)
+        return this
     }
 
     fun update(column: String, value: Any?): Query<T> {
@@ -128,10 +223,12 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
 
     private fun put(map: MutableMap<String, MutableList<String>>, column: String, value: Any?) {
 
-        val operationList = getOperationList(map, component.getColumnNameByFieldName(column) ?: convert(column))
+        val operationList = getOperationList(map, getColumnName(column))
         operationList!!.add(TypeAdapter.convertToDateString(componentClass, column, value!!))
         map[column] = operationList
     }
+
+    protected fun getColumnName(column: String) = component.getColumnNameByFieldName(column) ?: convert(column)
 
     fun notEq(column: String, value: Any?): Query<T> {
         value?.let { put(notEqualsOperation, column, it) }
@@ -151,6 +248,24 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
 
     fun orSearch(column: String, value: Any?): Query<T> {
         value?.let { put(orSearchOperation, column, "%$it%") }
+        return this
+    }
+
+    /**
+     * great equals then
+     */
+    fun ge(column: String, value: Any?): Query<T> {
+
+        value?.let { put(greatEqualsOperation, column, it) }
+        return this
+    }
+
+    /**
+     * less equals then
+     */
+    fun le(column: String, value: Any?): Query<T> {
+
+        value?.let { put(lessEqualsOperation, column, it) }
         return this
     }
 
@@ -190,9 +305,10 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return this
     }
 
-    fun orderBy(orderBy: String?): Query<T> {
+    fun orderBy(column: String, desc: Boolean = false): Query<T> {
 
-        this.orderBy = orderBy
+        orderByList.add("${getColumnName(column)}${if (desc) " desc" else ""}")
+
         return this
     }
 
@@ -242,6 +358,8 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
                     field.getAnnotation(OrEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orEq(fieldName, it) }
                     field.getAnnotation(NotEquals::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; notEq(fieldName, it) }
                     field.getAnnotation(OrNotEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orNotEq(fieldName, it) }
+                    field.getAnnotation(GreatEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; ge(fieldName, it) }
+                    field.getAnnotation(LessEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; le(fieldName, it) }
                     field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; search(fieldName, it) }
                     field.getAnnotation(OrSearch::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orSearch(fieldName, it) }
                     if (!haveCondition) eq(fieldName, it)
@@ -251,7 +369,13 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
         return this
     }
 
+    fun cache(expireSecond: Int? = 30 * 60) {
+        this.usingCache = true
+        this.cacheExpireSecond = expireSecond
+    }
+
     fun list(): List<T> {
+
         return core.find(this)
     }
 
@@ -266,6 +390,25 @@ private constructor(val componentClass: Class<out T>, private var isAutoConvert:
     fun executeDelete() {
         core.delete(this)
     }
+
+
+
+    fun generateColumns(): String? {
+
+        var columnSql = ""
+        if (countLazy.isInitialized()) countMap.forEach { columnName, showColumnName -> columnSql += "COUNT(DISTINCT $columnName) $showColumnName," }
+        if (sumLazy.isInitialized()) sumMap.forEach { columnName, showColumnName -> columnSql += "SUM($columnName) $showColumnName," }
+        if (avgLazy.isInitialized()) avgMap.forEach { columnName, showColumnName -> columnSql += "AVG($columnName) $showColumnName," }
+        if (minLazy.isInitialized()) minMap.forEach { columnName, showColumnName -> columnSql += "MIN($columnName) $showColumnName," }
+        if (maxLazy.isInitialized()) maxMap.forEach { columnName, showColumnName -> columnSql += "MAX($columnName) $showColumnName," }
+        if (showColumnLazy.isInitialized()) showColumnList.forEach { columnName -> columnSql += "$columnName," }
+        if (columnSql.lastIndexOf(",") != -1) {
+            columnSql = columnSql.substring(0, columnSql.lastIndexOf(","))
+        }
+
+        return if (columnSql == "") null else columnSql
+    }
+
 
     companion object {
         @JvmStatic

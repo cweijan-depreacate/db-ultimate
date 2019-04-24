@@ -13,11 +13,6 @@ class ComponentInfo(var componentClass: Class<*>) {
 
     var primaryKey: String? = null
 
-    private val primaryFieldName: String?
-        get() {
-            return primaryField?.name
-        }
-
     private var primaryField: Field? = null
 
     lateinit var selectColumns: String
@@ -47,12 +42,11 @@ class ComponentInfo(var componentClass: Class<*>) {
         return@lazy HashMap<Class<*>, ForeignKeyInfo>();
     }
 
+    val autoJoinLazy = lazy { return@lazy ArrayList<Class<*>>(); }
     /**
      * 自动关联的外键列表
      */
-    val autoJoinComponentList by lazy {
-        return@lazy ArrayList<Class<*>>();
-    }
+    val autoJoinComponentList by autoJoinLazy
 
     /**
      * 根据属性名找列名
@@ -118,10 +112,6 @@ class ComponentInfo(var componentClass: Class<*>) {
         }
 
         return foreignKeyInfo
-    }
-
-    fun isPrimaryField(field: Field?): Boolean {
-        return null != field && field.name == primaryFieldName
     }
 
     fun isQueryExcludeField(field: Field?): Boolean {
