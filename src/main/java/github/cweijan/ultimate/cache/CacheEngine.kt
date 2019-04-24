@@ -11,11 +11,13 @@ interface CacheEngine {
      * @param value  cache值
      * @param expireSecond 过期时间
      */
-    fun set(key: String, value: Any, expireSecond: Int? = 30 * 60)
+    fun set(key: String, value: Any?, expireSecond: Int? = 30 * 60)
 
     fun remove(key: String)
 
     fun removeForPrefix(prefix: String)
+
+    fun removeAll()
 
     fun expire(key: String, expireSecond: Int)
 

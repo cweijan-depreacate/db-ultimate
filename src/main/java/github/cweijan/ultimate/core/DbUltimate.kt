@@ -88,14 +88,18 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
 
         val sql = sqlGenerator.generateCountSql(query)
 
-        return getBySql(sql, null, Int::class.java)!!
+        return getBySql(sql, query.getParams(), Int::class.java)!!
     }
 
     fun <T> getByQuery(query: Query<T>): T? {
 
         val sql = sqlGenerator.generateSelectSql(query)
+        val key = "${query.component.tableName}_$sql"
+        if (query.usingCache) cache.getAndReCache<T>(key)?.run { return this }
+        val dataObject = getBySql(sql, query.getParams(), query.componentClass)
+        if (query.usingCache) cache.set(key, dataObject, query.cacheExpireSecond)
 
-        return getBySql(sql, query.getParams(), query.componentClass)
+        return dataObject
     }
 
     fun <T> getByPrimaryKey(clazz: Class<T>, value: String): T? {

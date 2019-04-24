@@ -9,8 +9,11 @@ import java.util.HashMap
  * cache实现,主要对部门和jsapi_ticket进行缓存
  */
 class StandCacheImpl : CacheEngine {
-
     private val cacheMap = HashMap<String, CacheEnity>()
+
+    override fun removeAll() {
+        cacheMap.clear()
+    }
 
     override fun removeForPrefix(prefix: String) {
         cacheMap.keys.forEach { key -> if (key.startsWith(prefix)) cacheMap.remove(key) }
@@ -37,9 +40,7 @@ class StandCacheImpl : CacheEngine {
 
     override fun <T> getAndReCache(key: String): T? {
         val cacheItem = get<T>(key)
-        cacheItem?.let {
-            cacheMap[key]!!.cacheTime = DateUtils.timestampForInt()
-        }
+        cacheItem?.let { cacheMap[key]!!.cacheTime = DateUtils.timestampForInt() }
         return cacheItem
     }
 
@@ -48,9 +49,9 @@ class StandCacheImpl : CacheEngine {
         cacheMap.remove(key)
     }
 
-    override fun set(key: String, value: Any, expireSecond: Int?) {
+    override fun set(key: String, value: Any?, expireSecond: Int?) {
 
-        cacheMap[key] = CacheEnity(value, expireSecond!!, DateUtils.timestampForInt())
+        value?.run { cacheMap[key] = CacheEnity(value, expireSecond!!, DateUtils.timestampForInt()) }
     }
 
     private class CacheEnity(var data: Any, var exipre: Int, var cacheTime: Int)

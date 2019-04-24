@@ -6,14 +6,12 @@ import java.lang.reflect.Field
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
 import java.util.*
 import kotlin.collections.ArrayList
 
 object TypeAdapter {
 
-
-    private val NUMBER_TYPE = Arrays.asList("byte","short", "int", "float", "double", "long", JavaType.Byte,
+    private val NUMBER_TYPE = Arrays.asList("byte", "short", "int", "float", "double", "long", JavaType.Byte,
             JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
     private val CHARACTER_TYPE = Arrays.asList(JavaType.String, "chat", JavaType.Character)
     private val BOOLEAN_TYPE = Arrays.asList(JavaType.Boolean, "boolean")
@@ -44,16 +42,7 @@ object TypeAdapter {
 
     fun convertToJavaDateObject(componentClass: Class<*>, fieldName: String, timeObject: Any): Any? {
         val columnInfo = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)!!
-        val dateFormat = columnInfo.dateFormat
-        val dateType = columnInfo.fieldType
-        val resultTime = DateUtils.getDateFormat(dateFormat).parse(timeObject.toString())
-        return when (dateType) {
-            Date::class.java -> resultTime
-            LocalDateTime::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault())
-            LocalDate::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault()).toLocalDate()
-            LocalTime::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault()).toLocalTime()
-            else -> null
-        }
+        return DateUtils.toDateObject(timeObject.toString(), columnInfo.fieldType, columnInfo.dateFormat)
     }
 
     /**
@@ -62,13 +51,7 @@ object TypeAdapter {
     fun convertToDateString(componentClass: Class<*>, fieldName: String, fieldValue: Any): String {
         val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat
                 ?: DateUtils.DEFAULT_PATTERN
-        return when (fieldValue::class.java.name) {
-            Date::class.java.name -> DateUtils.getDateFormat(dateFormat).format((fieldValue as Date))
-            LocalDateTime::class.java.name -> (fieldValue as LocalDateTime).format(DateUtils.getDateTimeFormatter(dateFormat))
-            LocalDate::class.java.name -> (fieldValue as LocalDate).format(DateUtils.getDateTimeFormatter(dateFormat))
-            LocalTime::class.java.name -> (fieldValue as LocalTime).format(DateUtils.getDateTimeFormatter(dateFormat))
-            else -> "$fieldValue"
-        }
+        return DateUtils.toDateString(fieldValue, dateFormat) ?: "fieldValue"
     }
 
     /**
@@ -82,10 +65,9 @@ object TypeAdapter {
             NUMBER_TYPE.contains(fieldType) -> "$fieldValue"
             CHARACTER_TYPE.contains(fieldType) -> "'$fieldValue'"
             BOOLEAN_TYPE.contains(fieldType) -> if (fieldValue as Boolean) "1" else "0"
-            Date::class.java.name == fieldType -> "'${DateUtils.getDateFormat(dateFormat).format((fieldValue as Date))}'"
-            LocalDateTime::class.java.name == fieldType -> "'${(fieldValue as LocalDateTime).format(DateUtils.getDateTimeFormatter(dateFormat))}'"
-            LocalDate::class.java.name == fieldType -> "'${(fieldValue as LocalDate).format(DateUtils.getDateTimeFormatter(dateFormat))}'"
-            LocalTime::class.java.name == fieldType -> "'${(fieldValue as LocalTime).format(DateUtils.getDateTimeFormatter(dateFormat))}'"
+            Date::class.java.name == fieldType || LocalDateTime::class.java.name == fieldType
+                    || LocalDate::class.java.name == fieldType || LocalTime::class.java.name == fieldType
+            -> "'${DateUtils.toDateString(fieldValue, dateFormat)}'"
             else -> "'$fieldValue'"
         }
     }

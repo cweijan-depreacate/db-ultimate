@@ -9,6 +9,7 @@ import github.cweijan.ultimate.test.bean.Lib;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class SelectTest extends BaseTest{
 
         Query<Admin> query = Query.of(Admin.class);
         query.eq("test", "test2");
-//        query.orEquals("id", "2");
+        //        query.orEquals("id", "2");
         //        query.setColumn("id, message");
         Admin admin = dbUltimate.getByQuery(query);
         Log.info(admin.toString());
@@ -36,6 +37,25 @@ public class SelectTest extends BaseTest{
     }
 
     @Test
+    public void testCache(){
+
+        Query.of(Admin.class).cache().eq("id", 2).list();
+        List<Admin> id = Query.of(Admin.class).cache().eq("id", 2).list();
+        List<Admin> id1 = Query.of(Admin.class).cache().eq("id", 2).list();
+        System.out.println(id);
+        System.out.println(id1);
+
+    }
+
+    @Test
+    public void testInputExcel(){
+
+        List<Admin> admins = Query.of(Admin.class).inputExcel("D://test.xls");
+        Log.info(admins);
+
+    }
+
+    @Test
     public void testExportExcel(){
 
         Query.of(Admin.class).ouputExcel("D://test.xls");
@@ -45,7 +65,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGetBy(){
 
-        Admin admin = dbUltimate.getByPrimaryKey(Admin.class, "2");
+        Admin admin = dbUltimate.getByPrimaryKey(Admin.class, "2111");
 
         Log.info(admin);
 
@@ -54,7 +74,8 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGet(){
 
-        Admin admin = Query.of(Admin.class).eq("id", 1).get();
+        Admin admin = Query.of(Admin.class).eq("id", 1).cache().get();
+        admin = Query.of(Admin.class).eq("id", 1).cache().get();
         Log.info(admin);
 
     }
@@ -62,8 +83,8 @@ public class SelectTest extends BaseTest{
     @Test
     public void testChildenClass(){
 
-//        AdminC admin = Query.of(AdminC.class).eq("id", 1).get();
-//        Log.info(admin);
+        //        AdminC admin = Query.of(AdminC.class).eq("id", 1).get();
+        //        Log.info(admin);
 
     }
 
@@ -71,7 +92,7 @@ public class SelectTest extends BaseTest{
     public void testQuery(){
 
         Admin admin = new Admin();
-//        admin.setId(1);
+        //        admin.setId(1);
         admin.setMessage("滚");
         List<Lib> list = Query.of(Lib.class).readObject(admin).list();
         Log.info(list.size());

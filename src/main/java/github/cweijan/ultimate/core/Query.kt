@@ -9,10 +9,12 @@ import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.excel.ExcelOperator
 import github.cweijan.ultimate.excel.ExcludeExcel
+import github.cweijan.ultimate.json.Json
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
 import java.util.*
 import kotlin.collections.ArrayList
-
-
 
 /**
  * @param isAutoConvert convertCamelToUnderScore
@@ -76,7 +78,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
     val orSearchLazy = lazy { HashMap<String, MutableList<String>>() }
     val orSearchOperation: MutableMap<String, MutableList<String>> by orSearchLazy
-
 
     private val sumLazy = lazy { return@lazy HashMap<String, String>() }
     private val sumMap: MutableMap<String, String>by sumLazy
@@ -147,13 +148,12 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return covertColumn
     }
 
-
-    fun statistic():List<Map<String,Any>>{
-        return core.executeSqlOfMapList(core.sqlGenerator.generateSelectSql(this),this.getParams())
+    fun statistic(): List<Map<String, Any>> {
+        return core.executeSqlOfMapList(core.sqlGenerator.generateSelectSql(this), this.getParams())
     }
 
     @JvmOverloads
-    fun sum(column: String?, sumColumnName: String?=null): Query<T> {
+    fun sum(column: String?, sumColumnName: String? = null): Query<T> {
         column?.let {
             val columnName = getColumnName(column)
             sumMap[columnName] = sumColumnName ?: "${columnName}Sum"
@@ -162,7 +162,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     @JvmOverloads
-    fun countDistinct(column: String?, countColumnName: String?=null): Query<T> {
+    fun countDistinct(column: String?, countColumnName: String? = null): Query<T> {
         column?.let {
             val columnName = getColumnName(column)
             countMap[columnName] = countColumnName ?: "${columnName}CountDistinct"
@@ -171,7 +171,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     @JvmOverloads
-    fun avg(column: String?, avgColumnName: String?=null): Query<T> {
+    fun avg(column: String?, avgColumnName: String? = null): Query<T> {
         column?.let {
             val columnName = getColumnName(column)
             avgMap[columnName] = avgColumnName ?: "${columnName}Avg"
@@ -180,7 +180,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     @JvmOverloads
-    fun min(column: String?, minColumnName: String?=null): Query<T> {
+    fun min(column: String?, minColumnName: String? = null): Query<T> {
         column?.let {
             val columnName = getColumnName(column)
             minMap[columnName] = minColumnName ?: "${columnName}Min"
@@ -189,7 +189,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     @JvmOverloads
-    fun max(column: String?, maxColumnName: String?=null): Query<T> {
+    fun max(column: String?, maxColumnName: String? = null): Query<T> {
         column?.let {
             val columnName = getColumnName(column)
             maxMap[columnName] = maxColumnName ?: "${columnName}Max"
@@ -319,6 +319,26 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return column
     }
 
+    fun toJson(): String {
+        return Json.objectToJson(list())
+    }
+
+    fun getFromJson(json:String):T{
+        return Json.jsonToObject(json,componentClass)
+    }
+
+    fun listFromJson(json:String):List<T>{
+        return Json.jsonToList(json,componentClass)
+    }
+
+    fun inputExcel(inputPath: String): List<T> {
+        return inputExcel(FileInputStream(File(inputPath)))
+    }
+
+    fun inputExcel(inputStream: InputStream): List<T> {
+        return ExcelOperator.inputExcel(inputStream, componentClass)
+    }
+
     fun ouputExcel(exportPath: String): Boolean {
 
         val dataList = list()
@@ -369,9 +389,11 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
-    fun cache(expireSecond: Int? = 30 * 60) {
+    @JvmOverloads
+    fun cache(expireSecond: Int? = 30 * 60): Query<T> {
         this.usingCache = true
         this.cacheExpireSecond = expireSecond
+        return this
     }
 
     fun list(): List<T> {
@@ -391,8 +413,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         core.delete(this)
     }
 
-
-
     fun generateColumns(): String? {
 
         var columnSql = ""
@@ -408,7 +428,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
         return if (columnSql == "") null else columnSql
     }
-
 
     companion object {
         @JvmStatic

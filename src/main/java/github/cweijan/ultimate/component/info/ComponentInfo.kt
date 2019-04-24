@@ -29,11 +29,9 @@ class ComponentInfo(var componentClass: Class<*>) {
     }
 
     /**
-     * 列名与属性名的映射
+     * excel列名与field的映射
      */
-    private val columnFieldMap by lazy {
-        return@lazy HashMap<String, String>()
-    }
+    val excelHeaderFieldMap = HashMap<String, Field>()
 
     /**
      * 外键映射
@@ -75,17 +73,6 @@ class ComponentInfo(var componentClass: Class<*>) {
      */
     fun nonExistsColumn(): Boolean {
         return fieldColumnInfoMap.keys.size == 0
-    }
-
-    /**
-     * 根据列名找属性名
-     *
-     * @param columnName 列名
-     * @return 对应的属性名
-     */
-    fun getFieldNameByColumnName(columnName: String): String? {
-
-        return columnFieldMap[columnName]
     }
 
     @Throws(IllegalAccessException::class)
@@ -132,12 +119,6 @@ class ComponentInfo(var componentClass: Class<*>) {
     fun isTableExcludeField(field: Field?): Boolean {
         val columnInfo = fieldColumnInfoMap[field?.name]
         return null != columnInfo && columnInfo.excludeTable
-    }
-
-    private fun putColumn(fieldName: String, columnInfo: ColumnInfo) {
-
-        fieldColumnInfoMap[fieldName] = columnInfo
-        columnFieldMap[columnInfo.columnName] = fieldName
     }
 
     companion object {
@@ -222,7 +203,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                     columnInfo.columnName = field.name
                     columnInfo.excelHeader = field.name
                 }
-
+                componentInfo.excelHeaderFieldMap[columnInfo.excelHeader]=field
 
                 if (camelcaseToUnderLine) {
                     val regex = Regex("([a-z])([A-Z]+)")
@@ -259,7 +240,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                     componentInfo.foreignKeyMap.put(value.java, foreignKeyInfo)
                 }
 
-                componentInfo.putColumn(field.name, columnInfo)
+                componentInfo.fieldColumnInfoMap[field.name] = columnInfo
             }
 
         }

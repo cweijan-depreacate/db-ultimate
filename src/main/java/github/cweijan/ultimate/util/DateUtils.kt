@@ -1,6 +1,10 @@
 package github.cweijan.ultimate.util
 
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.HashMap
@@ -13,6 +17,32 @@ object DateUtils {
     }
     private val timeFormatCache by lazy {
         return@lazy HashMap<String, DateTimeFormatter>()
+    }
+
+
+    @JvmOverloads
+    @JvmStatic
+    fun toDateObject(dateString:String, dateType:Class<*>, dateFormat: String= DEFAULT_PATTERN):Any?{
+        val resultTime = DateUtils.getDateFormat(dateFormat).parse(dateString)
+        return when (dateType) {
+            Date::class.java -> resultTime
+            LocalDateTime::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault())
+            LocalDate::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault()).toLocalDate()
+            LocalTime::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault()).toLocalTime()
+            else -> null
+        }
+    }
+
+    @JvmOverloads
+    @JvmStatic
+    fun toDateString(datevalue:Any, dateFormat: String= DEFAULT_PATTERN):String?{
+        return when (datevalue::class.java.name) {
+            Date::class.java.name -> DateUtils.getDateFormat(dateFormat).format((datevalue as Date))
+            LocalDateTime::class.java.name -> (datevalue as LocalDateTime).format(DateUtils.getDateTimeFormatter(dateFormat))
+            LocalDate::class.java.name -> (datevalue as LocalDate).format(DateUtils.getDateTimeFormatter(dateFormat))
+            LocalTime::class.java.name -> (datevalue as LocalTime).format(DateUtils.getDateTimeFormatter(dateFormat))
+            else -> null
+        }
     }
 
     /**

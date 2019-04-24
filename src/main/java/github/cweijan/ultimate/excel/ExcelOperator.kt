@@ -1,5 +1,7 @@
 package github.cweijan.ultimate.excel
 
+import github.cweijan.ultimate.component.TableInfo
+import github.cweijan.ultimate.json.Json
 import github.cweijan.ultimate.util.Log
 import org.apache.poi.hssf.usermodel.HSSFCell
 import org.apache.poi.hssf.usermodel.HSSFRow
@@ -11,6 +13,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.util.*
+import kotlin.collections.HashMap
 
 object ExcelOperator {
 
@@ -56,44 +59,35 @@ object ExcelOperator {
     }
 
     /**
-     * 读入excel文件，解析后返回
-     * @param file
+     * 读入excel文件，解析后返回解析对象
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun inputExcel(inputStream: InputStream): List<Array<String?>> {
-        //检查文件
-        //获得Workbook工作薄对象
+    fun <T> inputExcel(inputStream: InputStream, componentClass: Class<T>): List<T> {
+
         val workbook = HSSFWorkbook(inputStream)
-        //创建返回对象，把每行中的值作为一个数组，所有行作为一个集合返回
-        val list = ArrayList<Array<String?>>()
-        if (workbook != null) {
-            for (sheetNum in 0 until workbook.numberOfSheets) {
-                //获得当前sheet工作表
-                val sheet = workbook.getSheetAt(sheetNum) ?: continue
-//获得当前sheet的开始行
-                val firstRowNum = sheet.firstRowNum
-                //获得当前sheet的结束行
-                val lastRowNum = sheet.lastRowNum
-                //循环除了第一行的所有行
-                for (rowNum in firstRowNum + 1..lastRowNum) {
-                    //获得当前行
-                    val row = sheet.getRow(rowNum) ?: continue
-//获得当前行的开始列
-                    val firstCellNum = row.firstCellNum
-                    //获得当前行的列数
-                    val lastCellNum = row.physicalNumberOfCells
-                    val cells = arrayOfNulls<String?>(lastCellNum)
-                    //循环当前行
-                    for (cellNum in firstCellNum until lastCellNum) {
-                        val cell = row.getCell(cellNum)
-                        cells[cellNum] = getCellValue(cell)
+        val list = ArrayList<T>()
+
+        for (sheetNum in 0 until workbook.numberOfSheets) {
+            val sheet = workbook.getSheetAt(sheetNum) ?: continue
+            val headerRow = sheet.getRow(0) ?: return list
+            IntRange(sheet.firstRowNum + 1, sheet.lastRowNum + 1).forEach { rowNum ->
+                val tempDataMap = HashMap<String, Any>()
+                val row = sheet.getRow(rowNum) ?: return@forEach
+                IntRange(row.firstCellNum.toInt(), row.physicalNumberOfCells).forEach { cellNum ->
+                    val header = getCellValue(headerRow.getCell(cellNum))
+                    TableInfo.getComponent(componentClass).excelHeaderFieldMap[header]?.run {
+                        getCellValue(row.getCell(cellNum)).let { if (it != "") tempDataMap[this.name] = it }
                     }
-                    list.add(cells)
+                }
+
+                if (tempDataMap.keys.size > 0) {
+                    val toObject = Json.jsonToObject(Json.objectToJson(tempDataMap)!!, componentClass)!!
+                    list.add(toObject)
                 }
             }
-            workbook.close()
         }
+        workbook.close()
         return list
     }
 
