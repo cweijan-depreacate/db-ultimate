@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.component.info
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import github.cweijan.ultimate.annotation.*
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.convert.TypeAdapter
@@ -183,8 +184,8 @@ class ComponentInfo(var componentClass: Class<*>) {
                 }
 
                 //生成日期格式化信息
-                field.getAnnotation(DateFormat::class.java)?.run {
-                    columnInfo.dateFormat = this.value
+                field.getAnnotation(JsonFormat::class.java)?.run {
+                    columnInfo.dateFormat = this.pattern
                 }
 
                 //生成column info
