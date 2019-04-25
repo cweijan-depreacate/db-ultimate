@@ -39,9 +39,9 @@ public class SelectTest extends BaseTest{
     @Test
     public void testCache(){
 
-        Query.of(Admin.class).cache().eq("id", 2).list();
-        List<Admin> id = Query.of(Admin.class).cache().eq("id", 2).list();
-        List<Admin> id1 = Query.of(Admin.class).cache().eq("id", 2).list();
+        Query.of(Admin.class).cache("test").eq("id", 2).list();
+        List<Admin> id = Query.of(Admin.class).cache("test").eq("id", 2).list();
+        List<Admin> id1 = Query.of(Admin.class).cache("test").eq("id", 2).list();
         System.out.println(id);
         System.out.println(id1);
 
@@ -74,8 +74,8 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGet(){
 
-        Admin admin = Query.of(Admin.class).eq("id", 1).cache().get();
-        admin = Query.of(Admin.class).eq("id", 1).cache().get();
+        Admin admin = Query.of(Admin.class).eq("id", 1).cache("getadmin1").get();
+        admin = Query.of(Admin.class).eq("id", 8).cache("getadmin2").get();
         Log.info(admin);
 
     }

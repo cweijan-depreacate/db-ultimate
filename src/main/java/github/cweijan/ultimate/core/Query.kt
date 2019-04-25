@@ -29,8 +29,8 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return@lazy ArrayList<String>()
     }
 
-    var usingCache: Boolean = false
     var cacheExpireSecond: Int? = null
+    var cacheKey: String? = null
     var offset: Int? = null
         private set
     var page: Int? = null
@@ -390,8 +390,8 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     @JvmOverloads
-    fun cache(expireSecond: Int? = 30 * 60): Query<T> {
-        this.usingCache = true
+    fun cache(cacheKey:String,expireSecond: Int? = 30 * 60): Query<T> {
+        this.cacheKey=cacheKey
         this.cacheExpireSecond = expireSecond
         return this
     }
@@ -440,6 +440,8 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         lateinit var core: DbUltimate
 
     }
+
+
 
 }
 

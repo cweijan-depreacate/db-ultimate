@@ -94,10 +94,9 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
     fun <T> getByQuery(query: Query<T>): T? {
 
         val sql = sqlGenerator.generateSelectSql(query)
-        val key = "${query.component.tableName}_$sql"
-        if (query.usingCache) cache.getAndReCache<T>(key)?.run { return this }
+        query.cacheKey?.let { cache.getAndReCache<T>(it)?.run { return this } }
         val dataObject = getBySql(sql, query.getParams(), query.componentClass)
-        if (query.usingCache) cache.set(key, dataObject, query.cacheExpireSecond)
+        query.cacheKey?.let {cache.set(it, dataObject, query.cacheExpireSecond)}
 
         return dataObject
     }
@@ -111,12 +110,11 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
 
         val sql = sqlGenerator.generateSelectSql(query)
 
-        val key = "${query.component.tableName}_$sql"
-        if (query.usingCache) cache.getAndReCache<List<T>>(key)?.run { return this }
+        query.cacheKey?.let { cache.getAndReCache<List<T>>(it)?.run { return this } }
         val resultSet = sqlExecutor.executeSql(sql, query.getParams())
         val beanList = TypeConvert.resultSetToBeanList(resultSet!!, query.componentClass)
         resultSet.close()
-        if (query.usingCache) cache.set(key, beanList, query.cacheExpireSecond)
+        query.cacheKey?.let {cache.set(it, beanList, query.cacheExpireSecond)}
 
         return beanList
     }

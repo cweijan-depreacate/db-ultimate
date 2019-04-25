@@ -3,6 +3,7 @@ package github.cweijan.ultimate.convert
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.util.DateUtils
 import java.lang.reflect.Field
+import java.lang.reflect.Modifier
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -25,7 +26,7 @@ object TypeAdapter {
 
         val arrayList = ArrayList<Field>()
         if (componentClass == null) return arrayList
-        arrayList.addAll(componentClass.declaredFields)
+        arrayList.addAll(componentClass.declaredFields.filter { !Modifier.isStatic(it.modifiers) })
         arrayList.addAll(getAllField(componentClass.superclass))
 
         return arrayList
@@ -40,7 +41,8 @@ object TypeAdapter {
         }
     }
 
-    fun convertToJavaDateObject(componentClass: Class<*>, fieldName: String, timeObject: Any): Any? {
+    fun convertToJavaDateObject(componentClass: Class<*>, fieldName: String, timeObject: Any?): Any? {
+        if(timeObject==null)return null
         val columnInfo = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)!!
         return DateUtils.toDateObject(timeObject.toString(), columnInfo.fieldType, columnInfo.dateFormat)
     }
@@ -51,7 +53,7 @@ object TypeAdapter {
     fun convertToDateString(componentClass: Class<*>, fieldName: String, fieldValue: Any): String {
         val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat
                 ?: DateUtils.DEFAULT_PATTERN
-        return DateUtils.toDateString(fieldValue, dateFormat) ?: "fieldValue"
+        return DateUtils.toDateString(fieldValue, dateFormat) ?: "$fieldValue"
     }
 
     /**
