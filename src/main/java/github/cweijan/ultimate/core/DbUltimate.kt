@@ -102,7 +102,7 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         return dataObject
     }
 
-    fun <T> getByPrimaryKey(clazz: Class<T>, value: String): T? {
+    fun <T> getByPrimaryKey(clazz: Class<T>, value: Any): T? {
 
         return getByQuery(Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
