@@ -9,6 +9,7 @@ import org.reflections.util.ConfigurationBuilder
 import org.reflections.util.FilterBuilder
 import java.util.*
 
+
 /**
  * 扫描实体类
  */
@@ -23,6 +24,13 @@ object ComponentScan {
             scanTableClasses(scanPackage)
             alreadyScanPackages.add(scanPackage)
         }
+    }
+
+    fun isComponent(clazz: Class<*>): Boolean {
+
+        val table = ComponentInfo.getComponentClass(clazz)
+
+        return null != table
     }
 
     /**
@@ -40,9 +48,7 @@ object ComponentScan {
                 .setScanners(SubTypesScanner(false), ResourcesScanner())
                 .setUrls(ClasspathHelper.forClassLoader(*classLoadersList.toTypedArray()))
                 .filterInputsBy(FilterBuilder().include(FilterBuilder.prefix(packageName))))
-        reflections.getSubTypesOf(Any::class.java).forEach {
-            if (ComponentInfo.getComponentClass(it) != null) ComponentInfo.init(it)
-        }
+        reflections.getSubTypesOf(Any::class.java).forEach { if (isComponent(it)) ComponentInfo.init(it) }
 
     }
 }
