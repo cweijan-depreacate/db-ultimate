@@ -10,7 +10,7 @@ group = 'github.cweijan'
 
 sourceCompatibility = 1.8
 
-version '1.37'
+version '1.38'
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
@@ -20,8 +20,6 @@ shadowJar {
         include(dependency("com.zaxxer:HikariCP"))
         include(dependency("org.jetbrains.kotlin:kotlin-stdlib"))
         include(dependency("org.jetbrains.kotlin:kotlin-reflect"))
-//        include(dependency("org.easytesting:fest-reflect"))
-//        include(dependency("org.easytesting:fest-util"))
         include(dependency("commons-io:commons-io"))
     }
 }
@@ -53,6 +51,7 @@ dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
     compile group: 'org.apache.poi', name: 'poi', version: '3.17'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
+    compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
 
     testCompile(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.0.4.RELEASE') {
         exclude module: 'logback-classic'

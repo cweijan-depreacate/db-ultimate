@@ -10,6 +10,7 @@ import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.excel.ExcelOperator
 import github.cweijan.ultimate.excel.ExcludeExcel
 import github.cweijan.ultimate.json.Json
+import github.cweijan.ultimate.util.Log
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -22,6 +23,7 @@ import kotlin.collections.ArrayList
 open class Query<T>
 internal constructor(val componentClass: Class<out T>, private var isAutoConvert: Boolean = false) {
 
+    private var methodName: String?=null
     var component: ComponentInfo = TableInfo.getComponent(componentClass)
 
     private var column: String? = null
@@ -398,20 +400,29 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
     fun list(): List<T> {
 
+        methodName?.run{ Log.debug("Execute method $methodName ")}
         return core.find(this)
     }
 
     fun get(): T? {
+        methodName?.run{ Log.debug("Execute method $methodName ")}
         return core.getByQuery(this)
     }
 
     fun executeUpdate() {
+        methodName?.run{ Log.debug("Execute method $methodName ")}
         core.update(this)
     }
 
     fun executeDelete() {
+        methodName?.run{ Log.debug("Execute method $methodName ")}
         core.delete(this)
     }
+
+    fun name(methodName:String?){
+        this.methodName=methodName
+    }
+
 
     fun generateColumns(): String? {
 

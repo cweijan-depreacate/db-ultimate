@@ -82,19 +82,20 @@ class DBInitialer(private val dbConfig: DbConfig) {
                 columnInfo.comment?.let {
                     columnDefination += initSqlGenetator.generateCommentSqlFragment(it)
                 }
-                if (index != fields.size - 1) {
-                    columnDefination += ","
-                }
+
                 //生成唯一索引补丁
                 if (columnInfo.unique) {
                     uniques.add(initSqlGenetator.generateUniqueSqlFragment(componentInfo.tableName, columnInfo.columnName, columnDefination)!!)
                 }
 
                 //拼接sql
-                sql += columnDefination
+                sql += "$columnDefination,"
             }
         }
 
+        if (sql.lastIndexOf(",") != -1) {
+            sql = sql.substring(0, sql.lastIndexOf(","))
+        }
         uniques.forEach { uniqueSql -> sql += ",$uniqueSql" }
         sql += " );"
 

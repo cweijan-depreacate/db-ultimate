@@ -217,8 +217,8 @@ class ComponentInfo(var componentClass: Class<*>) {
                 if (primaryAnnotation != null || (field.name == "id" && StringUtils.isEmpty(componentInfo.primaryKey))) {
                     componentInfo.primaryKey = columnInfo.columnName
                     componentInfo.primaryField = field
-                    primaryAnnotation.run {
-                        columnInfo.autoIncrement = this?.autoIncrement ?: false
+                    primaryAnnotation?.run {
+                        columnInfo.autoIncrement = this.autoIncrement
                         columnInfo.columnName = if (StringUtils.isNotEmpty(this.value)) this.value else field.name
                         columnInfo.comment = if (StringUtils.isNotEmpty(this.comment)) this.comment else null
                         columnInfo.length = if (columnInfo.length != 0) this.length else null
