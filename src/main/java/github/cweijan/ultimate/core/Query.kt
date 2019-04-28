@@ -23,7 +23,7 @@ import kotlin.collections.ArrayList
 open class Query<T>
 internal constructor(val componentClass: Class<out T>, private var isAutoConvert: Boolean = false) {
 
-    private var methodName: String?=null
+    private var methodName: String? = null
     var component: ComponentInfo = TableInfo.getComponent(componentClass)
 
     private var column: String? = null
@@ -308,8 +308,9 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
-    fun orderBy(column: String, desc: Boolean = false): Query<T> {
+    fun orderBy(column: String?, desc: Boolean = false): Query<T> {
 
+        column?:return this
         orderByList.add("${getColumnName(column)}${if (desc) " desc" else ""}")
 
         return this
@@ -326,12 +327,14 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return Json.objectToJson(list())
     }
 
-    fun getFromJson(json:String):T?{
-        return Json.jsonToObject(json,componentClass)
+    fun getFromJson(json: String?): T? {
+        json?:return null
+        return Json.jsonToObject(json, componentClass)
     }
 
-    fun listFromJson(json:String):List<T>?{
-        return Json.jsonToList(json,componentClass)
+    fun listFromJson(json: String?): List<T>? {
+        json?:return null
+        return Json.jsonToList(json, componentClass)
     }
 
     fun inputExcel(inputPath: String): List<T> {
@@ -360,7 +363,8 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return ExcelOperator.outputExcel(headers, values, exportPath)
     }
 
-    fun readObject(paramObject: Any): Query<T> {
+    fun readObject(paramObject: Any?): Query<T> {
+        paramObject ?: return this
         if (paramObject is Map<*, *>) {
             paramObject.forEach { key, value ->
                 value?.let {
@@ -393,35 +397,35 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     @JvmOverloads
-    fun cache(cacheKey:String,expireSecond: Int? = 30 * 60): Query<T> {
-        this.cacheKey=cacheKey
+    fun cache(cacheKey: String, expireSecond: Int? = 30 * 60): Query<T> {
+        this.cacheKey = cacheKey
         this.cacheExpireSecond = expireSecond
         return this
     }
 
     fun list(): List<T> {
 
-        methodName?.run{ Log.debug("Execute method $methodName ")}
+        methodName?.run { Log.debug("Execute method $methodName ") }
         return core.find(this)
     }
 
     fun get(): T? {
-        methodName?.run{ Log.debug("Execute method $methodName ")}
+        methodName?.run { Log.debug("Execute method $methodName ") }
         return core.getByQuery(this)
     }
 
     fun executeUpdate() {
-        methodName?.run{ Log.debug("Execute method $methodName ")}
+        methodName?.run { Log.debug("Execute method $methodName ") }
         core.update(this)
     }
 
     fun executeDelete() {
-        methodName?.run{ Log.debug("Execute method $methodName ")}
+        methodName?.run { Log.debug("Execute method $methodName ") }
         core.delete(this)
     }
 
-    fun name(methodName:String?){
-        this.methodName=methodName
+    fun name(methodName: String?) {
+        this.methodName = methodName
     }
 
 
@@ -452,7 +456,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         lateinit var core: DbUltimate
 
     }
-
 
 
 }
