@@ -225,9 +225,10 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
     private fun put(map: MutableMap<String, MutableList<String>>, column: String, value: Any?) {
 
-        val operationList = getOperationList(map, getColumnName(column))
+        val tableColumn = getColumnName(column)
+        val operationList = getOperationList(map, tableColumn)
         operationList!!.add(TypeAdapter.convertToDateString(componentClass, column, value!!))
-        map[column] = operationList
+        map[tableColumn] = operationList
     }
 
     protected fun getColumnName(column: String) = component.getColumnNameByFieldName(column) ?: convert(column)
