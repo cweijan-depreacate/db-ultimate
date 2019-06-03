@@ -33,7 +33,6 @@ open class UltimateAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty("ultimate.jdbc.scanPackage")
     open fun createUltimate(): DbUltimate? {
 
         if (null == dbConfig || !dbConfig.enable) {
