@@ -30,7 +30,7 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         if (dbConfig.develop) {
             HotSwapSupport.startHotSwapListener(dbConfig)
         }
-        ComponentScan.scan(dbConfig.scanPackage!!.split(","))
+        dbConfig.scanPackage?.run{ComponentScan.scan(this.split(","))}
         DBInitialer(dbConfig).initalerTable()
         cache = CacheAdapter.getCacheEngine(cacheConfig)
         Query.core = this
