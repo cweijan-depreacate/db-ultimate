@@ -6,6 +6,7 @@ import org.springframework.jdbc.datasource.DataSourceUtils
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.sql.Statement
 import java.util.stream.IntStream
 
 /**
@@ -24,19 +25,20 @@ class SqlExecutor(private val dbConfig: DbConfig) {
 
     private fun executeSql(sql: String, params: Array<String>?, connection: Connection): ResultSet? {
 
-        var resultSet: ResultSet? = null
+        val resultSet: ResultSet?
 
-        val preparedStatement: PreparedStatement = connection.prepareStatement(sql)
+        val preparedStatement: PreparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         if (params != null) {
             IntStream.range(0, params.size).forEach { index ->
                 preparedStatement.setObject(index + 1, params[index])
             }
         }
         try {
-            if (sql.trim { it <= ' ' }.startsWith("select")) {
-                resultSet = preparedStatement.executeQuery()
+            resultSet = if (sql.trim { it <= ' ' }.toLowerCase().startsWith("select")) {
+                preparedStatement.executeQuery()
             } else {
                 preparedStatement.executeUpdate()
+                preparedStatement.generatedKeys
             }
         } catch (e: Exception) {
             Log.error("Fail Execute SQL : $sql   \n ${e.message} ")

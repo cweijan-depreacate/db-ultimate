@@ -27,7 +27,7 @@ abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {
             values = values.substring(0, values.lastIndexOf(","))
         }
 
-        return "insert into " + componentInfo.tableName + "(" + columns + ") values(" + values + ");"
+        return "INSERT INTO " + componentInfo.tableName + "(" + columns + ") VALUES(" + values + ");"
     }
 
     @Throws(IllegalAccessException::class)
@@ -62,7 +62,7 @@ abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {
     }
 
     override fun <T> generateCountSql(query: Query<T>): String {
-        return "select count(*) count from ${query.component.tableName} ${generateOperationSql(query, true)}"
+        return "select COUNT(*) count from ${query.component.tableName} ${generateOperationSql(query, true)}"
     }
 
     override fun <T> generateUpdateSqlByObject(query: Query<T>): String {

@@ -30,7 +30,7 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         if (dbConfig.develop) {
             HotSwapSupport.startHotSwapListener(dbConfig)
         }
-        dbConfig.scanPackage?.run{ComponentScan.scan(this.split(","))}
+        dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
         DBInitialer(dbConfig).initalerTable()
         cache = CacheAdapter.getCacheEngine(cacheConfig)
         Query.core = this
@@ -96,7 +96,7 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         val sql = sqlGenerator.generateSelectSql(query)
         query.cacheKey?.let { cache.getAndReCache<T>(it)?.run { return this } }
         val dataObject = getBySql(sql, query.getParams(), query.componentClass)
-        query.cacheKey?.let {cache.set(it, dataObject, query.cacheExpireSecond)}
+        query.cacheKey?.let { cache.set(it, dataObject, query.cacheExpireSecond) }
 
         return dataObject
     }
@@ -114,7 +114,7 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         val resultSet = sqlExecutor.executeSql(sql, query.getParams())
         val beanList = TypeConvert.resultSetToBeanList(resultSet!!, query.componentClass)
         resultSet.close()
-        query.cacheKey?.let {cache.set(it, beanList, query.cacheExpireSecond)}
+        query.cacheKey?.let { cache.set(it, beanList, query.cacheExpireSecond) }
 
         return beanList
     }
@@ -127,7 +127,11 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
     fun insert(component: Any) {
 
         val sql = sqlGenerator.generateInsertSql(component)
-        executeSql(sql)
+        val executeSql = executeSql(sql)
+        if(executeSql?.next()==true){
+            TableInfo.getComponent(component.javaClass).setPrimaryValue(component, executeSql.getInt(1))
+        }
+
     }
 
     fun insertList(componentList: List<Any>) {

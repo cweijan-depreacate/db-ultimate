@@ -20,6 +20,8 @@ class ComponentInfo(var componentClass: Class<*>) {
 
     lateinit var tableName: String
 
+    private var autoIncrement: Boolean = false
+
     var tableAlias: String? = null
 
     /**
@@ -79,7 +81,16 @@ class ComponentInfo(var componentClass: Class<*>) {
     @Throws(IllegalAccessException::class)
     fun getPrimaryValue(component: Any): Any? {
 
-        return primaryField!!.get(component)
+        return primaryField?.get(component)
+
+    }
+
+    @Throws(IllegalAccessException::class)
+    fun setPrimaryValue(component: Any, primaryValue: Any) {
+
+        if (autoIncrement && getPrimaryValue(component) == null) {
+            primaryField?.set(component, primaryValue)
+        }
 
     }
 
@@ -204,7 +215,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                     columnInfo.columnName = field.name
                     columnInfo.excelHeader = field.name
                 }
-                componentInfo.excelHeaderFieldMap[columnInfo.excelHeader]=field
+                componentInfo.excelHeaderFieldMap[columnInfo.excelHeader] = field
 
                 if (camelcaseToUnderLine) {
                     val regex = Regex("([a-z])([A-Z]+)")
@@ -219,6 +230,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                     componentInfo.primaryField = field
                     primaryAnnotation?.run {
                         columnInfo.autoIncrement = this.autoIncrement
+                        componentInfo.autoIncrement = this.autoIncrement
                         columnInfo.columnName = if (StringUtils.isNotEmpty(this.value)) this.value else field.name
                         columnInfo.comment = if (StringUtils.isNotEmpty(this.comment)) this.comment else null
                         columnInfo.length = if (columnInfo.length != 0) this.length else null
