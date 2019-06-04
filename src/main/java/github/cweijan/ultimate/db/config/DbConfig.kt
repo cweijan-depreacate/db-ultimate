@@ -42,7 +42,15 @@ class DbConfig() {
     var enable = DefaultProperties.ENABLE
     var develop = DefaultProperties.DEVELOP
     var scanPackage: String? = null
+    private val threadLocal = ThreadLocal<Connection?>()
 
-    fun getConnection(): Connection = DataSourceUtils.doGetConnection(dataSource!!)
+    fun getConnection(): Connection {
+        var connection = threadLocal.get()
+        if(connection ==null|| connection.isClosed ){
+            connection=DataSourceUtils.doGetConnection(dataSource!!)
+            threadLocal.set(connection)
+        }
+        return connection!!
+    }
 
 }

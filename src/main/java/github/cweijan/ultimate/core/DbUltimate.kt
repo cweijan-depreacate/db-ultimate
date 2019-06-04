@@ -75,12 +75,9 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         val rowCount = resultSet.row
         resultSet.beforeFirst()
         if (rowCount > 1) {
-            resultSet.close()
             throw TooManyResultException("Expect 1 result,but fond $rowCount")
         } else {
-            val bean = TypeConvert.resultSetToBean(resultSet, clazz)
-            resultSet.close()
-            return bean
+            return TypeConvert.resultSetToBean(resultSet, clazz)
         }
     }
 
@@ -113,7 +110,6 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         query.cacheKey?.let { cache.getAndReCache<List<T>>(it)?.run { return this } }
         val resultSet = sqlExecutor.executeSql(sql, query.getParams())
         val beanList = TypeConvert.resultSetToBeanList(resultSet!!, query.componentClass)
-        resultSet.close()
         query.cacheKey?.let { cache.set(it, beanList, query.cacheExpireSecond) }
 
         return beanList
