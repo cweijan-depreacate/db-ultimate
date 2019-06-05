@@ -82,7 +82,7 @@ object ExcelOperator {
                 }
 
                 if (tempDataMap.keys.size > 0) {
-                    val toObject = Json.jsonToObject(Json.objectToJson(tempDataMap)!!, componentClass)!!
+                    val toObject = Json.toObject(Json.toJson(tempDataMap)!!, componentClass)!!
                     list.add(toObject)
                 }
             }

@@ -19,6 +19,7 @@ public class InsertTest extends BaseTest{
         //        lib.setId(12);
         lib.setMessage("cweijan");
         dbUltimate.insert(lib);
+        System.out.println(lib.getId());
     }
 
     @Test

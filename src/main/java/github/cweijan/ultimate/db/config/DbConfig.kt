@@ -8,7 +8,7 @@ import java.sql.Connection
 import javax.sql.DataSource
 
 @ConfigurationProperties(prefix = "ultimate.jdbc")
-class DbConfig() {
+class DbConfig {
 
     var createNonexistsTable: Boolean = false
     var username: String? = null
@@ -45,12 +45,19 @@ class DbConfig() {
     private val threadLocal = ThreadLocal<Connection?>()
 
     fun getConnection(): Connection {
-        var connection = threadLocal.get()
-        if(connection ==null|| connection.isClosed ){
-            connection=DataSourceUtils.doGetConnection(dataSource!!)
-            threadLocal.set(connection)
+
+        val currentConnection = threadLocal.get()
+        return if (currentConnection == null || currentConnection.isClosed) {
+            threadLocal.set(DataSourceUtils.doGetConnection(dataSource!!))
+            threadLocal.get()!!
+        } else if (DataSourceUtils.isConnectionTransactional(currentConnection, dataSource)) {
+            DataSourceUtils.doGetConnection(dataSource!!)
+        } else {
+            DataSourceUtils.doCloseConnection(currentConnection,dataSource)
+            threadLocal.set(DataSourceUtils.doGetConnection(dataSource!!))
+            threadLocal.get()!!
         }
-        return connection!!
+
     }
 
 }

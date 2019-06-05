@@ -323,18 +323,22 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return column
     }
 
-    fun toJson(): String? {
-        return Json.objectToJson(list())
+    fun listJson(): String? {
+        return Json.toJson(list())
+    }
+
+    fun getJson(): String? {
+        return Json.toJson(get())
     }
 
     fun getFromJson(json: String?): T? {
         json?:return null
-        return Json.jsonToObject(json, componentClass)
+        return Json.toObject(json, componentClass)
     }
 
     fun listFromJson(json: String?): List<T>? {
         json?:return null
-        return Json.jsonToList(json, componentClass)
+        return Json.toList(json, componentClass)
     }
 
     fun inputExcel(inputPath: String): List<T> {

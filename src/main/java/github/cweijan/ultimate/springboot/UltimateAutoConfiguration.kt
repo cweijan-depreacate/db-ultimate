@@ -5,10 +5,11 @@ import github.cweijan.ultimate.db.config.CacheConfig
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.util.Log
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.transaction.PlatformTransactionManager
 import javax.sql.DataSource
@@ -17,22 +18,37 @@ import javax.sql.DataSource
 @EnableConfigurationProperties(DbConfig::class,CacheConfig::class)
 open class UltimateAutoConfiguration {
 
-    @Autowired
+    @Autowired(required = false)
     private val dbConfig: DbConfig? = null
     @Autowired(required = false)
     private val dataSource: DataSource? = null
 
+    @ConditionalOnMissingBean(DataSource::class)
     @Bean
+    @Order(0)
+    open fun createDataSource():DataSource?{
+
+        if (null == dbConfig || !dbConfig.enable) {
+            Log.debug("Db-core is disabled, skip..")
+            return null
+        }
+        return dbConfig.dataSource!!
+    }
+
+    @Bean
+    @Order(1)
     open fun createTransactionManager(): PlatformTransactionManager? {
 
         if (null == dbConfig || !dbConfig.enable) {
             Log.debug("Db-core is disabled, skip..")
             return null
         }
+
         return DataSourceTransactionManager(dataSource ?: dbConfig.dataSource!!)
     }
 
     @Bean
+    @Order(2)
     open fun createUltimate(): DbUltimate? {
 
         if (null == dbConfig || !dbConfig.enable) {

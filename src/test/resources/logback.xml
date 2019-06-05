@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml" />
+    <logger name="org.springframework.core" level="error" />
+    <logger name="org.springframework.beans" level="error" />
+    <logger name="org.springframework.context" level="error" />
+    <logger name="org.springframework.transaction" level="error" />
+    <logger name="org.springframework.web" level="error" />
+    <logger name="org.springframework.test" level="error" />
+    <logger name="org.reflections" level="error" />
+    <logger name="com.zaxxer.hikari" level="debug" />
+    <logger name="github.cweijan" level="debug" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %clr(%d{yyyy-MM-dd HH:mm:ss}){blue} %clr([%5p]){yellow} %clr(%replace(%caller{1}){'\t|Caller.{1}0|\r\n', ''}){magenta}  : %m [%t] %n
+            </pattern>
+        </encoder>
+    </appender>
+
+</configuration>

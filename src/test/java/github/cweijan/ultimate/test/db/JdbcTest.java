@@ -1,9 +1,11 @@
 package github.cweijan.ultimate.test.db;
 
-import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.convert.TypeConvert;
+import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.test.base.BaseTest;
+import github.cweijan.ultimate.test.bean.Admin;
 import org.junit.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,6 +24,16 @@ public class JdbcTest extends BaseTest{
         ResultSet resultSet = preparedStatement.executeQuery();
         List<Admin> admins = TypeConvert.INSTANCE.resultSetToBeanList(resultSet, Admin.class);
         System.out.println(admins);
+
+    }
+
+    @Test
+    public void testMultiConnection(){
+
+        for (int i = 0; i < 100; i++) {
+            System.out.println(i);
+            Query.of(Admin.class).list();
+        }
 
     }
 
