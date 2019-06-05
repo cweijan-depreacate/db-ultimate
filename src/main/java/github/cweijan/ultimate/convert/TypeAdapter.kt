@@ -17,9 +17,10 @@ object TypeAdapter {
     private val CHARACTER_TYPE = Arrays.asList(JavaType.String, "chat", JavaType.Character)
     private val BOOLEAN_TYPE = Arrays.asList(JavaType.Boolean, "boolean")
     private val DATE_TYPE = Arrays.asList("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
+    private val BLOB_TYPE=Arrays.asList(JavaType.byteArray)
 
     fun isAdapterType(typeName: String): Boolean {
-        return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName) || BOOLEAN_TYPE.contains(typeName)
+        return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName) || BOOLEAN_TYPE.contains(typeName)||BLOB_TYPE.contains(typeName)
     }
 
     fun getAllField(componentClass: Class<*>?): List<Field> {
@@ -48,9 +49,9 @@ object TypeAdapter {
     }
 
     /**
-     * convertToDateString
+     * convertDateString
      */
-    fun convertToDateString(componentClass: Class<*>, fieldName: String, fieldValue: Any): String {
+    fun convertDateString(componentClass: Class<*>, fieldName: String, fieldValue: Any): String {
         val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat
                 ?: DateUtils.DEFAULT_PATTERN
         return DateUtils.toDateString(fieldValue, dateFormat) ?: "$fieldValue"

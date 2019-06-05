@@ -10,7 +10,7 @@ group = 'github.cweijan'
 
 sourceCompatibility = 1.8
 
-version '1.38'
+version '1.39'
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

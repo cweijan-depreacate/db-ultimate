@@ -27,9 +27,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     var component: ComponentInfo = TableInfo.getComponent(componentClass)
 
     private var column: String? = null
-    private val params: MutableList<String> by lazy {
-        return@lazy ArrayList<String>()
-    }
+    private var params: MutableList<Any> = ArrayList()
 
     var cacheExpireSecond: Int? = null
     var cacheKey: String? = null
@@ -54,8 +52,8 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     val orderByLazy = lazy { return@lazy ArrayList<String>() }
     val orderByList: MutableList<String> by orderByLazy
 
-    val updateLazy = lazy { return@lazy HashMap<String, String>() }
-    val updateMap: MutableMap<String, String>by updateLazy
+    val updateLazy = lazy { return@lazy HashMap<String, Any>() }
+    val updateMap: MutableMap<String, Any>by updateLazy
 
     val greatEqLazy = lazy { HashMap<String, MutableList<String>>() }
     val greatEqualsOperation: MutableMap<String, MutableList<String>>by greatEqLazy
@@ -105,15 +103,20 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     val havingLazy = lazy { return@lazy ArrayList<String>() }
     val havingSqlList: MutableList<String> by havingLazy
 
-    fun addParam(param: String?): Query<T> {
+    fun addParam(param: Any?): Query<T> {
 
         param?.let { params.add(it) }
 
         return this
     }
-
-    fun getParams(): Array<String>? {
+    fun getParams(): Array<Any>? {
         return params.toTypedArray()
+    }
+
+    fun consumeParams(): Array<Any>? {
+        val array = params.toTypedArray()
+        params = ArrayList()
+        return array
     }
 
     fun join(clazz: Class<*>): Query<T> {
@@ -151,7 +154,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     fun statistic(): List<Map<String, Any>> {
-        return core.executeSqlOfMapList(core.sqlGenerator.generateSelectSql(this), this.getParams())
+        return core.executeSqlOfMapList(core.sqlGenerator.generateSelectSql(this), this.consumeParams())
     }
 
     @JvmOverloads
@@ -217,8 +220,12 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     fun update(column: String, value: Any?): Query<T> {
 
         value?.let {
-            updateMap[component.getColumnNameByFieldName(column) ?: convert(column)] =
-                    TypeAdapter.convertToDateString(componentClass, column, it)
+            updateMap[component.getColumnNameByFieldName(column)
+                    ?: convert(column)] = if (TypeAdapter.isDateType(value.javaClass.name)) {
+                TypeAdapter.convertDateString(componentClass, column, it)
+            } else {
+                value
+            }
         }
         return this
     }
@@ -227,7 +234,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
         val tableColumn = getColumnName(column)
         val operationList = getOperationList(map, tableColumn)
-        operationList!!.add(TypeAdapter.convertToDateString(componentClass, column, value!!))
+        operationList!!.add(TypeAdapter.convertDateString(componentClass, column, value!!))
         map[tableColumn] = operationList
     }
 
@@ -310,7 +317,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
     fun orderBy(column: String?, desc: Boolean = false): Query<T> {
 
-        column?:return this
+        column ?: return this
         orderByList.add("${getColumnName(column)}${if (desc) " desc" else ""}")
 
         return this
@@ -332,12 +339,12 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     fun getFromJson(json: String?): T? {
-        json?:return null
+        json ?: return null
         return Json.toObject(json, componentClass)
     }
 
     fun listFromJson(json: String?): List<T>? {
-        json?:return null
+        json ?: return null
         return Json.toList(json, componentClass)
     }
 
@@ -359,7 +366,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
             field.isAccessible = true
             dataList.forEachIndexed { dataIndex, data ->
                 values[dataIndex].add(
-                        TypeAdapter.convertToDateString(componentClass, field.name, field.get(data) ?: ""))
+                        TypeAdapter.convertDateString(componentClass, field.name, field.get(data) ?: ""))
             }
             return@filter true
         }.map { key -> component.fieldColumnInfoMap[key]!!.excelHeader }.toTypedArray()

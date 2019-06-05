@@ -15,8 +15,8 @@ class PostgresqlGenerator : BaseSqlGenerator() {
     }
 
     override fun generateAutoIncrementSqlFragment(tableName: String?, columnName: String?): String? {
-        if(tableName==null||columnName==null)return null
-        return "\n"+"""CREATE SEQUENCE ${tableName}_${columnName}_seq
+        if (tableName == null || columnName == null) return null
+        return "\n" + """CREATE SEQUENCE ${tableName}_${columnName}_seq
             INCREMENT 1
             START 1
             MINVALUE 1
@@ -39,7 +39,7 @@ class PostgresqlGenerator : BaseSqlGenerator() {
             JavaType.Float, "float" -> "float4"
             JavaType.Double, "double" -> "float8"
             JavaType.Boolean, "boolean" -> "bool"
-            Array<Byte>::class.java.name -> "bytea"
+            JavaType.byteArray -> "bytea"
             Date::class.java.name, LocalDateTime::class.java.name -> "timestamp"
             LocalDate::class.java.name -> "DATE"
             LocalTime::class.java.name -> "TIME"

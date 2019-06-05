@@ -32,7 +32,7 @@ class MysqlGenerator : BaseSqlGenerator() {
             JavaType.String -> "VARCHAR(${length ?: 100})"
             JavaType.Character, "char" -> "char(${length ?: 1})"
             JavaType.Integer, "int" -> "int"
-            Array<Byte>::class.java.name -> "BLOB"
+            JavaType.byteArray -> "BLOB"
             JavaType.Boolean, "boolean" -> "BIT"
             JavaType.Long, "long" -> "bigint"
             JavaType.Float, "float", JavaType.Double, "double" -> "DECIMAL(${length ?: 10},2)"

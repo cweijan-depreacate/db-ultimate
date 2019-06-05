@@ -4,7 +4,10 @@ import github.cweijan.ultimate.cache.CacheAdapter
 import github.cweijan.ultimate.cache.CacheEngine
 import github.cweijan.ultimate.component.ComponentScan
 import github.cweijan.ultimate.component.TableInfo
+import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeConvert
+import github.cweijan.ultimate.core.extra.ExtraData
+import github.cweijan.ultimate.core.extra.ExtraDataService
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.CacheConfig
 import github.cweijan.ultimate.db.config.DbConfig
@@ -30,45 +33,48 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         if (dbConfig.develop) {
             HotSwapSupport.startHotSwapListener(dbConfig)
         }
+        val extraData = ComponentInfo.init(ExtraData::class.java)
         dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
-        DBInitialer(dbConfig).initalerTable()
+        val dbInitialer = DBInitialer(dbConfig)
+        dbInitialer.initalerTable()
+        dbInitialer.createTable(extraData)
         cache = CacheAdapter.getCacheEngine(cacheConfig)
         Query.core = this
     }
 
     @JvmOverloads
-    fun <T> executeSqlOf(sql: String, params: Array<String>? = null, clazz: Class<T>): T? {
+    fun <T> executeSqlOf(sql: String, params: Array<Any>? = null, clazz: Class<T>): T? {
 
         return TypeConvert.resultSetToBean(sqlExecutor.executeSql(sql, params)!!, clazz)
 
     }
 
     @JvmOverloads
-    fun <T> executeSqlOfList(sql: String, params: Array<String>? = null, clazz: Class<T>): List<T> {
+    fun <T> executeSqlOfList(sql: String, params: Array<Any>? = null, clazz: Class<T>): List<T> {
 
         return TypeConvert.resultSetToBeanList(sqlExecutor.executeSql(sql, params)!!, clazz)
     }
 
     @JvmOverloads
-    fun executeSqlOfMap(sql: String, params: Array<String>? = null): Map<String, Any>? {
+    fun executeSqlOfMap(sql: String, params: Array<Any>? = null): Map<String, Any>? {
 
         return TypeConvert.resultSetToMap(sqlExecutor.executeSql(sql, params)!!)
     }
 
     @JvmOverloads
-    fun executeSqlOfMapList(sql: String, params: Array<String>? = null): List<Map<String, Any>> {
+    fun executeSqlOfMapList(sql: String, params: Array<Any>? = null): List<Map<String, Any>> {
 
         return TypeConvert.resultSetToMapList(sqlExecutor.executeSql(sql, params)!!)
     }
 
-    private fun executeSql(sql: String, params: Array<String>? = null): ResultSet? {
+    fun executeSql(sql: String, params: Array<Any>? = null): ResultSet? {
 
         return sqlExecutor.executeSql(sql, params)
 
     }
 
     @JvmOverloads
-    fun <T> getBySql(sql: String, params: Array<String>? = null, clazz: Class<T>): T? {
+    fun <T> getBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): T? {
 
         val resultSet = sqlExecutor.executeSql(sql, params)!!
         resultSet.last()
@@ -85,14 +91,14 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
 
         val sql = sqlGenerator.generateCountSql(query)
 
-        return getBySql(sql, query.getParams(), Int::class.java)!!
+        return getBySql(sql, query.consumeParams(), Int::class.java)!!
     }
 
     fun <T> getByQuery(query: Query<T>): T? {
 
         val sql = sqlGenerator.generateSelectSql(query)
         query.cacheKey?.let { cache.getAndReCache<T>(it)?.run { return this } }
-        val dataObject = getBySql(sql, query.getParams(), query.componentClass)
+        val dataObject = getBySql(sql, query.consumeParams(), query.componentClass)
         query.cacheKey?.let { cache.set(it, dataObject, query.cacheExpireSecond) }
 
         return dataObject
@@ -108,11 +114,20 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         val sql = sqlGenerator.generateSelectSql(query)
 
         query.cacheKey?.let { cache.getAndReCache<List<T>>(it)?.run { return this } }
-        val resultSet = sqlExecutor.executeSql(sql, query.getParams())
+        val resultSet = sqlExecutor.executeSql(sql, query.consumeParams())
         val beanList = TypeConvert.resultSetToBeanList(resultSet!!, query.componentClass)
         query.cacheKey?.let { cache.set(it, beanList, query.cacheExpireSecond) }
 
         return beanList
+    }
+
+    fun saveExtra(key: Any, extraObject: Any) {
+        ExtraDataService.save(key,extraObject)
+    }
+
+    fun <T> getExtra(key: Any, extraType: Class<T>): T? {
+
+        return ExtraDataService.getExtraData(key,extraType)
     }
 
     /**
@@ -147,17 +162,17 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
     }
 
     fun <T> batchDelete(query: Query<T>, privateKeyList: List<Any>) {
-        privateKeyList.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey) }
+        privateKeyList.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey).executeDelete() }
     }
 
     fun <T> batchDelete(query: Query<T>, privateKeys: Array<Any>) {
-        privateKeys.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey) }
+        privateKeys.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey).executeDelete() }
     }
 
     fun <T> delete(query: Query<T>) {
 
         val sql = sqlGenerator.generateDeleteSql(query)
-        executeSql(sql, query.getParams())
+        executeSql(sql, query.consumeParams())
     }
 
     fun update(component: Any) {
@@ -174,7 +189,7 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
     fun <T> update(query: Query<T>) {
 
         val sql = sqlGenerator.generateUpdateSqlByObject(query)
-        executeSql(sql, query.getParams())
+        executeSql(sql, query.consumeParams())
     }
 
     companion object {

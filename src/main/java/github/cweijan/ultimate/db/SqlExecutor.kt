@@ -18,12 +18,12 @@ class SqlExecutor(private val dbConfig: DbConfig) {
      * @param sql    sql
      * @param params 查询参数
      */
-    fun executeSql(sql: String, params: Array<String>? = null): ResultSet? {
+    fun executeSql(sql: String, params: Array<Any>? = null): ResultSet? {
 
         return executeSql(sql, params, dbConfig.getConnection())
     }
 
-    private fun executeSql(sql: String, params: Array<String>?, connection: Connection): ResultSet? {
+    private fun executeSql(sql: String, params: Array<Any>?, connection: Connection): ResultSet? {
 
         val resultSet: ResultSet?
 
