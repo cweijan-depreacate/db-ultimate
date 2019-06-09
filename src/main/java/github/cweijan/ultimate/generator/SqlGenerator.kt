@@ -6,10 +6,10 @@ import java.lang.reflect.Field
 
 interface SqlGenerator {
 
-    fun generateInsertSql(component: Any): String
+    fun generateInsertSql(component: Any): SqlObject
 
     @Throws(IllegalAccessException::class)
-    fun generateUpdateSqlByObject(component: Any): String
+    fun generateUpdateSqlByObject(component: Any): SqlObject
 
     fun <T> generateUpdateSqlByObject(query: Query<T>): String
 

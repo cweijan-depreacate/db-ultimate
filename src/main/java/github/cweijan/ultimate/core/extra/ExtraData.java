@@ -3,6 +3,9 @@ package github.cweijan.ultimate.core.extra;
 import github.cweijan.ultimate.annotation.Column;
 import github.cweijan.ultimate.annotation.Primary;
 import github.cweijan.ultimate.annotation.Table;
+import org.springframework.context.annotation.ComponentScan;
+
+import java.time.LocalDateTime;
 
 @Table("ultimate_extra_data")
 public class ExtraData {
@@ -13,6 +16,33 @@ public class ExtraData {
     @Column(nullable = true)
     private byte[] data;
     private String typeName;
+    private LocalDateTime createDate;
+    private LocalDateTime updateDate;
+    private Integer exprieMinute;
+
+    public Integer getExprieMinute() {
+        return exprieMinute;
+    }
+
+    public void setExprieMinute(Integer exprieMinute) {
+        this.exprieMinute = exprieMinute;
+    }
+
+    public LocalDateTime getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(LocalDateTime createDate) {
+        this.createDate = createDate;
+    }
+
+    public LocalDateTime getUpdateDate() {
+        return updateDate;
+    }
+
+    public void setUpdateDate(LocalDateTime updateDate) {
+        this.updateDate = updateDate;
+    }
 
     public String getExtraKey() {
         return extraKey;

@@ -7,17 +7,19 @@ import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 
 abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {
 
-    override fun generateInsertSql(component: Any): String {
+    override fun generateInsertSql(component: Any): SqlObject {
 
         val componentInfo = TableInfo.getComponent(component.javaClass)
         var columns = ""
         var values = ""
+        val params=ArrayList<Any>();
         for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
             field.isAccessible = true
             if (componentInfo.isInsertExcludeField(field)) continue
             field.get(component)?.run {
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
-                values += "${TypeAdapter.convertToSqlValue(componentInfo.componentClass, field.name, this)},"
+                values += "?,"
+                params.add(this)
             }
         }
         if (columns.lastIndexOf(",") != -1) {
@@ -27,16 +29,17 @@ abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {
             values = values.substring(0, values.lastIndexOf(","))
         }
 
-        return "INSERT INTO " + componentInfo.tableName + "(" + columns + ") VALUES(" + values + ");"
+        return SqlObject("INSERT INTO " + componentInfo.tableName + "(" + columns + ") VALUES(" + values + ");",params)
     }
 
     @Throws(IllegalAccessException::class)
-    override fun generateUpdateSqlByObject(component: Any): String {
+    override fun generateUpdateSqlByObject(component: Any): SqlObject {
 
         val componentInfo = TableInfo.getComponent(component.javaClass)
         val primaryValue = componentInfo.getPrimaryValue(component)
         primaryValue ?: throw PrimaryValueNotSetException("primary value must set!")
         var sql = "UPDATE ${componentInfo.tableName} a set "
+        val params=ArrayList<Any>();
 
         for (field in TypeAdapter.getAllField(component.javaClass)) {
             field.isAccessible = true
@@ -44,7 +47,8 @@ abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {
                 continue
             }
             field.get(component)?.run {
-                sql += "${componentInfo.getColumnNameByFieldName(field.name)}=${TypeAdapter.convertToSqlValue(component.javaClass, field.name, this)},"
+                sql += "${componentInfo.getColumnNameByFieldName(field.name)}=?,"
+                params.add(this)
             }
         }
 
@@ -53,8 +57,10 @@ abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {
         } else {
             sql = sql.substring(0, sql.lastIndexOf(","))
         }
+        sql+=" WHERE ${componentInfo.primaryKey}=?"
+        params.add(primaryValue)
 
-        return "$sql where ${componentInfo.primaryKey}='$primaryValue'"
+        return SqlObject(sql,params)
     }
 
     override fun <T> generateDeleteSql(query: Query<T>): String {

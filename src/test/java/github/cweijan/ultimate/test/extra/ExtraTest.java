@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.test.extra;
 
+import github.cweijan.ultimate.annotation.extra.ExtraName;
 import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.test.base.BaseTest;
 import org.junit.Test;
@@ -11,12 +12,23 @@ public class ExtraTest extends BaseTest {
 
         ImageEntry imageEntry = new ImageEntry();
         imageEntry.setName("test");
-        imageEntry.setAge(19);
+        imageEntry.setAge(20);
         Query.core.saveExtra(1,imageEntry);
         System.out.println(Query.core.getExtra(1,ImageEntry.class));
 
     }
 
+    @Test
+    public void testExprieExtra(){
+        Query.core.expireExtra(1,ImageEntry.class,3);
+    }
+
+    @Test
+    public void testGetExtra(){
+        System.out.println(Query.core.getExtra(1,ImageEntry.class));
+    }
+
+    @ExtraName(value="imageEx",expireMinute = 30)
     static class ImageEntry{
         String name;
         Integer age;

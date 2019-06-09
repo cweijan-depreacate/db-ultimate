@@ -121,13 +121,27 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         return beanList
     }
 
+    /**
+     * 保存或更新附加对象
+     */
     fun saveExtra(key: Any, extraObject: Any) {
         ExtraDataService.save(key,extraObject)
     }
 
+    /**
+     * 获取附加对象
+     */
     fun <T> getExtra(key: Any, extraType: Class<T>): T? {
 
         return ExtraDataService.getExtraData(key,extraType)
+    }
+
+    /**
+     * 设置附加对象过期时间
+     */
+    @JvmOverloads
+    fun expireExtra(key: Any, extraType: Class<*>,minute:Int=0){
+        ExtraDataService.expireExtraData(key,extraType,minute)
     }
 
     /**
@@ -137,8 +151,8 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
      */
     fun insert(component: Any) {
 
-        val sql = sqlGenerator.generateInsertSql(component)
-        val executeSql = executeSql(sql)
+        val sqlObject = sqlGenerator.generateInsertSql(component)
+        val executeSql = executeSql(sqlObject.sql,sqlObject.params.toTypedArray())
         if(executeSql?.next()==true){
             TableInfo.getComponent(component.javaClass).setPrimaryValue(component, executeSql.getInt(1))
         }
@@ -178,8 +192,8 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
     fun update(component: Any) {
 
         try {
-            val sql = sqlGenerator.generateUpdateSqlByObject(component)
-            executeSql(sql)
+            val sqlObject = sqlGenerator.generateUpdateSqlByObject(component)
+            executeSql(sqlObject.sql,sqlObject.params.toTypedArray())
         } catch (e: IllegalAccessException) {
             Log.error(e.message, e)
         }
