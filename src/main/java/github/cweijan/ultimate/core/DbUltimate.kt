@@ -1,7 +1,5 @@
 package github.cweijan.ultimate.core
 
-import github.cweijan.ultimate.cache.CacheAdapter
-import github.cweijan.ultimate.cache.CacheEngine
 import github.cweijan.ultimate.component.ComponentScan
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
@@ -9,7 +7,6 @@ import github.cweijan.ultimate.convert.TypeConvert
 import github.cweijan.ultimate.core.extra.ExtraData
 import github.cweijan.ultimate.core.extra.ExtraDataService
 import github.cweijan.ultimate.db.SqlExecutor
-import github.cweijan.ultimate.db.config.CacheConfig
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.debug.HotSwapSupport
@@ -22,9 +19,7 @@ import java.sql.ResultSet
 /**
  * 核心Api,用于Crud操作
  */
-class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
-
-    constructor(dbConfig: DbConfig) : this(dbConfig, null)
+class DbUltimate(dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
     var sqlGenerator: SqlGenerator = GeneratorAdapter.getSqlGenerator(dbConfig.driver)
@@ -38,7 +33,6 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
         val dbInitialer = DBInitialer(dbConfig)
         dbInitialer.initalerTable()
         dbInitialer.createTable(extraData)
-        cache = CacheAdapter.getCacheEngine(cacheConfig)
         Query.core = this
     }
 
@@ -97,11 +91,8 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
     fun <T> getByQuery(query: Query<T>): T? {
 
         val sql = sqlGenerator.generateSelectSql(query)
-        query.cacheKey?.let { cache.getAndReCache<T>(it)?.run { return this } }
-        val dataObject = getBySql(sql, query.consumeParams(), query.componentClass)
-        query.cacheKey?.let { cache.set(it, dataObject, query.cacheExpireSecond) }
 
-        return dataObject
+        return getBySql(sql, query.consumeParams(), query.componentClass)
     }
 
     fun <T> getByPrimaryKey(clazz: Class<T>, value: Any): T? {
@@ -113,12 +104,9 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
 
         val sql = sqlGenerator.generateSelectSql(query)
 
-        query.cacheKey?.let { cache.getAndReCache<List<T>>(it)?.run { return this } }
         val resultSet = sqlExecutor.executeSql(sql, query.consumeParams())
-        val beanList = TypeConvert.resultSetToBeanList(resultSet!!, query.componentClass)
-        query.cacheKey?.let { cache.set(it, beanList, query.cacheExpireSecond) }
 
-        return beanList
+        return TypeConvert.resultSetToBeanList(resultSet!!, query.componentClass)
     }
 
     /**
@@ -204,12 +192,6 @@ class DbUltimate(dbConfig: DbConfig, cacheConfig: CacheConfig? = null) {
 
         val sql = sqlGenerator.generateUpdateSqlByObject(query)
         executeSql(sql, query.consumeParams())
-    }
-
-    companion object {
-        @JvmStatic
-        lateinit var cache: CacheEngine
-
     }
 
 }

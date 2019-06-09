@@ -70,24 +70,6 @@
       "type": "java.lang.Boolean",
       "description": "Enable or disable develop mode,develop mode support reconfig component.",
       "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
-    },
-    {
-      "name": "ultimate.cache.disableAllCache",
-      "type": "java.lang.Boolean",
-      "description": "Enable or disable develop mode,develop mode support reconfig component.",
-      "sourceType": "github.cweijan.ultimate.db.config.CacheConfig"
-    },
-    {
-      "name": "ultimate.cache.autoUseCache",
-      "type": "java.lang.Boolean",
-      "description": "Enable or disable develop mode,develop mode support reconfig component.",
-      "sourceType": "github.cweijan.ultimate.db.config.CacheConfig"
-    },
-    {
-      "name": "ultimate.cache.expireSecond",
-      "type": "java.lang.Integer",
-      "description": "Enable or disable develop mode,develop mode support reconfig component.",
-      "sourceType": "github.cweijan.ultimate.db.config.CacheConfig"
     }
   ]
 }

@@ -29,8 +29,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     private var column: String? = null
     private var params: MutableList<Any> = ArrayList()
 
-    var cacheExpireSecond: Int? = null
-    var cacheKey: String? = null
     var offset: Int? = null
         private set
     var page: Int? = null
@@ -405,13 +403,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
                 }
             }
         }
-        return this
-    }
-
-    @JvmOverloads
-    fun cache(cacheKey: String, expireSecond: Int? = 30 * 60): Query<T> {
-        this.cacheKey = cacheKey
-        this.cacheExpireSecond = expireSecond
         return this
     }
 
