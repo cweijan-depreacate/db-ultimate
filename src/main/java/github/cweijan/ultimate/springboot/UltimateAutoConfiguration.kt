@@ -25,48 +25,67 @@ open class UltimateAutoConfiguration {
     @ConditionalOnMissingBean(DataSource::class)
     @Bean
     @Order(0)
-    open fun createDataSource():DataSource?{
+    open fun createDataSource(): DataSource? {
 
-        if (null == dbConfig || !dbConfig.enable) {
-            Log.debug("Db-core is disabled, skip..")
-            return null
-        }
-        return dbConfig.dataSource!!
+        if (configCheck())
+            return dbConfig!!.dataSource!!
+
+        return null
     }
 
     @Bean
     @Order(1)
     open fun createTransactionManager(): PlatformTransactionManager? {
 
-        if (null == dbConfig || !dbConfig.enable) {
-            Log.debug("Db-core is disabled, skip..")
-            return null
-        }
-
-        return DataSourceTransactionManager(dataSource ?: dbConfig.dataSource!!)
+        if (configCheck())
+            return DataSourceTransactionManager(dataSource ?: dbConfig!!.dataSource!!)
+        Log.info("please add \n" +
+                "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration,org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration" +
+                "\nto application.properties")
+        return null
     }
 
     @Bean
     @Order(2)
     open fun createUltimate(): DbUltimate? {
 
-        if (null == dbConfig || !dbConfig.enable) {
-            Log.debug("Db-ultimate is disabled, skip init ultimate.")
-            return null
-        } else if (null == dbConfig.driver) {
-            Log.debug("Can't not find database type, skip init ultimate.")
-            return null
-        } else if (dataSource == null && (null == dbConfig.username || null == dbConfig.url)) {
-            Log.error("Db config not set, skip init ultimate.")
-            return null
+        if (configCheck()){
+            dataSource?.let {
+                Log.debug("use datasource init dbultimate..")
+                dbConfig!!.dataSource = it
+            }
+            return DbUltimate(dbConfig!!)
         }
-
-        dataSource?.let {
-            Log.debug("use datasource init dbultimate..")
-            dbConfig.dataSource = it
-        }
-
-        return DbUltimate(dbConfig)
+        return null
     }
+
+    private fun configCheck(): Boolean {
+
+        return when {
+            null == dbConfig || !dbConfig.enable -> {
+                Log.info("db-ultimate is disabled, skip..")
+                false
+            }
+            dbConfig.url == null -> {
+                Log.error("jdbc url property not found! skip..")
+                false
+            }
+            dbConfig.driver == null -> {
+                Log.error("jdbc driver name property not found! skip..")
+                false
+            }
+            dbConfig.username == null -> {
+                Log.error("jdbc username property not found! skip..")
+                false
+            }
+            dbConfig.password == null -> {
+                Log.error("jdbc password property not found! skip..")
+                false
+            }
+            else -> true
+        }
+
+    }
+
 
 }

@@ -10,7 +10,7 @@ import javax.sql.DataSource
 @ConfigurationProperties(prefix = "ultimate.jdbc")
 class DbConfig {
 
-    var createNonexistsTable: Boolean = false
+    var createNonexistsTable: Boolean = DefaultProperties.CREATE_NON_EXISTS_TABLE
     var username: String? = null
     var password: String? = null
     var driver: String? = null
