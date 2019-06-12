@@ -23,6 +23,7 @@ class OracleGenerator : BaseSqlGenerator() {
     }
 
     override fun getColumnTypeByField(field: Field, length: Int?): String {
+        if(field.type.isEnum)return "VARCHAR2(${length ?: 50})"
         return when (field.type.name) {
             JavaType.String -> "VARCHAR2(${length ?: 100})"
             JavaType.Character, "char" -> "CHAR(${length ?: 1})"

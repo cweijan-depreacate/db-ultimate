@@ -3,6 +3,7 @@ package github.cweijan.ultimate.test.crud;
 import github.cweijan.ultimate.component.TableInfo;
 import github.cweijan.ultimate.component.info.ComponentInfo;
 import github.cweijan.ultimate.core.Query;
+import github.cweijan.ultimate.json.Json;
 import github.cweijan.ultimate.test.base.BaseTest;
 import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.test.bean.Lib;
@@ -22,6 +23,7 @@ public class SelectTest extends BaseTest{
         query.eq("test", "test2");
         //        query.orEquals("id", "2");
         //        query.setColumn("id, message");
+        query.pageSize(1);
         Admin admin = dbUltimate.getByQuery(query);
         Log.info(admin.toString());
     }
@@ -54,7 +56,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGetBy(){
 
-        Admin admin = dbUltimate.getByPrimaryKey(Admin.class, "2111");
+        Admin admin = dbUltimate.getByPrimaryKey(Admin.class, "1");
 
         Log.info(admin);
 
@@ -64,7 +66,7 @@ public class SelectTest extends BaseTest{
     public void testGet(){
 
         Admin admin = Query.of(Admin.class).eq("id", 1).get();
-        Log.info(admin);
+        Log.info(Json.toJson(admin));
 
     }
 
@@ -83,6 +85,12 @@ public class SelectTest extends BaseTest{
         //        admin.setId(1);
         admin.setMessage("滚");
         List<Lib> list = Query.of(Lib.class).readObject(admin).list();
+        Log.info(list.size());
+    }
+    @Test
+    public void testSearchLib(){
+
+        List<Lib> list = Query.of(Lib.class).search("msd","滚").list();
         Log.info(list.size());
     }
 

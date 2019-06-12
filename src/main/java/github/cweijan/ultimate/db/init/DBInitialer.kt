@@ -51,11 +51,12 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
         TypeAdapter.getAllField(componentInfo.componentClass).let { fields ->
             fields.forEachIndexed { index, field ->
-                if (componentInfo.isTableExcludeField(field)) {
+                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type)) {
                     return@forEachIndexed
                 }
                 field.isAccessible = true
                 val columnInfo = componentInfo.getColumnInfoByFieldName(field.name)!!
+                //生成column
                 var columnDefination = "${columnInfo.columnName} ${initSqlGenetator.getColumnTypeByField(field, columnInfo.length)}"
                 //生成主键或者非空片段
                 columnDefination += when {
@@ -72,7 +73,11 @@ class DBInitialer(private val dbConfig: DbConfig) {
                     field.name == componentInfo.primaryKey -> ""
                     else -> initSqlGenetator.generateDefaultSqlFragment(
                             if (StringUtils.isNotEmpty(columnInfo.defaultValue)) {
-                                TypeAdapter.convertToSqlValue(componentInfo.componentClass, field.name, columnInfo.defaultValue!!)
+                                if(TypeAdapter.CHARACTER_TYPE.contains(field.type.name)){
+                                    TypeAdapter.contentWrapper(columnInfo.defaultValue)
+                                }else{
+                                    columnInfo.defaultValue
+                                }
                             } else {
                                 TypeAdapter.getDefaultValue(field.type.name)
                             }

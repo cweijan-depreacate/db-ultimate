@@ -13,19 +13,19 @@ public class ExtraTest extends BaseTest {
         ImageEntry imageEntry = new ImageEntry();
         imageEntry.setName("test");
         imageEntry.setAge(20);
-        Query.core.saveExtra(1,imageEntry);
-        System.out.println(Query.core.getExtra(1,ImageEntry.class));
+        Query.db.saveExtra(1,imageEntry);
+        System.out.println(Query.db.getExtra(1,ImageEntry.class));
 
     }
 
     @Test
     public void testExprieExtra(){
-        Query.core.expireExtra(1,ImageEntry.class,3);
+        Query.db.expireExtra(1,ImageEntry.class,3);
     }
 
     @Test
     public void testGetExtra(){
-        System.out.println(Query.core.getExtra(1,ImageEntry.class));
+        System.out.println(Query.db.getExtra(1,ImageEntry.class));
     }
 
     @ExtraName(value="imageEx",expireMinute = 30)

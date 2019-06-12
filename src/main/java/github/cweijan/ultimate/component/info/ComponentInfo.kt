@@ -207,7 +207,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                         columnInfo.comment = if (StringUtils.isNotEmpty(this.comment)) this.comment else null
                         columnInfo.defaultValue = if (StringUtils.isNotEmpty(this.defaultValue)) this.defaultValue else null
                         columnInfo.nullable = this.nullable
-                        columnInfo.length = if (columnInfo.length != 0) this.length else null
+                        columnInfo.length = if (columnAnnotation.length != 0) this.length else null
                         columnInfo.unique = this.unique
                         columnInfo.excelHeader = if (this.excelHeader == "") columnInfo.columnName else this.excelHeader
                     }
@@ -233,7 +233,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                         componentInfo.autoIncrement = this.autoIncrement
                         columnInfo.columnName = if (StringUtils.isNotEmpty(this.value)) this.value else field.name
                         columnInfo.comment = if (StringUtils.isNotEmpty(this.comment)) this.comment else null
-                        columnInfo.length = if (columnInfo.length != 0) this.length else null
+                        columnInfo.length = if (primaryAnnotation.length != 0) this.length else null
                     }
 
                 }

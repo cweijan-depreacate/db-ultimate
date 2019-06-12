@@ -25,11 +25,11 @@ public final class ExtraDataService {
             extraData.setTypeName(extraName);
             extraData.setExprieMinute(getExtraMinute(extraObject.getClass()));
             extraData.setUpdateDate(LocalDateTime.now());
-            Query.core.insert(extraData);
+            Query.db.insert(extraData);
         } else {
             extraData.setUpdateDate(LocalDateTime.now());
             extraData.setData(Json.toJson(extraObject).getBytes());
-            Query.core.update(extraData);
+            Query.db.update(extraData);
         }
     }
 
@@ -37,7 +37,7 @@ public final class ExtraDataService {
 
         ExtraData extraData = getQuery(key, getExtraName(extraType)).get();
         if (extraData != null && (extraData.getExprieMinute() == -1 || extraData.getUpdateDate().plusMinutes(extraData.getExprieMinute()).isAfter(LocalDateTime.now()))) {
-            return Json.toObject(new String(extraData.getData(), Charsets.UTF_8), extraType);
+            return Json.parse(new String(extraData.getData(), Charsets.UTF_8), extraType);
         } else {
             return null;
         }

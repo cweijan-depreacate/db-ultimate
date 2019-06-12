@@ -33,7 +33,7 @@ class DbUltimate(dbConfig: DbConfig) {
         val dbInitialer = DBInitialer(dbConfig)
         dbInitialer.initalerTable()
         dbInitialer.createTable(extraData)
-        Query.core = this
+        Query.db = this
     }
 
     @JvmOverloads

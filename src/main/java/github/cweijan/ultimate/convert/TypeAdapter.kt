@@ -4,9 +4,6 @@ import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.util.DateUtils
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -14,13 +11,15 @@ object TypeAdapter {
 
     private val NUMBER_TYPE = Arrays.asList("byte", "short", "int", "float", "double", "long", JavaType.Byte,
             JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
-    private val CHARACTER_TYPE = Arrays.asList(JavaType.String, "chat", JavaType.Character)
     private val BOOLEAN_TYPE = Arrays.asList(JavaType.Boolean, "boolean")
-    private val DATE_TYPE = Arrays.asList("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
-    private val BLOB_TYPE=Arrays.asList(JavaType.byteArray)
+    private val BLOB_TYPE = Arrays.asList(JavaType.byteArray)
+    val CHARACTER_TYPE: MutableList<String> = Arrays.asList(JavaType.String, "chat", JavaType.Character)
+    val DATE_TYPE: MutableList<String> = Arrays.asList("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
 
-    fun isAdapterType(typeName: String): Boolean {
-        return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName) || BOOLEAN_TYPE.contains(typeName)||BLOB_TYPE.contains(typeName)
+    fun isAdapterType(type: Class<*>): Boolean {
+        val typeName = type.name
+        return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName)
+                || BOOLEAN_TYPE.contains(typeName) || BLOB_TYPE.contains(typeName) || type.isEnum
     }
 
     fun getAllField(componentClass: Class<*>?): List<Field> {
@@ -42,41 +41,48 @@ object TypeAdapter {
         }
     }
 
-    fun convertToJavaDateObject(componentClass: Class<*>, fieldName: String, timeObject: Any?): Any? {
-        if(timeObject==null)return null
-        val columnInfo = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)!!
-        return DateUtils.toDateObject(timeObject.toString(), columnInfo.fieldType, columnInfo.dateFormat)
-    }
+    fun convertJavaObject(componentClass: Class<*>, field: Field, javaObject: Any?): Any? {
+        if (javaObject == null) return null
 
-    /**
-     * convertDateString
-     */
-    fun convertDateString(componentClass: Class<*>, fieldName: String, fieldValue: Any): String {
-        val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat
-                ?: DateUtils.DEFAULT_PATTERN
-        return DateUtils.toDateString(fieldValue, dateFormat) ?: "$fieldValue"
-    }
-
-    /**
-     * 对值进行sql兼容处理,用于insert和update语句
-     */
-    fun convertToSqlValue(componentClass: Class<*>, fieldName: String, fieldValue: Any): String {
-        val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat
-                ?: DateUtils.DEFAULT_PATTERN
-        val fieldType = fieldValue::class.java.name
-        return when {
-            NUMBER_TYPE.contains(fieldType) -> "$fieldValue"
-            CHARACTER_TYPE.contains(fieldType) -> "'$fieldValue'"
-            BOOLEAN_TYPE.contains(fieldType) -> if (fieldValue as Boolean) "1" else "0"
-            Date::class.java.name == fieldType || LocalDateTime::class.java.name == fieldType
-                    || LocalDate::class.java.name == fieldType || LocalTime::class.java.name == fieldType
-            -> "'${DateUtils.toDateString(fieldValue, dateFormat)}'"
-            else -> "'$fieldValue'"
+        val fieldType = field.type
+        if (fieldType.isEnum && CHARACTER_TYPE.contains(javaObject::class.java.name)) {
+            return EnumConvert.valueOfEnum(fieldType, javaObject.toString())
         }
+        if (DATE_TYPE.contains(fieldType.name)) {
+            TableInfo.getComponent(componentClass).getColumnInfoByFieldName(field.name)?.run {
+                return DateUtils.toDateObject(javaObject.toString(), fieldType, this.dateFormat)
+            }
+        }
+
+        return javaObject
     }
 
-    fun isDateType(fieldType: String?): Boolean {
-        return DATE_TYPE.contains(fieldType)
+    /**
+     * convertAdapter
+     */
+    fun convertAdapter(componentClass: Class<*>, fieldName: String, fieldValue: Any?): Any {
+        if (fieldValue == null) return ""
+        if (fieldValue::class.java.isEnum) {
+            return (fieldValue as Enum<*>).name
+        }
+        val columnInfo = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)
+        val dateFormat: String = columnInfo?.dateFormat ?: DateUtils.DEFAULT_PATTERN
+        return DateUtils.toDateString(fieldValue, dateFormat) ?: fieldValue
+    }
+
+    fun contentWrapper(contentObject: Any?): String {
+        contentObject?.let {
+            if (it !is String) {
+                return "'$it'"
+            }
+            val content = it.toString()
+            return if (content.startsWith("'") && content.endsWith("'")) {
+                content
+            } else {
+                "'$content'"
+            }
+        }
+        return ""
     }
 
 }

@@ -19,7 +19,7 @@ abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {
             field.get(component)?.run {
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
                 values += "?,"
-                params.add(this)
+                params.add(TypeAdapter.convertAdapter(componentInfo.componentClass,field.name,this))
             }
         }
         if (columns.lastIndexOf(",") != -1) {

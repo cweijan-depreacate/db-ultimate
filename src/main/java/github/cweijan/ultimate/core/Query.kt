@@ -21,7 +21,7 @@ import kotlin.collections.ArrayList
  * @param isAutoConvert convertCamelToUnderScore
  */
 open class Query<T>
-internal constructor(val componentClass: Class<out T>, private var isAutoConvert: Boolean = false) {
+internal constructor(val componentClass: Class<out T>, private var isAutoConvert: Boolean = true) {
 
     private var methodName: String? = null
     var component: ComponentInfo = TableInfo.getComponent(componentClass)
@@ -107,6 +107,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
         return this
     }
+
     fun getParams(): Array<Any>? {
         return params.toTypedArray()
     }
@@ -152,7 +153,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     fun statistic(): List<Map<String, Any>> {
-        return core.executeSqlOfMapList(core.sqlGenerator.generateSelectSql(this), this.consumeParams())
+        return db.executeSqlOfMapList(db.sqlGenerator.generateSelectSql(this), this.consumeParams())
     }
 
     @JvmOverloads
@@ -218,12 +219,8 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     fun update(column: String, value: Any?): Query<T> {
 
         value?.let {
-            updateMap[component.getColumnNameByFieldName(column)
-                    ?: convert(column)] = if (TypeAdapter.isDateType(value.javaClass.name)) {
-                TypeAdapter.convertDateString(componentClass, column, it)
-            } else {
-                value
-            }
+            val columnName = component.getColumnNameByFieldName(column)
+            updateMap[columnName ?: convert(column)] = TypeAdapter.convertAdapter(componentClass, column, it)
         }
         return this
     }
@@ -232,7 +229,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
         val tableColumn = getColumnName(column)
         val operationList = getOperationList(map, tableColumn)
-        operationList!!.add(TypeAdapter.convertDateString(componentClass, column, value!!))
+        operationList!!.add(TypeAdapter.convertAdapter(componentClass, column, value).toString())
         map[tableColumn] = operationList
     }
 
@@ -338,12 +335,12 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
     fun getFromJson(json: String?): T? {
         json ?: return null
-        return Json.toObject(json, componentClass)
+        return Json.parse(json, componentClass)
     }
 
     fun listFromJson(json: String?): List<T>? {
         json ?: return null
-        return Json.toList(json, componentClass)
+        return Json.parseList(json, componentClass)
     }
 
     fun inputExcel(inputPath: String): List<T> {
@@ -364,7 +361,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
             field.isAccessible = true
             dataList.forEachIndexed { dataIndex, data ->
                 values[dataIndex].add(
-                        TypeAdapter.convertDateString(componentClass, field.name, field.get(data) ?: ""))
+                        TypeAdapter.convertAdapter(componentClass, field.name, field.get(data) ?: ""))
             }
             return@filter true
         }.map { key -> component.fieldColumnInfoMap[key]!!.excelHeader }.toTypedArray()
@@ -399,7 +396,8 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
                     field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; search(fieldName, it) }
                     field.getAnnotation(OrSearch::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orSearch(fieldName, it) }
                     field.getAnnotation(OrderBy::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orderBy(fieldName) }
-                    if (!haveCondition) eq(fieldName, it)
+                    if (!haveCondition && component.getColumnInfoByFieldName(fieldName)!=null)
+                        eq(fieldName, it)
                 }
             }
         }
@@ -409,22 +407,22 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     fun list(): List<T> {
 
         methodName?.run { Log.debug("Execute method $methodName ") }
-        return core.find(this)
+        return db.find(this)
     }
 
     fun get(): T? {
         methodName?.run { Log.debug("Execute method $methodName ") }
-        return core.getByQuery(this)
+        return db.getByQuery(this)
     }
 
     fun executeUpdate() {
         methodName?.run { Log.debug("Execute method $methodName ") }
-        core.update(this)
+        db.update(this)
     }
 
     fun executeDelete() {
         methodName?.run { Log.debug("Execute method $methodName ") }
-        core.delete(this)
+        db.delete(this)
     }
 
     fun name(methodName: String?) {
@@ -456,7 +454,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         }
 
         @JvmStatic
-        lateinit var core: DbUltimate
+        lateinit var db: DbUltimate
 
     }
 

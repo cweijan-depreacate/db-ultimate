@@ -14,14 +14,14 @@ public class UpdateTest extends BaseTest{
     public void testUpdateByOperation(){
 
         Query<Admin> query = Query.of(Admin.class);
-        query.update("test", "test2");
+        query.update("test", "test2").executeUpdate();
         dbUltimate.update(query);
     }
 
     @Test
     public void testUpdateByQuery(){
 
-        Query.of(Lib.class).update("test", "lib").eq("id", 2).executeUpdate();
+        Query.of(Lib.class).update("test", "lib").eq("id", 1).executeUpdate();
 
     }
 
@@ -29,10 +29,10 @@ public class UpdateTest extends BaseTest{
     public void testUpdate(){
 
         Admin admin = new Admin();
-        admin.setId(2);
-        Query.of(Admin.class).executeDelete();
-//        admin.setMsd("cweijain");
+        admin.setId(1);
+        admin.setDelete(false);
         admin.setDate(LocalDateTime.now());
+//        admin.setMsd("cweijain");
         dbUltimate.update(admin);
 
     }

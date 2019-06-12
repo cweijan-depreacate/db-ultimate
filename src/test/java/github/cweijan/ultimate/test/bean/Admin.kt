@@ -5,6 +5,7 @@ import github.cweijan.ultimate.annotation.query.Equals
 import github.cweijan.ultimate.annotation.query.OrSearch
 import github.cweijan.ultimate.annotation.query.Search
 import github.cweijan.ultimate.excel.ExcludeExcel
+import github.cweijan.ultimate.test.code.AdminTypeEnum
 import java.time.LocalDateTime
 
 import java.util.Date
@@ -20,7 +21,9 @@ open class Admin {
     @Search("msd")
     var message: String? = null
 
-    @Column("message")
+    var adminType:AdminTypeEnum?=null
+
+    @Column("message2")
     open var msd: String? = null
 
     var helloWorldTest: String? = null
@@ -30,6 +33,8 @@ open class Admin {
 
 //    @ExcludeResult
     var test: String? = null
+
+    var isDelete:Boolean?=false
 
     @ExcludeExcel
     var lib: Lib? = null

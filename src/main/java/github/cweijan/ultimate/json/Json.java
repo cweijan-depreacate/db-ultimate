@@ -113,7 +113,7 @@ public final class Json {
      * @param json      json字符串
      * @param valueType list泛型
      */
-    public static <T> List<T> toList(String json, Class<T> valueType) {
+    public static <T> List<T> parseList(String json, Class<T> valueType) {
 
         if (StringUtils.isEmpty(json) || valueType == null) return null;
 
@@ -123,7 +123,7 @@ public final class Json {
         try {
             objectList = mapper.readValue(json, javaType);
         } catch (Exception e) {
-            Log.error("toList error:" + e.getMessage(), e);
+            Log.error("parseList error:" + e.getMessage(), e);
             objectList = null;
         }
 
@@ -133,7 +133,7 @@ public final class Json {
     /**
      * 将json转成指定的类对象
      */
-    public static <T> T toObject(String json, Class<T> type) {
+    public static <T> T parse(String json, Class<T> type) {
 
         if (StringUtils.isEmpty(json) || type == null) return null;
 
@@ -141,7 +141,7 @@ public final class Json {
         try {
             result = mapper.readValue(json, type);
         } catch (Exception e) {
-            Log.error("toObject error:" + e.getMessage(), e);
+            Log.error("parse error:" + e.getMessage(), e);
             result = null;
         }
 

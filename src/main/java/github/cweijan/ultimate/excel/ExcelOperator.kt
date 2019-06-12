@@ -37,7 +37,7 @@ object ExcelOperator {
         values.forEachIndexed { i, rowData ->
             row = sheet.createRow(i + 1)
             rowData.forEachIndexed { j, data ->
-                row.createCell(j).setCellValue(data as String)
+                row.createCell(j).setCellValue("$data")
             }
         }
 
@@ -82,7 +82,7 @@ object ExcelOperator {
                 }
 
                 if (tempDataMap.keys.size > 0) {
-                    val toObject = Json.toObject(Json.toJson(tempDataMap)!!, componentClass)!!
+                    val toObject = Json.parse(Json.toJson(tempDataMap)!!, componentClass)!!
                     list.add(toObject)
                 }
             }
