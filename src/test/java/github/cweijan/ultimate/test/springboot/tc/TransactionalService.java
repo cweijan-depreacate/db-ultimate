@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class TestService {
+public class TransactionalService {
 
     @Transactional
     public void  test(){
@@ -18,5 +18,6 @@ public class TestService {
         Query.of(Lib.class).update("test", "lib2").eq("id", 3).executeUpdate();
 
     }
+
 
 }

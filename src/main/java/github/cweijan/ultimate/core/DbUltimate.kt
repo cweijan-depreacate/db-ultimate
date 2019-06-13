@@ -100,6 +100,10 @@ class DbUltimate(dbConfig: DbConfig) {
         return getByQuery(Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
 
+    fun deleteByPrimaryKey(clazz: Class<*>, value: Any) {
+        Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value).executeDelete();
+    }
+
     fun <T> find(query: Query<T>): List<T> {
 
         val sql = sqlGenerator.generateSelectSql(query)

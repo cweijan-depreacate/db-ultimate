@@ -2,6 +2,7 @@ package github.cweijan.ultimate.springboot
 
 import github.cweijan.ultimate.annotation.TableComponentScan
 import github.cweijan.ultimate.component.ComponentScan
+import github.cweijan.ultimate.springboot.helper.ServiceScan
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar
 import org.springframework.core.annotation.AnnotationAttributes
@@ -15,6 +16,7 @@ class AutoComponentScanner : ImportBeanDefinitionRegistrar {
 
         AnnotationAttributes.fromMap(annotationAttributes)?.getStringArray("value")?.run{
             ComponentScan.scan(this.asList())
+            ServiceScan.scan(registry,this.asList());
         }
 
     }

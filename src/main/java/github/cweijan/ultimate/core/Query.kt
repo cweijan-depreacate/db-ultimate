@@ -286,6 +286,10 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
+    fun count():Int{
+        return db.getCount(this)
+    }
+
     fun pageSize(limit: Int?): Query<T> {
 
         this.pageSize = limit
