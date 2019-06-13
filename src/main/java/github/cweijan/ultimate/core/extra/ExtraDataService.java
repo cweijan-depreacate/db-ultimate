@@ -3,6 +3,7 @@ package github.cweijan.ultimate.core.extra;
 import github.cweijan.ultimate.annotation.extra.ExtraName;
 import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.json.Json;
+import github.cweijan.ultimate.util.StringUtils;
 import kotlin.text.Charsets;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,16 +14,16 @@ public final class ExtraDataService {
     private ExtraDataService() {
     }
 
-    public static void save(Object key, Object extraObject) {
+    public static void save(Object key, Object extraObject,String extraName) {
 
-        String extraName = getExtraName(extraObject.getClass());
-        ExtraData extraData = getQuery(key, extraName).get();
+        String finalExtraName = StringUtils.isEmpty(extraName)?getExtraName(extraObject.getClass()):extraName;
+        ExtraData extraData = getQuery(key, finalExtraName).get();
         if (extraData == null) {
             extraData = new ExtraData();
             extraData.setData(Json.toJson(extraObject).getBytes());
             extraData.setExtraKey(key.toString());
             extraData.setCreateDate(LocalDateTime.now());
-            extraData.setTypeName(extraName);
+            extraData.setTypeName(finalExtraName);
             extraData.setExprieMinute(getExtraMinute(extraObject.getClass()));
             extraData.setUpdateDate(LocalDateTime.now());
             Query.db.insert(extraData);
@@ -33,14 +34,25 @@ public final class ExtraDataService {
         }
     }
 
-    public static <T> T getExtraData(Object key, Class<T> extraType) {
+    public static void save(Object key, Object extraObject) {
+        save(key,extraObject,null);
+    }
+    
 
-        ExtraData extraData = getQuery(key, getExtraName(extraType)).get();
+    public static <T> T getExtraData(Object key,Class<T> extraType,String extraName) {
+
+        String finalExtraName = StringUtils.isEmpty(extraName)?getExtraName(extraType):extraName;
+        ExtraData extraData = getQuery(key, finalExtraName).get();
         if (extraData != null && (extraData.getExprieMinute() == -1 || extraData.getUpdateDate().plusMinutes(extraData.getExprieMinute()).isAfter(LocalDateTime.now()))) {
             return Json.parse(new String(extraData.getData(), Charsets.UTF_8), extraType);
         } else {
             return null;
         }
+    }
+    
+    
+    public static <T> T getExtraData(Object key, Class<T> extraType) {
+        return getExtraData(key,extraType,null);
     }
 
     public static void expireExtraData(@NotNull Object key, @NotNull Class<?> extraType, int minute) {

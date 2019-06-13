@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.springboot.helper;
 
 import github.cweijan.ultimate.core.Query;
+import github.cweijan.ultimate.core.extra.ExtraDataService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.ParameterizedType;
@@ -92,12 +93,12 @@ public abstract class ServiceInject<T> {
 
     @Transactional
     public void saveExtra(Object key, Object extraObject){
-        Query.db.saveExtra(key,extraObject);
+        ExtraDataService.save(key,extraObject,entityClass.getName());
     }
 
     @Transactional(readOnly = true)
     public void getExtra(Object key, Object extraObject){
-        Query.db.getExtra(key,extraObject.getClass());
+        ExtraDataService.getExtraData(key,extraObject.getClass(),entityClass.getName());
     }
 
     @Transactional(readOnly = true)
