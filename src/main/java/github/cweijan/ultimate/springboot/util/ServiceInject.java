@@ -1,24 +1,26 @@
-package github.cweijan.ultimate.springboot.helper;
+package github.cweijan.ultimate.springboot.util;
 
 import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.core.extra.ExtraDataService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
-public abstract class ServiceInject<T> {
+public abstract class ServiceInject<T> implements InitializingBean {
 
-    private Class <T> entityClass;
+    private Class <T> componentClass;
     public ServiceInject() {
         try {
-            entityClass=(Class <T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+            componentClass=(Class <T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("must set generic type for service : "+getClass().getName());
         }
     }
     public Query<T> getQuery(){
-        return Query.of(entityClass);
+        return Query.of(componentClass);
     }
 
     public final List<T> findByExample(Object... examples){
@@ -45,13 +47,13 @@ public abstract class ServiceInject<T> {
     }
 
     @Transactional(readOnly=true)
-    public List<T> findAllLimit(int page,int pageSize){
-        return Query.of(entityClass).page(page).pageSize(pageSize).list();
+    public List<T> findByPage(Integer page, Integer pageSize){
+        return Query.of(componentClass).page(page).pageSize(pageSize).list();
     }
 
     @Transactional(readOnly=true)
     public T get(Object primaryKey) {
-        return Query.db.getByPrimaryKey(entityClass,primaryKey);
+        return Query.db.getByPrimaryKey(componentClass,primaryKey);
     }
 
     @Transactional(readOnly=true)
@@ -62,28 +64,28 @@ public abstract class ServiceInject<T> {
     }
 
     @Transactional
-    public void save(T entity){
-        Query.db.insert(entity);
+    public void save(T component){
+        Query.db.insert(component);
     }
 
     @Transactional
-    public void batchSave(List<T> entityList){
-        Query.db.insertList(entityList);
+    public void batchSave(List<T> componentList){
+        Query.db.insertList(componentList);
     }
 
     @Transactional
-    public void update(T entity){
-        Query.db.update(entity);
+    public void update(T component){
+        Query.db.update(component);
     }
 
     @Transactional
-    public void saveOrUpdate(T entity){
-        Query.db.insertOfUpdate(entity);
+    public void saveOrUpdate(T component){
+        Query.db.insertOfUpdate(component);
     }
 
     @Transactional
     public void delete(Object primaryKey) {
-        Query.db.deleteByPrimaryKey(entityClass,primaryKey);
+        Query.db.deleteByPrimaryKey(componentClass,primaryKey);
     }
 
     @Transactional
@@ -93,12 +95,12 @@ public abstract class ServiceInject<T> {
 
     @Transactional
     public void saveExtra(Object key, Object extraObject){
-        ExtraDataService.save(key,extraObject,entityClass.getName());
+        ExtraDataService.save(key,extraObject,componentClass.getName());
     }
 
     @Transactional(readOnly = true)
     public void getExtra(Object key, Object extraObject){
-        ExtraDataService.getExtraData(key,extraObject.getClass(),entityClass.getName());
+        ExtraDataService.getExtraData(key,extraObject.getClass(),componentClass.getName());
     }
 
     @Transactional(readOnly = true)
@@ -106,5 +108,13 @@ public abstract class ServiceInject<T> {
         return getQuery().count();
     }
 
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        ServiceMap.mapService(componentClass.getName(),this);
+    }
+
+    public static void copyProperties(Object target,Object source) {
+        BeanUtils.copyProperties(target, source);
+    }
 
 }

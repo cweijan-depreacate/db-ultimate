@@ -1,4 +1,4 @@
-package github.cweijan.ultimate.springboot.helper
+package github.cweijan.ultimate.springboot.util
 
 import org.reflections.Reflections
 import org.reflections.scanners.ResourcesScanner
@@ -23,7 +23,9 @@ object ServiceScan {
                     .setScanners(SubTypesScanner(true), ResourcesScanner())
                     .setUrls(ClasspathHelper.forClassLoader(*classLoadersList.toTypedArray()))
                     .filterInputsBy(FilterBuilder().include(FilterBuilder.prefix(packageName))))
-            reflections.getSubTypesOf(ServiceInject::class.java).forEach { c -> registry.registerBeanDefinition(c.name, RootBeanDefinition(c)) }
+            reflections.getSubTypesOf(ServiceInject::class.java).forEach { c ->
+                registry.registerBeanDefinition(c.name, RootBeanDefinition(c))
+            }
 
         }
 
