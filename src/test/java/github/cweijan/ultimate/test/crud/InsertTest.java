@@ -20,7 +20,7 @@ public class InsertTest extends BaseTest{
         Lib lib = new Lib();
         //        lib.setId(12);
         lib.setMessage("cweijan");
-        dbUltimate.insert(lib);
+        Query.db.insert(lib);
         System.out.println(lib.getId());
     }
 
@@ -44,7 +44,7 @@ public class InsertTest extends BaseTest{
             else if(i < 9) admin.setTest("test");
                  admin.setAdminType(AdminTypeEnum.user);
             admin.setDate(LocalDateTime.now());
-            dbUltimate.insert(admin);
+            Query.db.insert(admin);
         });
 
     }

@@ -15,7 +15,7 @@ public class UpdateTest extends BaseTest{
 
         Query<Admin> query = Query.of(Admin.class);
         query.update("test", "test2").executeUpdate();
-        dbUltimate.update(query);
+        Query.db.update(query);
     }
 
     @Test
@@ -33,7 +33,7 @@ public class UpdateTest extends BaseTest{
         admin.setDelete(false);
         admin.setDate(LocalDateTime.now());
 //        admin.setMsd("cweijain");
-        dbUltimate.update(admin);
+        Query.db.update(admin);
 
     }
 

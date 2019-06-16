@@ -1,15 +1,10 @@
 package github.cweijan.ultimate.core
 
-import github.cweijan.ultimate.component.ComponentScan
 import github.cweijan.ultimate.component.TableInfo
-import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeConvert
-import github.cweijan.ultimate.core.extra.ExtraData
 import github.cweijan.ultimate.core.extra.ExtraDataService
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
-import github.cweijan.ultimate.db.init.DBInitialer
-import github.cweijan.ultimate.debug.HotSwapSupport
 import github.cweijan.ultimate.exception.TooManyResultException
 import github.cweijan.ultimate.generator.GeneratorAdapter
 import github.cweijan.ultimate.generator.SqlGenerator
@@ -19,22 +14,10 @@ import java.sql.ResultSet
 /**
  * 核心Api,用于Crud操作
  */
-class DbUltimate(dbConfig: DbConfig) {
+class DbUltimate internal constructor(dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
     var sqlGenerator: SqlGenerator = GeneratorAdapter.getSqlGenerator(dbConfig.driver)
-
-    init {
-        if (dbConfig.develop) {
-            HotSwapSupport.startHotSwapListener(dbConfig)
-        }
-        val extraData = ComponentInfo.init(ExtraData::class.java)
-        dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
-        val dbInitialer = DBInitialer(dbConfig)
-        dbInitialer.initalerTable()
-        dbInitialer.createTable(extraData)
-        Query.db = this
-    }
 
     @JvmOverloads
     fun <T> executeSqlOf(sql: String, params: Array<Any>? = null, clazz: Class<T>): T? {

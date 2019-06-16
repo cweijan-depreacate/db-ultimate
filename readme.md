@@ -77,9 +77,10 @@ dbConfig.setPassword("root");
 dbConfig.setScanPackage("github.cweijan");
 dbConfig.setCreateNonexistsTable(true);
 
-DbUltimate dbUltimate = new DbUltimate(dbConfig);
+//调用init方法成功后即启动完成
+Query.init(dbConfig);
 
-List<Admin> admins = dbUltimate.find(Admin.class);
+List<Admin> admins = Query.of(Admin.class).list();
 System.out.println(admins);
 
 ```
@@ -123,17 +124,18 @@ Admin admin = new Admin();
 admin.setMessage("hello");
 admin.setTest("test");
 admin.setDate(new Date());
-dbUltimate.insert(admin);
+Query.db.insert(admin);
 ```
 
-## Operation对象
-除了插入操作外, 更新删除查询主要围绕Operation对象进行
+## Query对象
+更新删除查询主要围绕Query对象进行
 ``` java
-Operation<Admin> operation = Operation.build(Admin.class);
-operation.equals("test", "test2"); // ==查询
-operation.notEquals("test", "test2"); // !=查询
-operation.search("test", "t"); //like查询
-operation.join(Lib.class, "ad.id=l.id"); //连表查询,建议在TableComponent配置表别名
+Query<Admin> query = Query.of(Admin.class);
+query.eq("test", "test2"); // ==查询
+query.ne("test", "test2"); // !=查询
+query.search("test", "t"); //like查询
+query.join(Lib.class, "ad.id=l.id"); //连表查询,建议在TableComponent配置表别名
+List<Admin> adminList=quert.list();
 ```
 
 ## 更新
@@ -145,25 +147,22 @@ admin.setMessage("cweijain");
 dbUltimate.update(admin);
 
 //使用operation模式
-Operation<Admin> operation = Operation.build(Admin.class);
-operation.update("test","test2");
-dbUltimate.update(operation);
+Query<Admin> query = Query.of(Admin.class);
+query.update("test","test2");
+query.executeUpdate();
 ```
 
 
 ## 查询
 ``` java
 //使用查询Admin
-Operation<Admin> operation = Operation.build(Admin.class);
-List<Admin> admins = dbUltimate.find(operation);
-//使用TableComponent的class对象直接查询
-List<Admin> admins = dbUltimate.find(Admin.class, 0, 20);
+List<Admin> admins = Query.of(Admin.class).list();
 ```
 
 ## 删除
 ``` java
 //删除id为1的admin
-Operation<Admin> operation = Operation.build(Admin.class);    
-operation.equals("id", "1");
-dbUltimate.delete(operation);
+Query<Admin> query = Query.of(Admin.class);
+query.eq("id", "1");
+query.executeDelete();
 ```

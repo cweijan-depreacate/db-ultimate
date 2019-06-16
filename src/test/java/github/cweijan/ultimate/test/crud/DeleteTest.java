@@ -12,7 +12,7 @@ public class DeleteTest extends BaseTest{
 
         Query<Admin> query = Query.of(Admin.class);
         query.eq("id", "7");
-        dbUltimate.delete(query);
+        query.executeDelete();
 
     }
 

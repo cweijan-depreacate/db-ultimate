@@ -1,9 +1,8 @@
 package github.cweijan.ultimate.test.base;
 
-import github.cweijan.ultimate.core.DbUltimate;
+import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.db.config.DbConfig;
 import github.cweijan.ultimate.db.init.DBInitialer;
-import github.cweijan.ultimate.test.code.AdminTypeEnum;
 import github.cweijan.ultimate.util.Log;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,7 +10,6 @@ import org.junit.Test;
 public class BaseTest {
 
     protected static DbConfig dbConfig;
-    protected static DbUltimate dbUltimate;
     protected static DBInitialer dbInitialer;
 
     @BeforeClass
@@ -24,7 +22,7 @@ public class BaseTest {
         dbConfig.setDriver("com.mysql.jdbc.Driver");
         dbConfig.setCreateNonexistsTable(true);
         dbConfig.setScanPackage("github.cweijan.ultimate");
-        dbUltimate = new DbUltimate(dbConfig);
+        Query.init(dbConfig);
         dbInitialer = new DBInitialer(dbConfig);
     }
 
