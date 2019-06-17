@@ -2,9 +2,7 @@ plugins {
     id 'java'
     id 'maven'
     id "org.jetbrains.kotlin.jvm" version "1.3.10"
-    id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
-
 
 group = 'github.cweijan'
 
@@ -15,16 +13,8 @@ version '1.39'
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
-shadowJar {
-    dependencies {
-        include(dependency("com.zaxxer:HikariCP"))
-        include(dependency("org.jetbrains.kotlin:kotlin-stdlib"))
-        include(dependency("org.jetbrains.kotlin:kotlin-reflect"))
-        include(dependency("commons-io:commons-io"))
-    }
-}
+
 repositories {
-    
     mavenCentral()
 }
 
