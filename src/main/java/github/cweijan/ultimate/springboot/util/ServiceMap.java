@@ -1,5 +1,8 @@
 package github.cweijan.ultimate.springboot.util;
 
+import github.cweijan.ultimate.component.ComponentScan;
+import github.cweijan.ultimate.component.info.ComponentInfo;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,8 +15,8 @@ public class ServiceMap {
     }
     public static <T> ServiceInject<T> get(Class<T> componentClass){
         ServiceInject serviceInject = serviceInjectMap.get(componentClass.getName());
-        if(serviceInject==null){
-            throw new NullPointerException("Can't not suitable component service!");
+        if(serviceInject==null && ComponentScan.isComponent(componentClass)){
+            return new ServiceInject(componentClass) {};
         }
         return serviceInject;
     }

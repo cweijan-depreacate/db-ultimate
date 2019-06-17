@@ -4,11 +4,13 @@ import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.core.extra.ExtraDataService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
+@CacheConfig()
 public abstract class ServiceInject<T> implements InitializingBean {
 
     private Class <T> componentClass;
@@ -19,11 +21,14 @@ public abstract class ServiceInject<T> implements InitializingBean {
             throw new IllegalArgumentException("must set generic type for service : "+getClass().getName());
         }
     }
+    public ServiceInject(Class<T> componentClass) {
+        this.componentClass=componentClass;
+    }
     public Query<T> getQuery(){
         return Query.of(componentClass);
     }
 
-    public final List<T> findByExample(Object... examples){
+    public List<T> findByExample(Object... examples){
         Query<T> query = getQuery();
         for (Object example : examples) {
             query.readObject(example);

@@ -24,7 +24,8 @@ object ServiceScan {
                     .setUrls(ClasspathHelper.forClassLoader(*classLoadersList.toTypedArray()))
                     .filterInputsBy(FilterBuilder().include(FilterBuilder.prefix(packageName))))
             reflections.getSubTypesOf(ServiceInject::class.java).forEach { c ->
-                registry.registerBeanDefinition(c.name, RootBeanDefinition(c))
+                if(!c.isAnonymousClass)
+                    registry.registerBeanDefinition(c.name, RootBeanDefinition(c))
             }
 
         }

@@ -26,7 +26,9 @@ object ComponentScan {
         }
     }
 
-    fun isComponent(clazz: Class<*>): Boolean {
+    @JvmStatic
+    fun isComponent(clazz: Class<*>?): Boolean {
+        if(clazz==null)return false
 
         val table = ComponentInfo.getComponentClass(clazz)
 
