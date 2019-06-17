@@ -4,9 +4,14 @@ import github.cweijan.ultimate.annotation.query.*
 import github.cweijan.ultimate.annotation.query.pagination.Offset
 import github.cweijan.ultimate.annotation.query.pagination.Page
 import github.cweijan.ultimate.annotation.query.pagination.PageSize
+import github.cweijan.ultimate.component.ComponentScan
 import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
+import github.cweijan.ultimate.core.extra.ExtraData
+import github.cweijan.ultimate.db.config.DbConfig
+import github.cweijan.ultimate.db.init.DBInitialer
+import github.cweijan.ultimate.debug.HotSwapSupport
 import github.cweijan.ultimate.excel.ExcelOperator
 import github.cweijan.ultimate.excel.ExcludeExcel
 import github.cweijan.ultimate.json.Json
@@ -459,6 +464,19 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
         @JvmStatic
         lateinit var db: DbUltimate
+
+        @JvmStatic
+        fun init(dbConfig: DbConfig) {
+            if (dbConfig.develop) {
+                HotSwapSupport.startHotSwapListener(dbConfig)
+            }
+            dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
+            val dbInitialer = DBInitialer(dbConfig)
+            dbInitialer.initalerTable()
+            val extraData = ComponentInfo.init(ExtraData::class.java)
+            dbInitialer.createTable(extraData)
+            db = DbUltimate(dbConfig)
+        }
 
     }
 

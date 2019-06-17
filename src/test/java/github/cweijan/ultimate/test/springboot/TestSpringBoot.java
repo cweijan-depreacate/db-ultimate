@@ -46,7 +46,7 @@ public class TestSpringBoot {
     }
     @Test
     public void testServiceInject(){
-        List<Admin> list = adminService.list(0, 10);
+        List<Admin> list = adminService.findAllLimit(0, 10);
         Log.info(Json.toJson(list));
     }
 

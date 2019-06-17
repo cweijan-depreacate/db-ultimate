@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.springboot
 
 import github.cweijan.ultimate.core.DbUltimate
+import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.util.Log
 import org.springframework.beans.factory.annotation.Autowired
@@ -54,7 +55,8 @@ open class UltimateAutoConfiguration {
                 Log.debug("use datasource init dbultimate..")
                 dbConfig!!.dataSource = it
             }
-            return DbUltimate(dbConfig!!)
+            Query.init(dbConfig!!)
+            return Query.db
         }
         return null
     }

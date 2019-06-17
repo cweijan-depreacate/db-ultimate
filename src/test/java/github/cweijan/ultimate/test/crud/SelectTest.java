@@ -10,7 +10,6 @@ import github.cweijan.ultimate.test.bean.Lib;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ public class SelectTest extends BaseTest{
         //        query.orEquals("id", "2");
         //        query.setColumn("id, message");
         query.pageSize(1);
-        Admin admin = dbUltimate.getByQuery(query);
+        Admin admin = query.get();
         Log.info(admin.toString());
     }
 
@@ -32,7 +31,7 @@ public class SelectTest extends BaseTest{
     public void testGetMap(){
 
         String sql = "select * from rh_admin";
-        Map<String, Object> result = dbUltimate.executeSqlOfMap(sql);
+        Map<String, Object> result =Query.db.executeSqlOfMap(sql);
 
         Log.info(result + "");
 
@@ -56,8 +55,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGetBy(){
 
-        Admin admin = dbUltimate.getByPrimaryKey(Admin.class, "1");
-
+        Admin admin = Query.db.getByPrimaryKey(Admin.class, "1");
         Log.info(admin);
 
     }
@@ -123,7 +121,7 @@ public class SelectTest extends BaseTest{
 
         Admin admin = new Admin();
         admin.setId(2);
-        List<Admin> admins = dbUltimate.find(Query.of(Admin.class).readObject(admin));
+        List<Admin> admins = Query.of(Admin.class).readObject(admin).list();
         System.out.println(admins);
 
     }
@@ -133,7 +131,7 @@ public class SelectTest extends BaseTest{
 
         Admin admin = new Admin();
         admin.setId(2);
-        admin = dbUltimate.getByQuery(Query.of(Admin.class).readObject(admin));
+        admin = Query.of(Admin.class).readObject(admin).get();
         Log.info(admin);
 
     }
@@ -141,7 +139,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void findByComponentClass(){
 
-        List<Admin> admins = dbUltimate.find(Query.of(Admin.class).offset(0).pageSize(20));
+        List<Admin> admins = Query.of(Admin.class).offset(0).pageSize(20).list();
         Log.info(admins.toString());
 
     }
@@ -150,7 +148,7 @@ public class SelectTest extends BaseTest{
     public void testFindAll(){
 
         Query<Admin> query = Query.of(Admin.class);
-        List<Admin> admins = dbUltimate.find(query);
+        List<Admin> admins = query.list();
         ComponentInfo component = TableInfo.INSTANCE.getComponent(Admin.class);
         Log.info(admins.toString());
     }
@@ -169,7 +167,7 @@ public class SelectTest extends BaseTest{
 
         Query<Admin> query = Query.of(Admin.class);
         query.search("test", "2");
-        List<Admin> admins = dbUltimate.find(query);
+        List<Admin> admins = query.list();
         Log.info(admins.toString());
         Log.info("hello");
 
