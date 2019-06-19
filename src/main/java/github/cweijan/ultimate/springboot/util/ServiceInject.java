@@ -4,13 +4,11 @@ import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.core.extra.ExtraDataService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
-@CacheConfig()
 public abstract class ServiceInject<T> implements InitializingBean {
 
     private Class <T> componentClass;
