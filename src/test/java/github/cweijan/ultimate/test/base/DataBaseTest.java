@@ -1,7 +1,7 @@
 package github.cweijan.ultimate.test.base;
 
 import github.cweijan.ultimate.test.bean.Admin;
-import github.cweijan.ultimate.component.TableInfo;
+import github.cweijan.ultimate.core.component.TableInfo;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import github.cweijan.ultimate.util.Log;

@@ -1,14 +1,10 @@
 package github.cweijan.ultimate.test.bean
 
 import github.cweijan.ultimate.annotation.*
-import github.cweijan.ultimate.annotation.query.Equals
-import github.cweijan.ultimate.annotation.query.OrSearch
 import github.cweijan.ultimate.annotation.query.Search
-import github.cweijan.ultimate.excel.ExcludeExcel
+import github.cweijan.ultimate.core.excel.ExcludeExcel
 import github.cweijan.ultimate.test.code.AdminTypeEnum
 import java.time.LocalDateTime
-
-import java.util.Date
 
 @Table(value = "rh_admin", selectColumns = "*", alias = "ad", camelcaseToUnderLine = true)
 open class Admin {

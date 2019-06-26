@@ -2,7 +2,7 @@ package github.cweijan.ultimate.core.extra;
 
 import github.cweijan.ultimate.annotation.extra.ExtraName;
 import github.cweijan.ultimate.core.Query;
-import github.cweijan.ultimate.json.Json;
+import github.cweijan.ultimate.util.Json;
 import github.cweijan.ultimate.util.StringUtils;
 import kotlin.text.Charsets;
 import org.jetbrains.annotations.NotNull;

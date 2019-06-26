@@ -1,8 +1,10 @@
 package github.cweijan.ultimate.generator
 
-import github.cweijan.ultimate.component.TableInfo
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.Query
+import github.cweijan.ultimate.core.component.TableInfo
+import github.cweijan.ultimate.core.generator.SqlGenerator
+import github.cweijan.ultimate.core.generator.SqlObject
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 
 abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {

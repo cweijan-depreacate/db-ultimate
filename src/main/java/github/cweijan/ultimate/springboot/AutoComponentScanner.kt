@@ -1,7 +1,7 @@
 package github.cweijan.ultimate.springboot
 
 import github.cweijan.ultimate.annotation.TableComponentScan
-import github.cweijan.ultimate.component.ComponentScan
+import github.cweijan.ultimate.core.component.ComponentScan
 import github.cweijan.ultimate.springboot.util.ServiceScan
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar

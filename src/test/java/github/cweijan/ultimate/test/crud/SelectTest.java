@@ -1,9 +1,9 @@
 package github.cweijan.ultimate.test.crud;
 
-import github.cweijan.ultimate.component.TableInfo;
-import github.cweijan.ultimate.component.info.ComponentInfo;
+import github.cweijan.ultimate.core.component.TableInfo;
+import github.cweijan.ultimate.core.component.info.ComponentInfo;
 import github.cweijan.ultimate.core.Query;
-import github.cweijan.ultimate.json.Json;
+import github.cweijan.ultimate.util.Json;
 import github.cweijan.ultimate.test.base.BaseTest;
 import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.test.bean.Lib;

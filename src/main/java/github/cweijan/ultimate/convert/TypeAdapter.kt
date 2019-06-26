@@ -1,6 +1,6 @@
 package github.cweijan.ultimate.convert
 
-import github.cweijan.ultimate.component.TableInfo
+import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.util.DateUtils
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier

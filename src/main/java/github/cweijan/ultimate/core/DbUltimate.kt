@@ -1,13 +1,13 @@
 package github.cweijan.ultimate.core
 
-import github.cweijan.ultimate.component.TableInfo
+import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.convert.TypeConvert
 import github.cweijan.ultimate.core.extra.ExtraDataService
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.exception.TooManyResultException
-import github.cweijan.ultimate.generator.GeneratorAdapter
-import github.cweijan.ultimate.generator.SqlGenerator
+import github.cweijan.ultimate.core.generator.GeneratorAdapter
+import github.cweijan.ultimate.core.generator.SqlGenerator
 import github.cweijan.ultimate.util.Log
 import java.sql.ResultSet
 

@@ -1,7 +1,7 @@
 package github.cweijan.ultimate.test.util;
 
 import github.cweijan.ultimate.core.Query;
-import github.cweijan.ultimate.json.Json;
+import github.cweijan.ultimate.util.Json;
 import github.cweijan.ultimate.test.base.BaseTest;
 import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.util.Log;

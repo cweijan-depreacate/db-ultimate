@@ -1,8 +1,8 @@
 package github.cweijan.ultimate.debug
 
-import github.cweijan.ultimate.component.ComponentScan
-import github.cweijan.ultimate.component.TableInfo
-import github.cweijan.ultimate.component.info.ComponentInfo
+import github.cweijan.ultimate.core.component.ComponentScan
+import github.cweijan.ultimate.core.component.TableInfo
+import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.util.Log
@@ -13,7 +13,7 @@ import java.io.File
 
 class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : FileAlterationListener {
 
-    val initialer=DBInitialer(dbconfig)
+    val initialer= DBInitialer(dbconfig)
 
     override fun onFileChange(file: File) {
 

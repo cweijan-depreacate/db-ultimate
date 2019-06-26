@@ -1,15 +1,14 @@
 package github.cweijan.ultimate.db.init
 
-import github.cweijan.ultimate.component.TableInfo
-import github.cweijan.ultimate.component.info.ComponentInfo
 import github.cweijan.ultimate.convert.TypeAdapter
+import github.cweijan.ultimate.core.component.TableInfo
+import github.cweijan.ultimate.core.component.info.ComponentInfo
+import github.cweijan.ultimate.core.generator.GeneratorAdapter
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
-import github.cweijan.ultimate.generator.GeneratorAdapter
 import github.cweijan.ultimate.generator.TableInitSqlGenetator
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
-import org.springframework.transaction.annotation.Transactional
 import java.sql.Connection
 import java.sql.SQLException
 

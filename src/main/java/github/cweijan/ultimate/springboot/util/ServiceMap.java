@@ -1,7 +1,6 @@
 package github.cweijan.ultimate.springboot.util;
 
-import github.cweijan.ultimate.component.ComponentScan;
-import github.cweijan.ultimate.component.info.ComponentInfo;
+import github.cweijan.ultimate.core.component.ComponentScan;
 
 import java.util.HashMap;
 import java.util.Map;

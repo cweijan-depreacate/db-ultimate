@@ -2,7 +2,7 @@ package github.cweijan.ultimate.test.springboot;
 
 import github.cweijan.ultimate.annotation.TableComponentScan;
 import github.cweijan.ultimate.core.Query;
-import github.cweijan.ultimate.json.Json;
+import github.cweijan.ultimate.util.Json;
 import github.cweijan.ultimate.springboot.UltimateAutoConfiguration;
 import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.test.bean.Lib;
@@ -46,7 +46,7 @@ public class TestSpringBoot {
     }
     @Test
     public void testServiceInject(){
-        List<Admin> list = adminService.findAllLimit(0, 10);
+        List<Admin> list = adminService.findByPage(0, 10);
         Log.info(Json.toJson(list));
     }
 

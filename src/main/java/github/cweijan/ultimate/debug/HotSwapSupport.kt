@@ -1,7 +1,6 @@
 package github.cweijan.ultimate.debug
 
 import github.cweijan.ultimate.db.config.DbConfig
-import github.cweijan.ultimate.db.init.DBInitialer
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
 
