@@ -32,6 +32,13 @@ class ComponentInfo(var componentClass: Class<*>) {
     }
 
     /**
+     * 列名与属性名的映射
+     */
+    private val columnInfoMap by lazy {
+        return@lazy HashMap<String, ColumnInfo>()
+    }
+
+    /**
      * excel列名与field的映射
      */
     val excelHeaderFieldMap = HashMap<String, Field>()
@@ -63,7 +70,7 @@ class ComponentInfo(var componentClass: Class<*>) {
     /**
      * 根据属性名找列的详细信息
      *
-     * @param fieldName 列名
+     * @param fieldName 属性名
      * @return 对应的属性名
      */
     fun getColumnInfoByFieldName(fieldName: String): ColumnInfo? {
@@ -76,6 +83,17 @@ class ComponentInfo(var componentClass: Class<*>) {
      */
     fun nonExistsColumn(): Boolean {
         return fieldColumnInfoMap.keys.size == 0
+    }
+
+    /**
+     * 根据列名找ColumnInfo
+     *
+     * @param columnName 列名
+     * @return columnInfo
+     */
+    fun getColumnInfoByColumnName(columnName: String): ColumnInfo? {
+
+        return columnInfoMap[columnName]
     }
 
     @Throws(IllegalAccessException::class)
@@ -142,18 +160,18 @@ class ComponentInfo(var componentClass: Class<*>) {
          */
         fun init(componentClass: Class<*>, scanMode: Boolean = true): ComponentInfo? {
 
-            if (TableInfo.isAlreadyInit(componentClass) && scanMode) return null
-            val table = getComponentClass(componentClass) ?: return null
-            var tableName = table.value
+            if (TableInfo.isAlreadyInit(componentClass) && scanMode) return TableInfo.getComponent(componentClass)
+            val table = getComponentClass(componentClass)
+            var tableName = table?.value?:componentClass.simpleName.toLowerCase()
             if (tableName == "") {
                 tableName = componentClass.simpleName.toLowerCase()
             }
 
             val componentInfo = ComponentInfo(componentClass)
             componentInfo.tableName = tableName
-            componentInfo.selectColumns = table.selectColumns
-            componentInfo.tableAlias = table.alias
-            generateColumns(componentInfo, table.camelcaseToUnderLine)
+            componentInfo.selectColumns = table?.selectColumns?:"*"
+            componentInfo.tableAlias = table?.alias
+            generateColumns(componentInfo, table?.camelcaseToUnderLine?:true)
             TableInfo.putComponent(componentClass, componentInfo)
             Log.debug("load component ${componentClass.name}, table is $tableName")
             return componentInfo
@@ -254,6 +272,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                 }
 
                 componentInfo.fieldColumnInfoMap[field.name] = columnInfo
+                componentInfo.columnInfoMap[columnInfo.columnName] = columnInfo
             }
 
         }

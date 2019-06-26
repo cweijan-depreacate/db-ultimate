@@ -91,11 +91,12 @@ object TypeConvert {
             field.isAccessible = true
             val fieldName = field.name
             val fieldType = field.type.name
+            val key = component.getColumnNameByFieldName(fieldName)?.toLowerCase()
             if (component.isQueryExcludeField(field) ||
-                    (!columns.containsKey(component.getColumnNameByFieldName(fieldName)) && TypeAdapter.isAdapterType(field.type))) {
+                    (!columns.containsKey(key) && TypeAdapter.isAdapterType(field.type))) {
                 continue
             }
-            val columnName = columns[component.getColumnNameByFieldName(fieldName)]
+            val columnName = columns[key]
 
             try {
                 when {
@@ -106,7 +107,7 @@ object TypeConvert {
                     }))
                     else -> objectMap[field] = Class.forName(fieldType)
                 }
-                columns.remove(columnName)
+                columns.remove(key)
             } catch (e: Exception) {
                 Log.error(e.message, e)
             }
@@ -129,7 +130,7 @@ object TypeConvert {
 
         // 获取resultSet字段类型
         for (i in 1..metaData.columnCount) {
-            columns[metaData.getColumnLabel(i)] = metaData.getColumnLabel(i)
+            columns[metaData.getColumnLabel(i).toLowerCase()] = metaData.getColumnLabel(i)
         }
 
         return columns

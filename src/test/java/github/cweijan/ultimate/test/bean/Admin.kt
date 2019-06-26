@@ -19,8 +19,11 @@ open class Admin {
 
     var adminType:AdminTypeEnum?=null
 
-    @Column("message2")
+    @Column("message3")
     open var msd: String? = null
+
+    @Column(length = 30)
+    var newColumn:String?=null
 
     var helloWorldTest: String? = null
 
