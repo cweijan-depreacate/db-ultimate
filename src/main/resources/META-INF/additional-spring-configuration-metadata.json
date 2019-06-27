@@ -60,8 +60,8 @@
       "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
     },
     {
-      "name": "ultimate.jdbc.createNonexistsTable",
-      "type": "java.lang.Boolean",
+      "name": "ultimate.jdbc.table-auto",
+      "type": "github.cweijan.ultimate.db.init.generator.TableAutoMode",
       "description": "Enable or disable auto create non exists table.",
       "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
     },

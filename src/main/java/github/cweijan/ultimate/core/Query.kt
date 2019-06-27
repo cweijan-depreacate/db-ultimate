@@ -471,6 +471,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
             if (dbConfig.develop) {
                 HotSwapSupport.startHotSwapListener(dbConfig)
             }
+
             dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
             DBInitialer(dbConfig).initalerTable()
 

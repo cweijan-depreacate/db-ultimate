@@ -13,6 +13,9 @@ import java.util.*
  * @date 2019/6/25/025 14:44
  */
 class OracleInit : BaseInitSqlGenerator() {
+    override fun initStruct() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     override fun generateUniqueSqlFragment(tableName: String, columnName: String, columnDefinition: String): String? {
         return " CONSTRAINT ${columnName}_uk UNIQUE ($columnName) "

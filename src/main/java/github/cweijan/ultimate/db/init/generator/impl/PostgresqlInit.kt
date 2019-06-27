@@ -9,6 +9,10 @@ import java.time.LocalTime
 import java.util.*
 
 class PostgresqlInit : BaseInitSqlGenerator() {
+    override fun initStruct() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun generateUniqueSqlFragment(tableName: String, columnName: String, columnDefinition: String): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }

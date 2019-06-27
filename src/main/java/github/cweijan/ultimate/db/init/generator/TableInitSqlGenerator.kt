@@ -4,6 +4,8 @@ import java.lang.reflect.Field
 
 interface TableInitSqlGenerator {
 
+    fun initStruct()
+
     fun getColumnTypeByField(field: Field, length: Int?): String
 
     fun generateDefaultSqlFragment(defaultValue:Any?):String
@@ -13,5 +15,11 @@ interface TableInitSqlGenerator {
     fun generateCommentSqlFragment(comment: String): String?
 
     fun generateUniqueSqlFragment(tableName: String,columnName: String,columnDefinition: String): String?
+
+    fun dropTable(tableName: String?):String?{
+        tableName?:return null
+
+        return "DROP TABLE $tableName;"
+    }
 
 }

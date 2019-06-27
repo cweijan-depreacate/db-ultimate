@@ -1,7 +1,9 @@
 package github.cweijan.ultimate.db.init.generator.impl
 
 import github.cweijan.ultimate.convert.JavaType
+import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.db.init.generator.BaseInitSqlGenerator
+import github.cweijan.ultimate.db.init.generator.struct.TableStruct
 
 import java.lang.reflect.Field
 import java.time.LocalDate
@@ -14,6 +16,10 @@ import java.util.*
  * @date 2019/6/25/025 14:43
  */
 class MysqlInit : BaseInitSqlGenerator() {
+
+    override fun initStruct() {
+        ComponentInfo.init(TableStruct::class.java)
+    }
 
     override fun generateUniqueSqlFragment(tableName: String, columnName: String, columnDefinition: String): String? {
         return "UNIQUE INDEX ($columnName)"

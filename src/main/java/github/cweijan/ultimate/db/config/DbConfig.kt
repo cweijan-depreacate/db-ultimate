@@ -10,7 +10,6 @@ import javax.sql.DataSource
 @ConfigurationProperties(prefix = "ultimate.jdbc")
 class DbConfig {
 
-    var createNonexistsTable: Boolean = DefaultProperties.CREATE_NON_EXISTS_TABLE
     var username: String? = null
     var password: String? = null
     var driver: String? = null
@@ -41,6 +40,7 @@ class DbConfig {
     var showSql = DefaultProperties.SHOW_SQL
     var enable = DefaultProperties.ENABLE
     var develop = DefaultProperties.DEVELOP
+    var tableMode=DefaultProperties.DEFAULT_TABLE_MODE
     var scanPackage: String? = null
     private val threadLocal = ThreadLocal<Connection?>()
 

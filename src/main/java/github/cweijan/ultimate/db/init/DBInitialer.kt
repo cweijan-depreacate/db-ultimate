@@ -8,12 +8,16 @@ import github.cweijan.ultimate.core.extra.ExtraData
 import github.cweijan.ultimate.core.generator.GeneratorAdapter
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
+import github.cweijan.ultimate.db.init.generator.TableAutoMode
 import github.cweijan.ultimate.db.init.generator.TableInitSqlGenerator
 import github.cweijan.ultimate.db.init.generator.struct.TableStruct
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
 import java.sql.Connection
 import java.sql.SQLException
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 /**
  * 用于创建实体对应的不存在的数据表
@@ -22,6 +26,10 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
     private var connection: Connection = dbConfig.getConnection()
+        get() {
+            if (connection.isClosed) field = dbConfig.getConnection()
+            return field
+        }
     private var initSqlGenetator: TableInitSqlGenerator = GeneratorAdapter.getInitGenerator(dbConfig.driver)
 
     /**
@@ -31,29 +39,31 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
         val extraData = ComponentInfo.init(ExtraData::class.java)
         createTable(extraData)
-        var tableStruct = ComponentInfo.init(TableStruct::class.java)
-        println(tableStruct)
-        TableInfo.componentList.stream().forEach { componentInfo ->
-            updateTable(componentInfo)
-        }
-        if (dbConfig.createNonexistsTable) {
-            TableInfo.componentList.stream().forEach { componentInfo ->
-                createTable(componentInfo)
+        initSqlGenetator.initStruct()
+
+        val excludeList = listOf(TableStruct::class.java, ExtraData::class.java)
+        val component = TableInfo.componentList.stream().filter { componentInfo -> !excludeList.contains(componentInfo.componentClass) }
+        when (dbConfig.tableMode) {
+            TableAutoMode.none -> return
+            TableAutoMode.create -> {
+                component.forEach { componentInfo -> recreateTable(componentInfo) }
             }
-        } else {
-            TableInfo.componentList.stream().forEach { componentInfo ->
-                //                updateTable(componentInfo)
+            TableAutoMode.update -> {
+                component.forEach { componentInfo -> updateTable(componentInfo) }
             }
         }
 
     }
 
+    private fun recreateTable(componentInfo: ComponentInfo) {
+        if (tableExists(componentInfo.tableName)) {
+            initSqlGenetator.dropTable(componentInfo.tableName)
+        }
+        createTable(componentInfo)
+    }
+
 
     fun createTable(componentInfo: ComponentInfo?) {
-
-        if(componentInfo?.componentClass==TableStruct::class.java)return
-
-        if (connection.isClosed) connection = dbConfig.getConnection()
 
         if (componentInfo == null || tableExists(componentInfo.tableName)) return
 
@@ -150,11 +160,11 @@ class DBInitialer(private val dbConfig: DbConfig) {
      */
     private fun updateTable(componentInfo: ComponentInfo?) {
 
-        if(componentInfo?.componentClass==TableStruct::class.java)return
-
-        if (connection.isClosed) connection = dbConfig.getConnection()
-
         if (componentInfo == null) return
+        if(!tableExists(componentInfo.tableName)){
+            createTable(componentInfo)
+            return
+        }
 
         if (componentInfo.nonExistsColumn()) {
             Log.debug("${componentInfo.componentClass.name} dont have any columns, skip create table ")
@@ -224,7 +234,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
         }
 
         try {
-            updateSqlList.forEach{sqlExecutor.executeSql(it)}
+            updateSqlList.forEach { sqlExecutor.executeSql(it) }
         } catch (e: Exception) {
             Log.error("Update table ${componentInfo.tableName} error!", e)
             return
