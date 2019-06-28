@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.db.init.generator.impl.postgresql
 
 import github.cweijan.ultimate.convert.JavaType
+import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.db.init.generator.TableInitSqlGenerator
 import java.lang.reflect.Field
@@ -12,7 +13,35 @@ import java.util.*
 class PostgresqlInit : TableInitSqlGenerator {
 
     override fun getColumnDefination(field: Field, componentInfo: ComponentInfo): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        field.isAccessible = true
+        val columnInfo = componentInfo.getColumnInfoByFieldName(field.name)!!
+        //生成column
+        val columnType = getColumnTypeByField(field, columnInfo.length)
+        var columnDefination = "${columnInfo.columnName} $columnType"
+        //生成主键或者非空片段
+        when {
+            columnInfo.isPrimary && columnInfo.autoIncrement -> {
+                columnDefination = columnDefination.replace(columnType, "serial")
+                columnDefination += " PRIMARY KEY "
+            }
+            columnInfo.isPrimary -> columnDefination += " PRIMARY KEY "
+            columnInfo.unique -> columnDefination += " UNIQUE "
+            columnInfo.nullable -> columnDefination += ""
+            else -> columnDefination += " NOT NULL "
+        }
+        //生成默认值片段
+        columnDefination += when {
+            columnInfo.unique || columnInfo.isPrimary || columnInfo.defaultValue == null -> ""
+            else -> " DEFAULT " + if (TypeAdapter.CHARACTER_TYPE.contains(field.type.name)) {
+                TypeAdapter.contentWrapper(columnInfo.defaultValue)
+            } else {
+                columnInfo.defaultValue
+            }
+        }
+
+        //注释:Postgresql不支持生成注释
+
+        return columnDefination
     }
 
     override fun initStruct() {

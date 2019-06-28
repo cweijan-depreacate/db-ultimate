@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.db.init.generator.impl.oracle
 
 import github.cweijan.ultimate.convert.JavaType
+import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.db.init.generator.TableInitSqlGenerator
 import java.lang.reflect.Field
@@ -16,7 +17,32 @@ import java.util.*
 class OracleInit : TableInitSqlGenerator {
 
     override fun getColumnDefination(field: Field, componentInfo: ComponentInfo): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        field.isAccessible = true
+        val columnInfo = componentInfo.getColumnInfoByFieldName(field.name)!!
+        //生成column
+        var columnDefination = "${columnInfo.columnName} ${getColumnTypeByField(field, columnInfo.length)}"
+        //生成主键或者非空片段
+        columnDefination += when {
+            columnInfo.isPrimary && columnInfo.autoIncrement -> " PRIMARY KEY AUTO_INCREMENT "
+            columnInfo.isPrimary -> " PRIMARY KEY "
+//            columnInfo.unique -> " UNIQUE "
+            columnInfo.nullable -> ""
+            else -> " NOT NULL "
+        }
+        //ORACLE不支持Unique
+        //生成默认值片段
+        columnDefination += when {
+            columnInfo.unique || columnInfo.isPrimary || columnInfo.defaultValue==null -> ""
+            else -> " DEFAULT " + if (TypeAdapter.CHARACTER_TYPE.contains(field.type.name)) {
+                TypeAdapter.contentWrapper(columnInfo.defaultValue)
+            } else {
+                columnInfo.defaultValue
+            }
+        }
+
+        //Oracle不支持生成注释
+
+        return columnDefination
     }
 
     override fun initStruct() {
