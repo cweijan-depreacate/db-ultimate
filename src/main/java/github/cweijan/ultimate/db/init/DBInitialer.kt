@@ -15,9 +15,6 @@ import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
 import java.sql.Connection
 import java.sql.SQLException
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 /**
  * 用于创建实体对应的不存在的数据表
@@ -25,12 +22,13 @@ import kotlin.collections.HashSet
 class DBInitialer(private val dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
-    private var connection: Connection = dbConfig.getConnection()
-        get() {
-            if (connection.isClosed) field = dbConfig.getConnection()
-            return field
-        }
+    private var connection: Connection=dbConfig.getConnection()
     private var initSqlGenetator: TableInitSqlGenerator = GeneratorAdapter.getInitGenerator(dbConfig.driver)
+
+    private fun getConnection():Connection{
+        if (connection.isClosed) connection = dbConfig.getConnection()
+        return connection
+    }
 
     /**
      * 创建Bean所对应的表
@@ -147,7 +145,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
     fun tableExists(tableName: String): Boolean {
 
         try {
-            return connection.metaData.getTables(null, null, tableName, null).next()
+            return getConnection().metaData.getTables(null, null, tableName, null).next()
         } catch (e: SQLException) {
             Log.error(e.message, e)
         }
@@ -172,7 +170,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
         }
 
         val updateSqlList = HashSet<String>();
-        val structList = Query.of(TableStruct::class.java).eq("tableScheme", connection.schema).eq("tableName", componentInfo.tableName).list()
+        val structList = Query.of(TableStruct::class.java).eq("tableScheme", getConnection().schema).eq("tableName", componentInfo.tableName).list()
 
         TypeAdapter.getAllField(componentInfo.componentClass).let { fields ->
 
