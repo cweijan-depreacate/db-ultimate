@@ -3,11 +3,11 @@ package github.cweijan.ultimate.core
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.convert.TypeConvert
 import github.cweijan.ultimate.core.extra.ExtraDataService
+import github.cweijan.ultimate.core.dialect.DialectAdapter
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.exception.TooManyResultException
-import github.cweijan.ultimate.core.generator.GeneratorAdapter
-import github.cweijan.ultimate.core.generator.SqlGenerator
+import github.cweijan.ultimate.core.dialect.SqlDialect
 import github.cweijan.ultimate.util.Log
 import java.sql.ResultSet
 
@@ -17,13 +17,12 @@ import java.sql.ResultSet
 class DbUltimate internal constructor(dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
-    var sqlGenerator: SqlGenerator = GeneratorAdapter.getSqlGenerator(dbConfig.driver)
+    var sqlGenerator: SqlDialect = DialectAdapter.getSqlGenerator(dbConfig.getDatabaseType())
 
     @JvmOverloads
     fun <T> executeSqlOf(sql: String, params: Array<Any>? = null, clazz: Class<T>): T? {
 
         return TypeConvert.resultSetToBean(sqlExecutor.executeSql(sql, params)!!, clazz)
-
     }
 
     @JvmOverloads
@@ -100,7 +99,7 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
      * 保存或更新附加对象
      */
     fun saveExtra(key: Any, extraObject: Any) {
-        ExtraDataService.save(key,extraObject)
+        ExtraDataService.save(key, extraObject)
     }
 
     /**
@@ -108,15 +107,15 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
      */
     fun <T> getExtra(key: Any, extraType: Class<T>): T? {
 
-        return ExtraDataService.getExtraData(key,extraType)
+        return ExtraDataService.getExtraData(key, extraType)
     }
 
     /**
      * 设置附加对象过期时间
      */
     @JvmOverloads
-    fun expireExtra(key: Any, extraType: Class<*>,minute:Int=0){
-        ExtraDataService.expireExtraData(key,extraType,minute)
+    fun expireExtra(key: Any, extraType: Class<*>, minute: Int = 0) {
+        ExtraDataService.expireExtraData(key, extraType, minute)
     }
 
     /**
@@ -127,8 +126,8 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
     fun insert(component: Any) {
 
         val sqlObject = sqlGenerator.generateInsertSql(component)
-        val executeSql = executeSql(sqlObject.sql,sqlObject.params.toTypedArray())
-        if(executeSql?.next()==true){
+        val executeSql = executeSql(sqlObject.sql, sqlObject.params.toTypedArray())
+        if (executeSql?.next() == true) {
             TableInfo.getComponent(component.javaClass).setPrimaryValue(component, executeSql.getInt(1))
         }
 
@@ -168,7 +167,7 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
 
         try {
             val sqlObject = sqlGenerator.generateUpdateSqlByObject(component)
-            executeSql(sqlObject.sql,sqlObject.params.toTypedArray())
+            executeSql(sqlObject.sql, sqlObject.params.toTypedArray())
         } catch (e: IllegalAccessException) {
             Log.error(e.message, e)
         }

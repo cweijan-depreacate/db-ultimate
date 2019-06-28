@@ -1,13 +1,11 @@
-package github.cweijan.ultimate.generator
+package github.cweijan.ultimate.core.dialect
 
+import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.Query
-import github.cweijan.ultimate.core.component.TableInfo
-import github.cweijan.ultimate.core.generator.SqlGenerator
-import github.cweijan.ultimate.core.generator.SqlObject
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 
-abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {
+abstract class BaseSqlDialect : SqlDialect {
 
     override fun generateInsertSql(component: Any): SqlObject {
 
@@ -171,11 +169,6 @@ abstract class BaseSqlGenerator : SqlGenerator, TableInitSqlGenetator {
 
         return sql.toString()
     }
-
-    override fun generateCommentSqlFragment(comment: String): String? {
-        return null
-    }
-
     abstract fun <T> generatePaginationSql(sql: String, query: Query<T>): String
 
 }

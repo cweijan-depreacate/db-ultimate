@@ -37,7 +37,7 @@ dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
     compile group: 'org.apache.poi', name: 'poi', version: '3.17'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
-    compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
+//    compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
 
     testCompile(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.1.4.RELEASE') 
     testCompile group: 'junit', name: 'junit', version: '4.12'

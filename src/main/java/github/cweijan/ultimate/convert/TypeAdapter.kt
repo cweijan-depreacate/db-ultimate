@@ -4,17 +4,15 @@ import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.util.DateUtils
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
-import java.util.*
 import kotlin.collections.ArrayList
 
 object TypeAdapter {
 
-    private val NUMBER_TYPE = Arrays.asList("byte", "short", "int", "float", "double", "long", JavaType.Byte,
-            JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
-    private val BOOLEAN_TYPE = Arrays.asList(JavaType.Boolean, "boolean")
-    private val BLOB_TYPE = Arrays.asList(JavaType.byteArray)
-    val CHARACTER_TYPE: MutableList<String> = Arrays.asList(JavaType.String, "chat", JavaType.Character)
-    val DATE_TYPE: MutableList<String> = Arrays.asList("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
+    private val NUMBER_TYPE = mutableListOf("byte", "short", "int", "float", "double", "long", JavaType.Byte, JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
+    private val BOOLEAN_TYPE = mutableListOf(JavaType.Boolean, "boolean")
+    private val BLOB_TYPE = mutableListOf(JavaType.byteArray)
+    val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
+    val DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
 
     fun isAdapterType(type: Class<*>): Boolean {
         val typeName = type.name
@@ -30,15 +28,6 @@ object TypeAdapter {
         arrayList.addAll(getAllField(componentClass.superclass))
 
         return arrayList
-    }
-
-    fun getDefaultValue(fieldType: String): Any? {
-        return when {
-            NUMBER_TYPE.contains(fieldType) -> 0
-            BOOLEAN_TYPE.contains(fieldType) -> 0
-            CHARACTER_TYPE.contains(fieldType) -> "''"
-            else -> null
-        }
     }
 
     fun convertJavaObject(componentClass: Class<*>, field: Field, javaObject: Any?): Any? {

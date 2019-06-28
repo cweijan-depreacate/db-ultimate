@@ -5,6 +5,7 @@ import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
+import github.cweijan.ultimate.db.init.generator.TableAutoMode
 import github.cweijan.ultimate.util.Log
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationObserver
@@ -13,7 +14,7 @@ import java.io.File
 
 class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : FileAlterationListener {
 
-    val initialer= DBInitialer(dbconfig)
+    private val initialer= DBInitialer(dbconfig)
 
     override fun onFileChange(file: File) {
 
@@ -23,7 +24,7 @@ class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : F
         componentClass?: return
         if(ComponentScan.isComponent(componentClass)){
             val componentInfo = ComponentInfo.init(componentClass, false)
-            if(dbconfig.createNonexistsTable){
+            if(dbconfig.tableMode!=TableAutoMode.none){
                 initialer.createTable(componentInfo)
             }
             Log.debug("reload component $className")
@@ -39,7 +40,7 @@ class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : F
         componentClass?: return
         if(ComponentScan.isComponent(componentClass)){
             val componentInfo = ComponentInfo.init(componentClass, false)
-            if(dbconfig.createNonexistsTable){
+            if(dbconfig.tableMode!=TableAutoMode.none){
                 initialer.createTable(componentInfo)
             }
             Log.debug("init component $className")

@@ -291,7 +291,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
-    fun count():Int{
+    fun count(): Int {
         return db.getCount(this)
     }
 
@@ -405,7 +405,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
                     field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; search(fieldName, it) }
                     field.getAnnotation(OrSearch::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orSearch(fieldName, it) }
                     field.getAnnotation(OrderBy::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orderBy(fieldName) }
-                    if (!haveCondition && component.getColumnInfoByFieldName(fieldName)!=null)
+                    if (!haveCondition && component.getColumnInfoByFieldName(fieldName) != null)
                         eq(fieldName, it)
                 }
             }
@@ -467,15 +467,14 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
         @JvmStatic
         fun init(dbConfig: DbConfig) {
+            db = DbUltimate(dbConfig)
             if (dbConfig.develop) {
                 HotSwapSupport.startHotSwapListener(dbConfig)
             }
+
             dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
-            val dbInitialer = DBInitialer(dbConfig)
-            dbInitialer.initalerTable()
-            val extraData = ComponentInfo.init(ExtraData::class.java)
-            dbInitialer.createTable(extraData)
-            db = DbUltimate(dbConfig)
+            DBInitialer(dbConfig).initalerTable()
+
         }
 
     }

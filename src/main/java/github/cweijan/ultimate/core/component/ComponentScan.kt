@@ -1,12 +1,13 @@
 package github.cweijan.ultimate.core.component
 
+//import org.reflections.Reflections
+//import org.reflections.scanners.ResourcesScanner
+//import org.reflections.scanners.SubTypesScanner
+//import org.reflections.util.ClasspathHelper
+//import org.reflections.util.ConfigurationBuilder
+//import org.reflections.util.FilterBuilder
 import github.cweijan.ultimate.core.component.info.ComponentInfo
-import org.reflections.Reflections
-import org.reflections.scanners.ResourcesScanner
-import org.reflections.scanners.SubTypesScanner
-import org.reflections.util.ClasspathHelper
-import org.reflections.util.ConfigurationBuilder
-import org.reflections.util.FilterBuilder
+import github.cweijan.ultimate.util.ClassTools
 import java.util.*
 
 
@@ -42,15 +43,17 @@ object ComponentScan {
      */
     private fun scanTableClasses(packageName: String) {
 
-        val classLoadersList = LinkedList<ClassLoader>()
-        classLoadersList.add(ClasspathHelper.contextClassLoader())
-        classLoadersList.add(ClasspathHelper.staticClassLoader())
+        ClassTools.getClasses(packageName).forEach { if (isComponent(it)) ComponentInfo.init(it)}
 
-        val reflections = Reflections(ConfigurationBuilder()
-                .setScanners(SubTypesScanner(false), ResourcesScanner())
-                .setUrls(ClasspathHelper.forClassLoader(*classLoadersList.toTypedArray()))
-                .filterInputsBy(FilterBuilder().include(FilterBuilder.prefix(packageName))))
-        reflections.getSubTypesOf(Any::class.java).forEach { if (isComponent(it)) ComponentInfo.init(it) }
+//        val classLoadersList = LinkedList<ClassLoader>()
+//        classLoadersList.add(ClasspathHelper.contextClassLoader())
+//        classLoadersList.add(ClasspathHelper.staticClassLoader())
+//
+//        val reflections = Reflections(ConfigurationBuilder()
+//                .setScanners(SubTypesScanner(false), ResourcesScanner())
+//                .setUrls(ClasspathHelper.forClassLoader(*classLoadersList.toTypedArray()))
+//                .filterInputsBy(FilterBuilder().include(FilterBuilder.prefix(packageName))))
+//        reflections.getSubTypesOf(Any::class.java).forEach { if (isComponent(it)) ComponentInfo.init(it) }
 
     }
 }

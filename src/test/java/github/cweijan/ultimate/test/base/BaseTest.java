@@ -3,6 +3,7 @@ package github.cweijan.ultimate.test.base;
 import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.db.config.DbConfig;
 import github.cweijan.ultimate.db.init.DBInitialer;
+import github.cweijan.ultimate.db.init.generator.TableAutoMode;
 import github.cweijan.ultimate.util.Log;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -20,7 +21,7 @@ public class BaseTest {
         dbConfig.setUsername("root");
         dbConfig.setPassword("123456");
         dbConfig.setDriver("com.mysql.jdbc.Driver");
-        dbConfig.setCreateNonexistsTable(true);
+        dbConfig.setTableMode(TableAutoMode.update);
         dbConfig.setScanPackage("github.cweijan.ultimate");
         Query.init(dbConfig);
         dbInitialer = new DBInitialer(dbConfig);

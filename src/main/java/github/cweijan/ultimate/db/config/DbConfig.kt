@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.db.config
 
+import github.cweijan.ultimate.db.DatabaseType
 import github.cweijan.ultimate.db.HikariDataSourceAdapter
 import github.cweijan.ultimate.util.Log
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -10,7 +11,6 @@ import javax.sql.DataSource
 @ConfigurationProperties(prefix = "ultimate.jdbc")
 class DbConfig {
 
-    var createNonexistsTable: Boolean = DefaultProperties.CREATE_NON_EXISTS_TABLE
     var username: String? = null
     var password: String? = null
     var driver: String? = null
@@ -41,8 +41,19 @@ class DbConfig {
     var showSql = DefaultProperties.SHOW_SQL
     var enable = DefaultProperties.ENABLE
     var develop = DefaultProperties.DEVELOP
+    var tableMode=DefaultProperties.DEFAULT_TABLE_MODE
     var scanPackage: String? = null
     private val threadLocal = ThreadLocal<Connection?>()
+
+    fun getDatabaseType():DatabaseType{
+        return when{
+            url!!.indexOf("jdbc:mysql")!=-1->DatabaseType.mysql
+            url!!.indexOf("jdbc:oracle")!=-1->DatabaseType.oracle
+            url!!.indexOf("jdbc:postgresql")!=-1->DatabaseType.mysql
+            url!!.indexOf("jdbc:sqlite")!=-1->DatabaseType.sqllite
+            else -> DatabaseType.none
+        }
+    }
 
     fun getConnection(): Connection {
 

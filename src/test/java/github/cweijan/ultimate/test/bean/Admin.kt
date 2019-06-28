@@ -19,12 +19,16 @@ open class Admin {
 
     var adminType:AdminTypeEnum?=null
 
-    @Column("message2")
+    @Column("message3")
     open var msd: String? = null
+
+    @Column(length = 30)
+    @ExcludeExcel
+    var newColumn:String?=null
 
     var helloWorldTest: String? = null
 
-    @Column("create_date")
+    @Column("create_date",excelHeader = "创建时间")
     var date: LocalDateTime? = null
 
 //    @ExcludeResult

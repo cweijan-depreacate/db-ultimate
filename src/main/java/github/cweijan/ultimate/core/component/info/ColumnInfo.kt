@@ -6,7 +6,7 @@ class ColumnInfo {
     lateinit var fieldType: Class<*>
     lateinit var excelHeader: String
     var length: Int? = null
-    var nullable: Boolean = false
+    var nullable: Boolean = true
     var autoIncrement: Boolean = false
     var unique: Boolean=false
     var comment: String?=null
@@ -16,4 +16,5 @@ class ColumnInfo {
     var excludeUpdate: Boolean = false
     var excludeResult: Boolean = false
     var excludeTable: Boolean = false
+    var isPrimary:Boolean=false
 }

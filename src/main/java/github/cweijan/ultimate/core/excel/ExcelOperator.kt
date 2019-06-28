@@ -7,6 +7,7 @@ import org.apache.poi.hssf.usermodel.HSSFCell
 import org.apache.poi.hssf.usermodel.HSSFRow
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.Cell
+import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.ss.usermodel.VerticalAlignment
 import java.io.File
@@ -15,7 +16,12 @@ import java.io.InputStream
 import java.util.*
 import kotlin.collections.HashMap
 
+
+@SuppressWarnings("all")
 object ExcelOperator {
+
+    val numberPattern = Regex("^(-?\\d+)(\\.\\d+)?$")
+    val integerPattern = Regex("^[-\\+]?[\\d]*$")
 
     /**
      * 导出Excel
@@ -37,8 +43,27 @@ object ExcelOperator {
         values.forEachIndexed { i, rowData ->
             row = sheet.createRow(i + 1)
             rowData.forEachIndexed { j, data ->
-                row.createCell(j).setCellValue("$data")
+                val valueCell = row.createCell(j)
+
+                val contextstyle = wb.createCellStyle()
+                contextstyle.setAlignment(HorizontalAlignment.CENTER)
+                contextstyle.setVerticalAlignment(VerticalAlignment.CENTER)
+                val cellValue = "$data"
+                if (cellValue.matches(numberPattern) && !cellValue.contains("%")) {
+                    val df = wb.createDataFormat()
+                    if (cellValue.matches(integerPattern)) {
+                        contextstyle.dataFormat = df.getFormat("#,#0")//数据格式只显示整数
+                    } else {
+                        contextstyle.dataFormat = df.getFormat("#,##0.00")//保留两位小数点
+                    }
+                    valueCell.setCellStyle(contextstyle)
+                    valueCell.setCellValue(cellValue.toDouble())
+                } else {
+                    valueCell.setCellStyle(contextstyle)
+                    valueCell.setCellValue(cellValue)
+                }
             }
+
         }
 
         row = sheet.createRow(0)
