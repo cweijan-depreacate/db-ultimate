@@ -162,15 +162,4 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
     }
 
-    private fun notExistsColumn(tableStructList: List<MysqlTableStruct>?, columnName: String): Boolean {
-
-        if (tableStructList == null) return true
-
-        tableStructList.forEach { tableStruct ->
-            if (tableStruct.columnName == columnName) return false
-        }
-
-        return true
-    }
-
 }

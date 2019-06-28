@@ -4,7 +4,6 @@ import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.util.DateUtils
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
-import java.util.*
 import kotlin.collections.ArrayList
 
 object TypeAdapter {
@@ -29,15 +28,6 @@ object TypeAdapter {
         arrayList.addAll(getAllField(componentClass.superclass))
 
         return arrayList
-    }
-
-    fun getDefaultValue(fieldType: String): Any? {
-        return when {
-            NUMBER_TYPE.contains(fieldType) -> 0
-            BOOLEAN_TYPE.contains(fieldType) -> 0
-            CHARACTER_TYPE.contains(fieldType) -> "''"
-            else -> null
-        }
     }
 
     fun convertJavaObject(componentClass: Class<*>, field: Field, javaObject: Any?): Any? {

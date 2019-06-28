@@ -1,15 +1,13 @@
 package github.cweijan.ultimate.core.component
 
-import github.cweijan.ultimate.core.component.info.ComponentInfo
-import github.cweijan.ultimate.springboot.util.ServiceInject
-import github.cweijan.ultimate.util.ClassTools
-import org.springframework.beans.factory.support.RootBeanDefinition
 //import org.reflections.Reflections
 //import org.reflections.scanners.ResourcesScanner
 //import org.reflections.scanners.SubTypesScanner
 //import org.reflections.util.ClasspathHelper
 //import org.reflections.util.ConfigurationBuilder
 //import org.reflections.util.FilterBuilder
+import github.cweijan.ultimate.core.component.info.ComponentInfo
+import github.cweijan.ultimate.util.ClassTools
 import java.util.*
 
 

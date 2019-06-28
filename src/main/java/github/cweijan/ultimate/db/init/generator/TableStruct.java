@@ -18,6 +18,9 @@ public interface TableStruct {
         switch (databaseType) {
             case mysql:
                 return Query.of(MysqlTableStruct.class).eq("tableScheme", schemeName).eq("tableName", tableName).list();
+            case oracle:
+            case sqllite:
+            case postgresql:
         }
 
         return null;

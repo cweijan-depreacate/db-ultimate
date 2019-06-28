@@ -33,7 +33,7 @@ class MysqlInit : TableInitSqlGenerator {
         }
         //生成默认值片段
         columnDefination += when {
-            columnInfo.unique || columnInfo.isPrimary || StringUtils.isEmpty(columnInfo.defaultValue) -> ""
+            columnInfo.unique || columnInfo.isPrimary || columnInfo.defaultValue==null -> ""
             else -> " DEFAULT " + if (TypeAdapter.CHARACTER_TYPE.contains(field.type.name)) {
                 TypeAdapter.contentWrapper(columnInfo.defaultValue)
             } else {

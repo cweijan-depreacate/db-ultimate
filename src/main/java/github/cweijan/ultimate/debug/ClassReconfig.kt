@@ -14,7 +14,7 @@ import java.io.File
 
 class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : FileAlterationListener {
 
-    val initialer= DBInitialer(dbconfig)
+    private val initialer= DBInitialer(dbconfig)
 
     override fun onFileChange(file: File) {
 
