@@ -1,23 +1,26 @@
-package github.cweijan.ultimate.db.init.generator.impl
+package github.cweijan.ultimate.db.init.generator.impl.postgresql
 
 import github.cweijan.ultimate.convert.JavaType
-import github.cweijan.ultimate.db.init.generator.BaseInitSqlGenerator
+import github.cweijan.ultimate.core.component.info.ComponentInfo
+import github.cweijan.ultimate.db.init.generator.TableInitSqlGenerator
 import java.lang.reflect.Field
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
 
-class PostgresqlInit : BaseInitSqlGenerator() {
+class PostgresqlInit : TableInitSqlGenerator {
+
+    override fun getColumnDefination(field: Field, componentInfo: ComponentInfo): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun initStruct() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun generateUniqueSqlFragment(tableName: String, columnName: String, columnDefinition: String): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 
-    override fun generateAutoIncrementSqlFragment(tableName: String?, columnName: String?): String? {
+    fun generateAutoIncrementSqlFragment(tableName: String?, columnName: String?): String? {
         if (tableName == null || columnName == null) return null
         return "\n" + """CREATE SEQUENCE ${tableName}_${columnName}_seq
             INCREMENT 1
@@ -27,10 +30,6 @@ class PostgresqlInit : BaseInitSqlGenerator() {
             CACHE 1;
         ALTER TABLE $tableName alter column $columnName set default nextval('${tableName}_${columnName}_seq');
         """
-    }
-
-    override fun generateDefaultSqlFragment(defaultValue: Any?): String {
-        return " DEFAULT $defaultValue "
     }
 
     override fun getColumnTypeByField(field: Field, length: Int?): String {

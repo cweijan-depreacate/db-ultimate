@@ -1,7 +1,6 @@
 package github.cweijan.ultimate.util;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.JarURLConnection;
@@ -27,7 +26,6 @@ public class ClassTools {
      */
     public static Set<Class<?>> getClasses(String pack) {
         Set<Class<?>> classes = new LinkedHashSet<>();
-        boolean recursive = true;
         String packageName = pack;
         String packageDirName = packageName.replace('.', '/');
         Enumeration<URL> dirs;
@@ -38,7 +36,7 @@ public class ClassTools {
                 String protocol = url.getProtocol();
                 if ("file".equals(protocol)) {
                     String filePath = URLDecoder.decode(url.getFile(), "UTF-8");
-                    findAndAddClassesInPackageByFile(packageName, filePath, recursive, classes);
+                    findAndAddClassesInPackageByFile(packageName, filePath, classes);
                 } else if ("jar".equals(protocol)) {
                     JarFile jar;
                     try {
@@ -55,14 +53,12 @@ public class ClassTools {
                                 if (idx != -1) {
                                     packageName = name.substring(0, idx).replace('/', '.');
                                 }
-                                if ((idx != -1) || recursive) {
-                                    if (name.endsWith(".class") && !entry.isDirectory()) {
-                                        String className = name.substring(packageName.length() + 1, name.length() - 6);
-                                        try {
-                                            classes.add(Class.forName(packageName + '.' + className));
-                                        } catch (ClassNotFoundException e) {
-                                            e.printStackTrace();
-                                        }
+                                if (name.endsWith(".class") && !entry.isDirectory()) {
+                                    String className = name.substring(packageName.length() + 1, name.length() - 6);
+                                    try {
+                                        classes.add(Class.forName(packageName + '.' + className));
+                                    } catch (ClassNotFoundException e) {
+                                        e.printStackTrace();
                                     }
                                 }
                             }
@@ -79,22 +75,21 @@ public class ClassTools {
     }
 
     /**
-     * 以文件的形式来获取包下的所有Class
+     * 以文件路径的形式来获取包下的所有Class
      *
-     * @param packageName
-     * @param packagePath
-     * @param recursive
-     * @param classes
+     * @param packageName 包名
+     * @param packagePath 包的物理文件路径
+     * @param classes 集合
      */
-    public static void findAndAddClassesInPackageByFile(String packageName, String packagePath, final boolean recursive, Set<Class<?>> classes) {
+    private static void findAndAddClassesInPackageByFile(String packageName, String packagePath, Set<Class<?>> classes) {
         File dir = new File(packagePath);
         if (!dir.exists() || !dir.isDirectory()) {
             return;
         }
-        File[] dirfiles = dir.listFiles(file -> (recursive && file.isDirectory()) || (file.getName().endsWith(".class")));
+        File[] dirfiles = dir.listFiles(file -> (file.isDirectory()) || (file.getName().endsWith(".class")));
         for (File file : dirfiles) {
             if (file.isDirectory()) {
-                findAndAddClassesInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), recursive, classes);
+                findAndAddClassesInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), classes);
             } else {
                 String className = file.getName().substring(0, file.getName().length() - 6);
                 try {

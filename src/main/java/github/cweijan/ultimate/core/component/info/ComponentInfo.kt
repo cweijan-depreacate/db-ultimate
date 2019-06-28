@@ -246,6 +246,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                 if (primaryAnnotation != null || (field.name == "id" && StringUtils.isEmpty(componentInfo.primaryKey))) {
                     componentInfo.primaryKey = columnInfo.columnName
                     componentInfo.primaryField = field
+                    columnInfo.isPrimary=true
                     primaryAnnotation?.run {
                         columnInfo.autoIncrement = this.autoIncrement
                         componentInfo.autoIncrement = this.autoIncrement

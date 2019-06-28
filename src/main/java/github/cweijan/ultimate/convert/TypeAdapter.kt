@@ -9,12 +9,11 @@ import kotlin.collections.ArrayList
 
 object TypeAdapter {
 
-    private val NUMBER_TYPE = Arrays.asList("byte", "short", "int", "float", "double", "long", JavaType.Byte,
-            JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
-    private val BOOLEAN_TYPE = Arrays.asList(JavaType.Boolean, "boolean")
-    private val BLOB_TYPE = Arrays.asList(JavaType.byteArray)
-    val CHARACTER_TYPE: MutableList<String> = Arrays.asList(JavaType.String, "chat", JavaType.Character)
-    val DATE_TYPE: MutableList<String> = Arrays.asList("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
+    private val NUMBER_TYPE = mutableListOf("byte", "short", "int", "float", "double", "long", JavaType.Byte, JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
+    private val BOOLEAN_TYPE = mutableListOf(JavaType.Boolean, "boolean")
+    private val BLOB_TYPE = mutableListOf(JavaType.byteArray)
+    val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
+    val DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
 
     fun isAdapterType(type: Class<*>): Boolean {
         val typeName = type.name

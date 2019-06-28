@@ -1,5 +1,7 @@
 package github.cweijan.ultimate.db.init.generator
 
+import github.cweijan.ultimate.convert.TypeAdapter
+import github.cweijan.ultimate.core.component.info.ComponentInfo
 import java.lang.reflect.Field
 
 interface TableInitSqlGenerator {
@@ -8,17 +10,34 @@ interface TableInitSqlGenerator {
 
     fun getColumnTypeByField(field: Field, length: Int?): String
 
-    fun generateDefaultSqlFragment(defaultValue:Any?):String
+    fun getColumnDefination(field: Field, componentInfo: ComponentInfo): String
 
-    fun generateAutoIncrementSqlFragment(tableName: String?=null,columnName:String?=null):String?
+    fun createTable(componentInfo: ComponentInfo): String? {
 
-    fun generateCommentSqlFragment(comment: String): String?
+        var sql = "create table ${componentInfo.tableName}("
 
-    fun generateUniqueSqlFragment(tableName: String,columnName: String,columnDefinition: String): String?
+        TypeAdapter.getAllField(componentInfo.componentClass).let { fields ->
+            fields.forEach { field ->
+                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type)) {
+                    return@forEach
+                }
+                val columnDefination = getColumnDefination(field, componentInfo)
+                //拼接sql
+                sql += "$columnDefination,"
+            }
+        }
 
-    fun dropTable(tableName: String?):String?{
-        tableName?:return null
+        if (sql.lastIndexOf(",") != -1) {
+            sql = sql.substring(0, sql.lastIndexOf(","))
+        }
+        sql += " );"
 
+        return sql
+    }
+
+
+    fun dropTable(tableName: String?): String? {
+        tableName ?: return null
         return "DROP TABLE $tableName;"
     }
 

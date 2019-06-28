@@ -1,7 +1,8 @@
-package github.cweijan.ultimate.db.init.generator.impl
+package github.cweijan.ultimate.db.init.generator.impl.oracle
 
 import github.cweijan.ultimate.convert.JavaType
-import github.cweijan.ultimate.db.init.generator.BaseInitSqlGenerator
+import github.cweijan.ultimate.core.component.info.ComponentInfo
+import github.cweijan.ultimate.db.init.generator.TableInitSqlGenerator
 import java.lang.reflect.Field
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -12,21 +13,14 @@ import java.util.*
  * @author cwj
  * @date 2019/6/25/025 14:44
  */
-class OracleInit : BaseInitSqlGenerator() {
-    override fun initStruct() {
+class OracleInit : TableInitSqlGenerator {
+
+    override fun getColumnDefination(field: Field, componentInfo: ComponentInfo): String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun generateUniqueSqlFragment(tableName: String, columnName: String, columnDefinition: String): String? {
-        return " CONSTRAINT ${columnName}_uk UNIQUE ($columnName) "
-    }
-
-    override fun generateAutoIncrementSqlFragment(tableName: String?, columnName: String?): String {
-        TODO("Not Support Oracle Increment")
-    }
-
-    override fun generateDefaultSqlFragment(defaultValue: Any?): String {
-        return " DEFAULT ($defaultValue) "
+    override fun initStruct() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun getColumnTypeByField(field: Field, length: Int?): String {

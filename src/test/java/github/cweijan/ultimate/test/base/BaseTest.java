@@ -21,7 +21,7 @@ public class BaseTest {
         dbConfig.setUsername("root");
         dbConfig.setPassword("123456");
         dbConfig.setDriver("com.mysql.jdbc.Driver");
-        dbConfig.setTableMode(TableAutoMode.create);
+        dbConfig.setTableMode(TableAutoMode.update);
         dbConfig.setScanPackage("github.cweijan.ultimate");
         Query.init(dbConfig);
         dbInitialer = new DBInitialer(dbConfig);

@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.db.config
 
+import github.cweijan.ultimate.db.DatabaseType
 import github.cweijan.ultimate.db.HikariDataSourceAdapter
 import github.cweijan.ultimate.util.Log
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -43,6 +44,16 @@ class DbConfig {
     var tableMode=DefaultProperties.DEFAULT_TABLE_MODE
     var scanPackage: String? = null
     private val threadLocal = ThreadLocal<Connection?>()
+
+    fun getDatabaseType():DatabaseType{
+        return when{
+            url!!.indexOf("jdbc:mysql")!=-1->DatabaseType.mysql
+            url!!.indexOf("jdbc:oracle")!=-1->DatabaseType.oracle
+            url!!.indexOf("jdbc:postgresql")!=-1->DatabaseType.mysql
+            url!!.indexOf("jdbc:sqlite")!=-1->DatabaseType.sqllite
+            else -> DatabaseType.none
+        }
+    }
 
     fun getConnection(): Connection {
 

@@ -1,20 +1,19 @@
 package github.cweijan.ultimate.db.init
 
 import github.cweijan.ultimate.convert.TypeAdapter
-import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.core.extra.ExtraData
-import github.cweijan.ultimate.core.generator.GeneratorAdapter
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.generator.TableAutoMode
 import github.cweijan.ultimate.db.init.generator.TableInitSqlGenerator
-import github.cweijan.ultimate.db.init.generator.struct.TableStruct
+import github.cweijan.ultimate.db.init.generator.TableStruct
+import github.cweijan.ultimate.db.init.generator.impl.mysql.MysqlTableStruct
 import github.cweijan.ultimate.util.Log
-import github.cweijan.ultimate.util.StringUtils
 import java.sql.Connection
 import java.sql.SQLException
+import java.util.*
 
 /**
  * 用于创建实体对应的不存在的数据表
@@ -22,10 +21,11 @@ import java.sql.SQLException
 class DBInitialer(private val dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
-    private var connection: Connection=dbConfig.getConnection()
-    private var initSqlGenetator: TableInitSqlGenerator = GeneratorAdapter.getInitGenerator(dbConfig.driver)
+    private var connection: Connection = dbConfig.getConnection()
+    private var initSqlGenetator: TableInitSqlGenerator = GeneratorAdapter.getInitGenerator(dbConfig.getDatabaseType())
+    private val tableSctruct: TableStruct = GeneratorAdapter.getTableStruct(dbConfig.getDatabaseType())
 
-    private fun getConnection():Connection{
+    private fun getConnection(): Connection {
         if (connection.isClosed) connection = dbConfig.getConnection()
         return connection
     }
@@ -39,7 +39,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
         createTable(extraData)
         initSqlGenetator.initStruct()
 
-        val excludeList = listOf(TableStruct::class.java, ExtraData::class.java)
+        val excludeList = listOf(MysqlTableStruct::class.java, ExtraData::class.java)
         val component = TableInfo.componentList.stream().filter { componentInfo -> !excludeList.contains(componentInfo.componentClass) }
         when (dbConfig.tableMode) {
             TableAutoMode.none -> return
@@ -55,7 +55,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
     private fun recreateTable(componentInfo: ComponentInfo) {
         if (tableExists(componentInfo.tableName)) {
-            initSqlGenetator.dropTable(componentInfo.tableName)
+            initSqlGenetator.dropTable(componentInfo.tableName)?.let { sqlExecutor.executeSql(it) }
         }
         createTable(componentInfo)
     }
@@ -70,65 +70,10 @@ class DBInitialer(private val dbConfig: DbConfig) {
             return
         }
 
-        var sql = "create table ${componentInfo.tableName}("
-        val uniques = ArrayList<String>()
-
-        TypeAdapter.getAllField(componentInfo.componentClass).let { fields ->
-            fields.forEachIndexed { index, field ->
-                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type)) {
-                    return@forEachIndexed
-                }
-                field.isAccessible = true
-                val columnInfo = componentInfo.getColumnInfoByFieldName(field.name)!!
-                //生成column
-                var columnDefination = "${columnInfo.columnName} ${initSqlGenetator.getColumnTypeByField(field, columnInfo.length)}"
-                //生成主键或者非空片段
-                columnDefination += when {
-                    componentInfo.primaryKey == field.name -> " PRIMARY KEY "
-                    columnInfo.nullable -> ""
-                    else -> " NOT NULL "
-                }
-                if (field.name == componentInfo.primaryKey && columnInfo.autoIncrement) {
-                    columnDefination += initSqlGenetator.generateAutoIncrementSqlFragment()
-                }
-                //生成默认值片段
-                columnDefination += when {
-                    columnInfo.nullable -> ""
-                    field.name == componentInfo.primaryKey -> ""
-                    else -> initSqlGenetator.generateDefaultSqlFragment(
-                            if (StringUtils.isNotEmpty(columnInfo.defaultValue)) {
-                                if (TypeAdapter.CHARACTER_TYPE.contains(field.type.name)) {
-                                    TypeAdapter.contentWrapper(columnInfo.defaultValue)
-                                } else {
-                                    columnInfo.defaultValue
-                                }
-                            } else {
-                                TypeAdapter.getDefaultValue(field.type.name)
-                            }
-                    )
-                }
-                //生成注释片段
-                columnInfo.comment?.let {
-                    columnDefination += initSqlGenetator.generateCommentSqlFragment(it)
-                }
-
-                //生成唯一索引补丁
-                if (columnInfo.unique) {
-                    uniques.add(initSqlGenetator.generateUniqueSqlFragment(componentInfo.tableName, columnInfo.columnName, columnDefination)!!)
-                }
-
-                //拼接sql
-                sql += "$columnDefination,"
-            }
-        }
-
-        if (sql.lastIndexOf(",") != -1) {
-            sql = sql.substring(0, sql.lastIndexOf(","))
-        }
-        uniques.forEach { uniqueSql -> sql += ",$uniqueSql" }
-        sql += " );"
+        val sql = initSqlGenetator.createTable(componentInfo)
 
         try {
+            sql ?: return
             sqlExecutor.executeSql(sql)
         } catch (e: Exception) {
             Log.error("Create table ${componentInfo.tableName} error!", e)
@@ -159,7 +104,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
     private fun updateTable(componentInfo: ComponentInfo?) {
 
         if (componentInfo == null) return
-        if(!tableExists(componentInfo.tableName)){
+        if (!tableExists(componentInfo.tableName)) {
             createTable(componentInfo)
             return
         }
@@ -168,9 +113,8 @@ class DBInitialer(private val dbConfig: DbConfig) {
             Log.debug("${componentInfo.componentClass.name} dont have any columns, skip create table ")
             return
         }
-
-        val updateSqlList = HashSet<String>();
-        val structList = Query.of(TableStruct::class.java).eq("tableScheme", getConnection().schema).eq("tableName", componentInfo.tableName).list()
+        val updateSqlList = HashSet<String>()
+        val structList = tableSctruct.getTableStruct(dbConfig.getDatabaseType(),getConnection().schema,componentInfo.tableName)
 
         TypeAdapter.getAllField(componentInfo.componentClass).let { fields ->
 
@@ -185,31 +129,10 @@ class DBInitialer(private val dbConfig: DbConfig) {
                 val columnInfo = componentInfo.getColumnInfoByFieldName(field.name)!!
                 //生成column
                 val columnType = initSqlGenetator.getColumnTypeByField(field, columnInfo.length)
-                var columnDefination = "${columnInfo.columnName} ${initSqlGenetator.getColumnTypeByField(field, columnInfo.length)}"
-
-                //生成默认值片段
-                columnDefination += when {
-                    columnInfo.nullable -> ""
-                    field.name == componentInfo.primaryKey -> ""
-                    else -> initSqlGenetator.generateDefaultSqlFragment(
-                            if (StringUtils.isNotEmpty(columnInfo.defaultValue)) {
-                                if (TypeAdapter.CHARACTER_TYPE.contains(field.type.name)) {
-                                    TypeAdapter.contentWrapper(columnInfo.defaultValue)
-                                } else {
-                                    columnInfo.defaultValue
-                                }
-                            } else {
-                                TypeAdapter.getDefaultValue(field.type.name)
-                            }
-                    )
-                }
-                //生成注释片段
-                columnInfo.comment?.let {
-                    columnDefination += initSqlGenetator.generateCommentSqlFragment(it)
-                }
+                val columnDefination = initSqlGenetator.getColumnDefination(field, componentInfo)
 
                 //如果列不存在,新增
-                if (notExistsColumn(structList, columnInfo.columnName)) {
+                if (tableSctruct.columnNotExists(structList, columnInfo.columnName)) {
                     updateSqlList.add("ALTER TABLE ${componentInfo.tableName} ADD COLUMN $columnDefination;")
                     return@forEachIndexed
                 }
@@ -220,9 +143,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
                         updateSqlList.add("ALTER TABLE ${componentInfo.tableName} DROP COLUMN ${struct.columnName};")
                         return@forEachIndexed
                     }
-                    if ((struct.characterMaximumLength != null && tempColumnInfo.length != null && struct.characterMaximumLength.toInt() != tempColumnInfo.length) ||
-                            (columnInfo.columnName == struct.columnName && !columnType.toLowerCase().contains(struct.dataType.toLowerCase()))
-                    ) {
+                    if (tableSctruct.columnIsChanged(tempColumnInfo, columnType)) {
                         updateSqlList.add("ALTER TABLE ${componentInfo.tableName} MODIFY $columnDefination;")
                         return@forEachIndexed
                     }
@@ -241,7 +162,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
     }
 
-    private fun notExistsColumn(tableStructList: List<TableStruct>?, columnName: String): Boolean {
+    private fun notExistsColumn(tableStructList: List<MysqlTableStruct>?, columnName: String): Boolean {
 
         if (tableStructList == null) return true
 
