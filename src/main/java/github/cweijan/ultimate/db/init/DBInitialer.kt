@@ -23,7 +23,6 @@ class DBInitialer(private val dbConfig: DbConfig) {
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
     private var connection: Connection = dbConfig.getConnection()
     private var initSqlGenetator: TableInitSqlGenerator = GeneratorAdapter.getInitGenerator(dbConfig.getDatabaseType())
-    private val tableSctruct: TableStruct = GeneratorAdapter.getTableStruct(dbConfig.getDatabaseType())
 
     private fun getConnection(): Connection {
         if (connection.isClosed) connection = dbConfig.getConnection()
@@ -114,7 +113,13 @@ class DBInitialer(private val dbConfig: DbConfig) {
             return
         }
         val updateSqlList = HashSet<String>()
-        val structList = tableSctruct.getTableStruct(dbConfig.getDatabaseType(),getConnection().schema,componentInfo.tableName)
+        val structList = TableStruct.getTableStruct(dbConfig.getDatabaseType(), getConnection().schema, componentInfo.tableName)
+        structList.forEach { struct ->
+            val tempColumnInfo = componentInfo.getColumnInfoByColumnName(struct.columnName)
+            if (tempColumnInfo == null) {
+                updateSqlList.add("ALTER TABLE ${componentInfo.tableName} DROP COLUMN ${struct.columnName};")
+            }
+        }
 
         TypeAdapter.getAllField(componentInfo.componentClass).let { fields ->
 
@@ -132,20 +137,17 @@ class DBInitialer(private val dbConfig: DbConfig) {
                 val columnDefination = initSqlGenetator.getColumnDefination(field, componentInfo)
 
                 //如果列不存在,新增
-                if (tableSctruct.columnNotExists(structList, columnInfo.columnName)) {
+                if (TableStruct.columnNotExists(structList, columnInfo.columnName)) {
                     updateSqlList.add("ALTER TABLE ${componentInfo.tableName} ADD COLUMN $columnDefination;")
                     return@forEachIndexed
                 }
 
                 structList.forEach { struct ->
-                    val tempColumnInfo = componentInfo.getColumnInfoByColumnName(struct.columnName)
-                    if (tempColumnInfo == null) {
-                        updateSqlList.add("ALTER TABLE ${componentInfo.tableName} DROP COLUMN ${struct.columnName};")
-                        return@forEachIndexed
-                    }
-                    if (tableSctruct.columnIsChanged(tempColumnInfo, columnType)) {
-                        updateSqlList.add("ALTER TABLE ${componentInfo.tableName} MODIFY $columnDefination;")
-                        return@forEachIndexed
+                    if (struct.columnName == columnInfo.columnName) {
+                        if (struct.columnIsChanged(columnInfo, columnType)) {
+                            updateSqlList.add("ALTER TABLE ${componentInfo.tableName} MODIFY $columnDefination;")
+                            return@forEachIndexed
+                        }
                     }
                 }
 
@@ -158,7 +160,9 @@ class DBInitialer(private val dbConfig: DbConfig) {
             Log.error("Update table ${componentInfo.tableName} error!", e)
             return
         }
-        Log.info("Update component table ${componentInfo.tableName}")
+        if(updateSqlList.size>0){
+            Log.info("Update component table ${componentInfo.tableName} success!")
+        }
 
     }
 

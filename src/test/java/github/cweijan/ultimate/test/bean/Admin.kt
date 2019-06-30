@@ -19,7 +19,7 @@ open class Admin {
 
     var adminType:AdminTypeEnum?=null
 
-    @Column("message3")
+    @Column("message3",nullable = true)
     open var msd: String? = null
 
     @Column(length = 30)

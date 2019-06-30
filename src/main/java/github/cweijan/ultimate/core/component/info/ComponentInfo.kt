@@ -247,6 +247,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                     componentInfo.primaryKey = columnInfo.columnName
                     componentInfo.primaryField = field
                     columnInfo.isPrimary=true
+                    columnInfo.nullable=false
                     primaryAnnotation?.run {
                         columnInfo.autoIncrement = this.autoIncrement
                         componentInfo.autoIncrement = this.autoIncrement

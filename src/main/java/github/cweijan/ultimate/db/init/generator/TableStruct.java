@@ -13,17 +13,28 @@ import java.util.List;
  */
 public interface TableStruct {
 
-    default List<? extends TableStruct> getTableStruct(DatabaseType databaseType,String schemeName, String tableName) {
+    static List<? extends TableStruct> getTableStruct(DatabaseType databaseType,String schemaName, String tableName) {
 
         switch (databaseType) {
             case mysql:
-                return Query.of(MysqlTableStruct.class).eq("tableScheme", schemeName).eq("tableName", tableName).list();
+                return Query.of(MysqlTableStruct.class).eq("tableSchema", schemaName).eq("tableName", tableName).list();
             case oracle:
             case sqllite:
             case postgresql:
         }
 
         return null;
+    }
+
+    static boolean columnNotExists(List<TableStruct> tableStructList, String columnName) {
+
+        if(tableStructList==null)return false;
+
+        for (TableStruct tableStruct : tableStructList) {
+            if(tableStruct.getColumnName().equals(columnName)) return false;
+        }
+
+        return false;
     }
 
     /**
@@ -34,8 +45,6 @@ public interface TableStruct {
      * @return 是否已改变
      */
     boolean columnIsChanged(ColumnInfo columnInfo, String columnType);
-
-    boolean columnNotExists(List<TableStruct> tableStructList, String columnName);
 
     String getColumnName();
 

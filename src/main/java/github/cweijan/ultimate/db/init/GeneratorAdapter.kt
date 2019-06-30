@@ -23,14 +23,4 @@ object GeneratorAdapter {
         }
     }
 
-    fun getTableStruct(databaseType: DatabaseType):TableStruct{
-        return when (databaseType) {
-            DatabaseType.mysql -> MysqlTableStruct()
-//          DatabaseType.oracleME -> OracleInit()
-//          DatabaseType.postgrR_NAME -> PostgresqlInit()
-//          DatabaseType.sqllitME -> PostgresqlInit()
-            else -> MysqlTableStruct()
-        }
-    }
-
 }

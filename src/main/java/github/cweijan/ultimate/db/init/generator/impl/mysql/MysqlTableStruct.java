@@ -14,7 +14,7 @@ import java.util.List;
 @Table("information_schema.columns")
 public class MysqlTableStruct implements TableStruct {
 
-    private String tableScheme;
+    private String tableSchema;
     private String tableName;
     private  String columnName;
     private String isNullable;
@@ -38,6 +38,7 @@ public class MysqlTableStruct implements TableStruct {
         this.characterMaximumLength = characterMaximumLength;
     }
 
+    @Override
     public String getColumnName() {
         return columnName;
     }
@@ -62,12 +63,12 @@ public class MysqlTableStruct implements TableStruct {
         this.dataType = dataType;
     }
 
-    public String getTableScheme() {
-        return tableScheme;
+    public String getTableSchema() {
+        return tableSchema;
     }
 
-    public void setTableScheme(String tableScheme) {
-        this.tableScheme = tableScheme;
+    public void setTableSchema(String tableSchema) {
+        this.tableSchema = tableSchema;
     }
     public String getTableName() {
         return tableName;
@@ -80,21 +81,11 @@ public class MysqlTableStruct implements TableStruct {
     @Override
     public boolean columnIsChanged(ColumnInfo columnInfo, String columnType) {
 
-        return (characterMaximumLength != null && columnInfo.getLength() != null && characterMaximumLength.intValue() != columnInfo.getLength()) ||
-                (columnInfo.columnName.equals(columnName) && !columnType.toLowerCase().contains(dataType.toLowerCase()));
+        if(!columnType.toLowerCase().contains(dataType.toLowerCase()))return true;
+        if(columnInfo.getNullable() != isNullable.toUpperCase().equals("YES"))return true;
+
+        return (characterMaximumLength != null && columnInfo.getLength() != null
+                && characterMaximumLength.intValue() != columnInfo.getLength());
     }
 
-    @Override
-    public boolean columnNotExists(List<TableStruct> tableStructList, String columnName) {
-
-        if(tableStructList==null)return false;
-
-        for (TableStruct tableStruct : tableStructList) {
-            if(tableStruct instanceof MysqlTableStruct){
-                if (((MysqlTableStruct) tableStruct).columnName.equals(columnName)) return false;
-            }
-        }
-
-        return false;
-    }
 }

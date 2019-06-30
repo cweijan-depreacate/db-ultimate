@@ -17,7 +17,7 @@ public @interface Column{
 
     boolean unique() default false;
 
-    boolean nullable() default false;
+    boolean nullable() default true;
 
     String excelHeader() default "";
 

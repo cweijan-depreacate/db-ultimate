@@ -30,6 +30,7 @@ public class InsertTest extends BaseTest{
         admin.setDate(LocalDateTime.now());
         admin.setAdminType(AdminTypeEnum.admin);
         admin.setDelete(true);
+        admin.setMessage("hello");
         Query.db.insert(admin);
     }
 
