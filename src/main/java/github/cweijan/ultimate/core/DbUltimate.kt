@@ -32,13 +32,13 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
     }
 
     @JvmOverloads
-    fun executeSqlOfMap(sql: String, params: Array<Any>? = null): Map<String, Any>? {
+    fun executeSqlOfMap(sql: String, params: Array<Any>? = null): Map<String, Any?>? {
 
         return TypeConvert.resultSetToMap(sqlExecutor.executeSql(sql, params)!!)
     }
 
     @JvmOverloads
-    fun executeSqlOfMapList(sql: String, params: Array<Any>? = null): List<Map<String, Any>> {
+    fun executeSqlOfMapList(sql: String, params: Array<Any>? = null): List<Map<String, Any?>> {
 
         return TypeConvert.resultSetToMapList(sqlExecutor.executeSql(sql, params)!!)
     }

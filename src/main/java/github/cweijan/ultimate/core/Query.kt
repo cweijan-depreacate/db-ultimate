@@ -157,7 +157,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return covertColumn
     }
 
-    fun statistic(): List<Map<String, Any>> {
+    fun statistic(): List<Map<String, Any?>> {
         return db.executeSqlOfMapList(db.sqlGenerator.generateSelectSql(this), this.consumeParams())
     }
 
