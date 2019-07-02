@@ -52,7 +52,8 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
     }
 
-    private fun recreateTable(componentInfo: ComponentInfo) {
+    fun recreateTable(componentInfo: ComponentInfo?) {
+        if (componentInfo == null || tableExists(componentInfo.tableName)) return
         if (tableExists(componentInfo.tableName)) {
             initSqlGenetator.dropTable(componentInfo.tableName)?.let { sqlExecutor.executeSql(it) }
         }

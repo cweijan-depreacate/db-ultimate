@@ -1,18 +1,16 @@
 package github.cweijan.ultimate.debug
 
 import github.cweijan.ultimate.core.component.ComponentScan
-import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
-import github.cweijan.ultimate.db.init.generator.TableAutoMode
+import github.cweijan.ultimate.db.init.generator.TableAutoMode.create
+import github.cweijan.ultimate.db.init.generator.TableAutoMode.update
 import github.cweijan.ultimate.util.Log
-import org.apache.commons.io.monitor.FileAlterationListener
-import org.apache.commons.io.monitor.FileAlterationObserver
-
+import org.apache.commons.io.monitor.FileAlterationListenerAdaptor
 import java.io.File
 
-class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : FileAlterationListener {
+class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : FileAlterationListenerAdaptor() {
 
     private val initialer= DBInitialer(dbconfig)
 
@@ -24,51 +22,18 @@ class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : F
         componentClass?: return
         if(ComponentScan.isComponent(componentClass)){
             val componentInfo = ComponentInfo.init(componentClass, false)
-            if(dbconfig.tableMode!=TableAutoMode.none){
-                initialer.createTable(componentInfo)
+            when(dbconfig.tableMode){
+                create ->initialer.createTable(componentInfo)
+                update ->initialer.recreateTable(componentInfo)
+                else -> ""
             }
-            Log.debug("reload component $className")
+            Log.debug("load component $className")
         }
 
     }
 
     override fun onFileCreate(file: File) {
-
-        if(!file.path.endsWith(".class"))return
-        val className = file.path.substring(baseClasspath.length + 1).replace("\\", ".").replace(".class", "")
-        val componentClass = Class.forName(className)
-        componentClass?: return
-        if(ComponentScan.isComponent(componentClass)){
-            val componentInfo = ComponentInfo.init(componentClass, false)
-            if(dbconfig.tableMode!=TableAutoMode.none){
-                initialer.createTable(componentInfo)
-            }
-            Log.debug("init component $className")
-        }
-    }
-
-
-
-    override fun onFileDelete(file: File) {
-        if(!file.path.endsWith(".class"))return
-        val className = file.path.substring(baseClasspath.length + 1).replace("\\", ".").replace(".class", "")
-        TableInfo.removeComponent(Class.forName(className))
-        Log.debug("remove component $className")
-    }
-
-    override fun onStart(fileAlterationObserver: FileAlterationObserver) {
-    }
-
-    override fun onStop(fileAlterationObserver: FileAlterationObserver) {
-    }
-
-    override fun onDirectoryCreate(file: File) {
-    }
-
-    override fun onDirectoryChange(file: File) {
-    }
-
-    override fun onDirectoryDelete(file: File) {
+        onFileChange(file)
     }
 
 }
