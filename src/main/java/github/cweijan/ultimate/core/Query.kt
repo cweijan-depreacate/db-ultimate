@@ -149,9 +149,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         var covertColumn = column
 
         if (isAutoConvert) {
-            val regex = "([a-z])([A-Z]+)"
-            val replacement = "$1_$2"
-            covertColumn = covertColumn.replace(regex.toRegex(), replacement).toLowerCase()
+            covertColumn =TypeAdapter.convertHumpToUnderLine(covertColumn)!!
         }
 
         return covertColumn

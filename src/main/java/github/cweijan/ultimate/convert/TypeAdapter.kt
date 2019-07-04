@@ -30,6 +30,16 @@ object TypeAdapter {
         return arrayList
     }
 
+    /**
+     * 转换驼峰命名为下划线
+     */
+    fun convertHumpToUnderLine(hump:String?):String?{
+        hump?:return null
+        val regex = Regex("([a-z])([A-Z]+)")
+        val replacement = "$1_$2"
+        return hump.replace(regex, replacement).toLowerCase()
+    }
+
     fun convertJavaObject(componentClass: Class<*>, field: Field, javaObject: Any?): Any? {
         if (javaObject == null) return null
 

@@ -158,13 +158,14 @@ class ComponentInfo(var componentClass: Class<*>) {
          *
          * @param componentClass 实体类
          */
-        fun init(componentClass: Class<*>, scanMode: Boolean = true): ComponentInfo? {
+        @JvmStatic
+        fun init(componentClass: Class<*>, scanMode: Boolean = true): ComponentInfo {
 
             if (TableInfo.isAlreadyInit(componentClass) && scanMode) return TableInfo.getComponent(componentClass)
             val table = getComponentClass(componentClass)
-            var tableName = table?.value?:componentClass.simpleName.toLowerCase()
+            var tableName = table?.value?:""
             if (tableName == "") {
-                tableName = componentClass.simpleName.toLowerCase()
+                tableName = TypeAdapter.convertHumpToUnderLine(componentClass.simpleName)!!
             }
 
             val componentInfo = ComponentInfo(componentClass)
@@ -236,9 +237,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                 componentInfo.excelHeaderFieldMap[columnInfo.excelHeader] = field
 
                 if (camelcaseToUnderLine) {
-                    val regex = Regex("([a-z])([A-Z]+)")
-                    val replacement = "$1_$2"
-                    columnInfo.columnName = columnInfo.columnName.replace(regex, replacement).toLowerCase()
+                    columnInfo.columnName = TypeAdapter.convertHumpToUnderLine(columnInfo.columnName)!!
                 }
 
                 //generate primary key column info
@@ -262,9 +261,7 @@ class ComponentInfo(var componentClass: Class<*>) {
                 field.getAnnotation(ForeignKey::class.java)?.run {
                     var joinColumnName = joinColumn
                     if (camelcaseToUnderLine) {
-                        val regex = Regex("([a-z])([A-Z]+)")
-                        val replacement = "$1_$2"
-                        joinColumnName = joinColumn.replace(regex, replacement).toLowerCase()
+                        joinColumnName =TypeAdapter.convertHumpToUnderLine(joinColumn)!!
                     }
                     if (autoJoin) {
                         componentInfo.autoJoinComponentList.add(value.java)
