@@ -114,7 +114,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
             return
         }
         val updateSqlList = HashSet<String>()
-        val structList = TableStruct.getTableStruct(dbConfig.getDatabaseType(), getConnection().schema, componentInfo.tableName)
+        val structList = TableStruct.getTableStruct(dbConfig.getDatabaseType(), getConnection().catalog, componentInfo.tableName)
         structList.forEach { struct ->
             val tempColumnInfo = componentInfo.getColumnInfoByColumnName(struct.columnName)
             if (tempColumnInfo == null) {
