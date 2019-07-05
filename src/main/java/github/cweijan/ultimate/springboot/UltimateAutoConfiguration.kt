@@ -23,17 +23,6 @@ open class UltimateAutoConfiguration {
     @Autowired(required = false)
     private val dataSource: DataSource? = null
 
-    @ConditionalOnMissingBean(DataSource::class)
-    @Bean
-    @Order(0)
-    open fun createDataSource(): DataSource? {
-
-        if (configCheck())
-            return dbConfig!!.dataSource!!
-
-        return null
-    }
-
     @Bean
     @Order(1)
     open fun createTransactionManager(): PlatformTransactionManager? {
