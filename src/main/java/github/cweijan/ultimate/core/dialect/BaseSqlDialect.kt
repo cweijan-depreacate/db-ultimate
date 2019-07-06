@@ -12,14 +12,14 @@ abstract class BaseSqlDialect : SqlDialect {
         val componentInfo = TableInfo.getComponent(component.javaClass)
         var columns = ""
         var values = ""
-        val params=ArrayList<Any>();
+        val params = ArrayList<Any>();
         for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
             field.isAccessible = true
             if (componentInfo.isInsertExcludeField(field)) continue
             field.get(component)?.run {
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
                 values += "?,"
-                params.add(TypeAdapter.convertAdapter(componentInfo.componentClass,field.name,this))
+                params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, this))
             }
         }
         if (columns.lastIndexOf(",") != -1) {
@@ -29,7 +29,7 @@ abstract class BaseSqlDialect : SqlDialect {
             values = values.substring(0, values.lastIndexOf(","))
         }
 
-        return SqlObject("INSERT INTO " + componentInfo.tableName + "(" + columns + ") VALUES(" + values + ");",params)
+        return SqlObject("INSERT INTO " + componentInfo.tableName + "(" + columns + ") VALUES(" + values + ");", params)
     }
 
     @Throws(IllegalAccessException::class)
@@ -39,7 +39,7 @@ abstract class BaseSqlDialect : SqlDialect {
         val primaryValue = componentInfo.getPrimaryValue(component)
         primaryValue ?: throw PrimaryValueNotSetException("primary value must set!")
         var sql = "UPDATE ${componentInfo.tableName} a set "
-        val params=ArrayList<Any>();
+        val params = ArrayList<Any>();
 
         for (field in TypeAdapter.getAllField(component.javaClass)) {
             field.isAccessible = true
@@ -57,10 +57,10 @@ abstract class BaseSqlDialect : SqlDialect {
         } else {
             sql = sql.substring(0, sql.lastIndexOf(","))
         }
-        sql+=" WHERE ${componentInfo.primaryKey}=?"
+        sql += " WHERE ${componentInfo.primaryKey}=?"
         params.add(primaryValue)
 
-        return SqlObject(sql,params)
+        return SqlObject(sql, params)
     }
 
     override fun <T> generateDeleteSql(query: Query<T>): String {
@@ -119,6 +119,19 @@ abstract class BaseSqlDialect : SqlDialect {
         if (query.searchLazy.isInitialized()) sql += generateOperationSql0(query.searchOperation, "LIKE", and, query)
         if (query.orSearchLazy.isInitialized()) sql += generateOperationSql0(query.orSearchOperation, "LIKE", or, query)
 
+        var inSql = StringBuilder()
+
+        if (query.inLazy.isInitialized()) query.inOperation.forEach { (key, operations) ->
+            inSql.append("$and $key in (")
+            operations.forEach { value ->
+                inSql.append(",?")
+                query.addParam(value)
+            }
+            inSql=StringBuilder(inSql.replaceFirst(",".toRegex(),""))
+            inSql.append(")")
+        }
+        sql += inSql.toString()
+
         if (sql.startsWith(and)) {
             sql = sql.replaceFirst(and.toRegex(), "")
             sql = " WHERE$sql"
@@ -169,6 +182,7 @@ abstract class BaseSqlDialect : SqlDialect {
 
         return sql.toString()
     }
+
     abstract fun <T> generatePaginationSql(sql: String, query: Query<T>): String
 
 }

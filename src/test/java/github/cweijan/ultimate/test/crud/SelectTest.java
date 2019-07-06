@@ -10,6 +10,7 @@ import github.cweijan.ultimate.test.bean.Lib;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,18 @@ public class SelectTest extends BaseTest{
         Map<String, Object> result =Query.db.executeSqlOfMap(sql);
 
         Log.info(result + "");
+
+    }
+
+    @Test
+    public void testInSelect(){
+
+        ArrayList<Integer> idList = new ArrayList<>();
+        idList.add(2);
+        idList.add(3);
+        List<Admin> admins = Query.of(Admin.class).in0("id", idList).list();
+        Log.info(admins);
+
 
     }
 

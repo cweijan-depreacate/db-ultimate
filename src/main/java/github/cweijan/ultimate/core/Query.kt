@@ -67,6 +67,9 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     val eqLazy = lazy { HashMap<String, MutableList<String>>() }
     val equalsOperation: MutableMap<String, MutableList<String>>by eqLazy
 
+    val inLazy = lazy { HashMap<String, MutableList<*>>() }
+    val inOperation: MutableMap<String, MutableList<*>>by inLazy
+
     val orEqLazy = lazy { HashMap<String, MutableList<String>>() }
     val orEqualsOperation: MutableMap<String, MutableList<String>>by orEqLazy
 
@@ -233,7 +236,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         val tableColumn = getColumnName(column)
         val operationList = getOperationList(map, tableColumn)
         operationList!!.add(TypeAdapter.convertAdapter(componentClass, column, value).toString())
-        map[tableColumn] = operationList
     }
 
     protected fun getColumnName(column: String) = component.getColumnNameByFieldName(column) ?: convert(column)
@@ -280,6 +282,15 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     fun eq(column: String, value: Any?): Query<T> {
 
         value?.let { put(equalsOperation, column, it) }
+        return this
+    }
+
+    fun in0(column: String, value: MutableList<*>?): Query<T> {
+
+        value?.let {
+            val tableColumn = getColumnName(column)
+            inOperation[tableColumn] = value
+        }
         return this
     }
 
