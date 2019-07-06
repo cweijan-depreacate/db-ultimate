@@ -48,7 +48,7 @@ abstract class BaseSqlDialect : SqlDialect {
             }
             field.get(component)?.run {
                 sql += "${componentInfo.getColumnNameByFieldName(field.name)}=?,"
-                params.add(this)
+                params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, this))
             }
         }
 
