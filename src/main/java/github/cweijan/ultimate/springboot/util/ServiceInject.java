@@ -84,13 +84,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
     @Transactional
     public void ignoreSave(T component) {
 
-        Object primaryValue = TableInfo.getComponent(componentClass).getPrimaryValue(component);
-        T byPrimaryKey = getByPrimaryKey(primaryValue);
-        if (byPrimaryKey != null) return;
-        T byData = getQuery().read(component).get();
-        if (byData != null) return;
-
-        save(component);
+        Query.db.ignoreInsert(component);
     }
 
     @Transactional

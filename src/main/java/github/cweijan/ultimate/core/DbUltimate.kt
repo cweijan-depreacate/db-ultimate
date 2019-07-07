@@ -77,8 +77,8 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
         return getBySql(sql, query.consumeParams(), query.componentClass)
     }
 
-    fun <T> getByPrimaryKey(clazz: Class<T>, value: Any): T? {
-
+    fun <T> getByPrimaryKey(clazz: Class<T>, value: Any?): T? {
+        if(value==null)return null
         return getByQuery(Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
 
@@ -132,6 +132,22 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
         }
 
     }
+
+    /**
+     * 插入对象,如果对象已经存在，则不插入
+     *
+     * @param component 实体对象
+     */
+    fun ignoreInsert(component: Any) {
+
+        val primaryValue = TableInfo.getComponent(component::class.java).getPrimaryValue(component)
+        val byPrimaryKey = getByPrimaryKey(component::class.java,primaryValue)
+        if (byPrimaryKey != null) return
+        val byData = Query.of(component::class.java).read(component).get()
+        if (byData != null) return
+        insert(component)
+    }
+
 
     fun insertList(componentList: List<Any>) {
 
