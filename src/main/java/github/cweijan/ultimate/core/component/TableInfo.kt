@@ -33,6 +33,7 @@ object TableInfo {
         return TypeMap.containsKey(clazz.name)
     }
 
+    @JvmStatic
     fun getComponent(clazz: Class<*>): ComponentInfo {
         return TypeMap[clazz.name]
                 ?: throw ComponentNotExistsException("$clazz component is not exists!")

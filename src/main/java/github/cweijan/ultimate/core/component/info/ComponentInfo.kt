@@ -96,11 +96,9 @@ class ComponentInfo(var componentClass: Class<*>) {
         return columnInfoMap[columnName]
     }
 
-    @Throws(IllegalAccessException::class)
     fun getPrimaryValue(component: Any): Any? {
 
         return primaryField?.get(component)
-
     }
 
     @Throws(IllegalAccessException::class)
@@ -163,16 +161,16 @@ class ComponentInfo(var componentClass: Class<*>) {
 
             if (TableInfo.isAlreadyInit(componentClass) && scanMode) return TableInfo.getComponent(componentClass)
             val table = getComponentClass(componentClass)
-            var tableName = table?.value?:""
+            var tableName = table?.value ?: ""
             if (tableName == "") {
                 tableName = TypeAdapter.convertHumpToUnderLine(componentClass.simpleName)!!
             }
 
             val componentInfo = ComponentInfo(componentClass)
             componentInfo.tableName = tableName
-            componentInfo.selectColumns = table?.selectColumns?:"*"
+            componentInfo.selectColumns = table?.selectColumns ?: "*"
             componentInfo.tableAlias = table?.alias
-            generateColumns(componentInfo, table?.camelcaseToUnderLine?:true)
+            generateColumns(componentInfo, table?.camelcaseToUnderLine ?: true)
             TableInfo.putComponent(componentClass, componentInfo)
             Log.debug("load component ${componentClass.name}, table is $tableName")
             return componentInfo
@@ -197,7 +195,7 @@ class ComponentInfo(var componentClass: Class<*>) {
             var columnInfo: ColumnInfo
 
             for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
-                columnInfo=ColumnInfo.init(componentInfo,field)
+                columnInfo = ColumnInfo.init(componentInfo, field)
             }
 
         }

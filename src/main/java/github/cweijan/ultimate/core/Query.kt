@@ -387,7 +387,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return ExcelOperator.outputExcel(headers, values, exportPath)
     }
 
-    fun readObject(paramObject: Any?): Query<T> {
+    fun read(paramObject: Any?): Query<T> {
         paramObject ?: return this
         if (paramObject is Map<*, *>) {
             paramObject.forEach { key, value ->

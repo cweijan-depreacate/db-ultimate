@@ -57,10 +57,10 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
         val rowCount = resultSet.row
         resultSet.beforeFirst()
         if (rowCount > 1) {
-            throw TooManyResultException("Expect 1 result,but fond $rowCount")
-        } else {
-            return TypeConvert.resultSetToBean(resultSet, clazz)
+//            throw TooManyResultException("Expect 1 result,but fond $rowCount")
+            Log.getLogger().warn("TooManyResultWarn: Get expect 1 result,but fond $rowCount")
         }
+        return TypeConvert.resultSetToBean(resultSet, clazz)
     }
 
     fun <T> getCount(query: Query<T>): Int {
