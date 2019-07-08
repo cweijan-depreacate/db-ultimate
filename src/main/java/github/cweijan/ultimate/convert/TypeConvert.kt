@@ -79,6 +79,7 @@ object TypeConvert {
         try {
             beanInstance = clazz.newInstance()
         } catch (e: Exception) {
+            Log.getLogger().error(e.message)
             return null
         }
         if (columns.keys.isEmpty()) return beanInstance

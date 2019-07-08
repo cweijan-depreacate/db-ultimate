@@ -95,7 +95,7 @@ public class SelectTest extends BaseTest{
         Admin admin = new Admin();
         //        admin.setId(1);
         admin.setMessage("滚");
-        List<Lib> list = Query.of(Lib.class).readObject(admin).list();
+        List<Lib> list = Query.of(Lib.class).read(admin).list();
         Log.info(list.size());
     }
     @Test
@@ -134,7 +134,7 @@ public class SelectTest extends BaseTest{
 
         Admin admin = new Admin();
         admin.setId(2);
-        List<Admin> admins = Query.of(Admin.class).readObject(admin).list();
+        List<Admin> admins = Query.of(Admin.class).read(admin).list();
         System.out.println(admins);
 
     }
@@ -144,7 +144,7 @@ public class SelectTest extends BaseTest{
 
         Admin admin = new Admin();
         admin.setId(2);
-        admin = Query.of(Admin.class).readObject(admin).get();
+        admin = Query.of(Admin.class).read(admin).get();
         Log.info(admin);
 
     }

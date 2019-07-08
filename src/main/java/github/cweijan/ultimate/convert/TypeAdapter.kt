@@ -8,7 +8,7 @@ import kotlin.collections.ArrayList
 
 object TypeAdapter {
 
-    private val NUMBER_TYPE = mutableListOf("byte", "short", "int", "float", "double", "long", JavaType.Byte, JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
+    private val NUMBER_TYPE = mutableListOf("java.math.BigInteger","byte", "short", "int", "float", "double", "long", JavaType.Byte, JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
     private val BOOLEAN_TYPE = mutableListOf(JavaType.Boolean, "boolean")
     private val BLOB_TYPE = mutableListOf(JavaType.byteArray)
     val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
@@ -33,8 +33,8 @@ object TypeAdapter {
     /**
      * 转换驼峰命名为下划线
      */
-    fun convertHumpToUnderLine(hump:String?):String?{
-        hump?:return null
+    fun convertHumpToUnderLine(hump: String?): String? {
+        hump ?: return null
         val regex = Regex("([a-z])([A-Z]+)")
         val replacement = "$1_$2"
         return hump.replace(regex, replacement).toLowerCase()
@@ -60,13 +60,20 @@ object TypeAdapter {
      * convertAdapter
      */
     fun convertAdapter(componentClass: Class<*>, fieldName: String, fieldValue: Any?): Any {
+
         if (fieldValue == null) return ""
+
         if (fieldValue::class.java.isEnum) {
             return (fieldValue as Enum<*>).name
         }
-        val columnInfo = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)
-        val dateFormat: String = columnInfo?.dateFormat ?: DateUtils.DEFAULT_PATTERN
-        return DateUtils.toDateString(fieldValue, dateFormat) ?: fieldValue
+
+        if (DATE_TYPE.contains(fieldValue::class.java.name)) {
+            val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat
+                    ?: DateUtils.DEFAULT_PATTERN
+            return DateUtils.toDateString(fieldValue, dateFormat) ?: fieldValue
+        }
+
+        return fieldValue
     }
 
     fun contentWrapper(contentObject: Any?): String {

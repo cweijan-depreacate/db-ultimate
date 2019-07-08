@@ -8,6 +8,7 @@ import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.exception.TooManyResultException
 import github.cweijan.ultimate.core.dialect.SqlDialect
+import github.cweijan.ultimate.core.extra.GroupFunction
 import github.cweijan.ultimate.util.Log
 import java.sql.ResultSet
 
@@ -67,7 +68,7 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
 
         val sql = sqlGenerator.generateCountSql(query)
 
-        return getBySql(sql, query.consumeParams(), Int::class.java)!!
+        return getBySql(sql, query.consumeParams(), GroupFunction::class.java)!!.count.toInt()
     }
 
     fun <T> getByQuery(query: Query<T>): T? {

@@ -22,8 +22,14 @@ object DateUtils {
 
     @JvmOverloads
     @JvmStatic
-    fun toDateObject(dateString:String, dateType:Class<*>, dateFormat: String= DEFAULT_PATTERN):Any?{
-        val resultTime = DateUtils.getDateFormat(dateFormat).parse(dateString)
+    fun toDateObject(dateString: String, dateType: Class<*>, dateFormat: String = DEFAULT_PATTERN): Any? {
+        if (StringUtils.isBlank(dateString)) return null
+        val resultTime = try {
+            DateUtils.getDateFormat(dateFormat).parse(dateString)
+        } catch (e: Exception) {
+            Log.getLogger().error(e.message)
+            return null
+        }
         return when (dateType) {
             Date::class.java -> resultTime
             LocalDateTime::class.java -> LocalDateTime.ofInstant(resultTime.toInstant(), ZoneId.systemDefault())
@@ -35,7 +41,7 @@ object DateUtils {
 
     @JvmOverloads
     @JvmStatic
-    fun toDateString(datevalue:Any, dateFormat: String= DEFAULT_PATTERN):String?{
+    fun toDateString(datevalue: Any, dateFormat: String = DEFAULT_PATTERN): String? {
         return when (datevalue::class.java.name) {
             Date::class.java.name -> DateUtils.getDateFormat(dateFormat).format((datevalue as Date))
             LocalDateTime::class.java.name -> (datevalue as LocalDateTime).format(DateUtils.getDateTimeFormatter(dateFormat))

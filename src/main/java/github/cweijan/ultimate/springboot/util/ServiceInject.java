@@ -118,8 +118,8 @@ public abstract class ServiceInject<T> implements InitializingBean {
     }
 
     @Transactional(readOnly = true)
-    public void getExtra(Object key, Object extraObject) {
-        ExtraDataService.getExtraData(key, extraObject.getClass(), componentClass.getName());
+    public <E> E getExtra(Object key, Class<E> extraType) {
+        return ExtraDataService.getExtraData(key, extraType, componentClass.getName());
     }
 
     @Transactional(readOnly = true)

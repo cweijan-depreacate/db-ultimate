@@ -2,7 +2,6 @@ package github.cweijan.ultimate.db
 
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.util.Log
-import org.springframework.jdbc.datasource.DataSourceUtils
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -41,13 +40,17 @@ class SqlExecutor(private val dbConfig: DbConfig) {
                 preparedStatement.generatedKeys
             }
         } catch (e: Exception) {
-            Log.error("Fail Execute SQL : $sql   \n ${e.message} ")
+            Log.getLogger().error("Fail Execute SQL : $sql   \n ${e.message} ")
             throw e
         }
         if (dbConfig.showSql) {
-            Log.info("Execute SQL : $sql")
+            Log.getLogger().info("Execute SQL : $sql")
             if (params != null) {
-                IntStream.range(0, params.size).forEach { index -> Log.debug(" param ${index + 1} : ${params[index]} ") }
+                var paramContent=" param count ${params.size} : "
+                IntStream.range(0, params.size).forEach { index ->
+                    paramContent+=",${params[index]}"
+                }
+                Log.getLogger().info(paramContent.replaceFirst(",",""));
             }
         }
 

@@ -4,16 +4,15 @@ import github.cweijan.ultimate.annotation.query.*
 import github.cweijan.ultimate.annotation.query.pagination.Offset
 import github.cweijan.ultimate.annotation.query.pagination.Page
 import github.cweijan.ultimate.annotation.query.pagination.PageSize
+import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.ComponentScan
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.component.info.ComponentInfo
-import github.cweijan.ultimate.convert.TypeAdapter
-import github.cweijan.ultimate.core.extra.ExtraData
-import github.cweijan.ultimate.db.config.DbConfig
-import github.cweijan.ultimate.db.init.DBInitialer
-import github.cweijan.ultimate.debug.HotSwapSupport
 import github.cweijan.ultimate.core.excel.ExcelOperator
 import github.cweijan.ultimate.core.excel.ExcludeExcel
+import github.cweijan.ultimate.core.extra.GroupFunction
+import github.cweijan.ultimate.db.config.DbConfig
+import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.util.Json
 import github.cweijan.ultimate.util.Log
 import java.io.File
@@ -58,32 +57,32 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     val updateLazy = lazy { return@lazy HashMap<String, Any>() }
     val updateMap: MutableMap<String, Any>by updateLazy
 
-    val greatEqLazy = lazy { HashMap<String, MutableList<String>>() }
-    val greatEqualsOperation: MutableMap<String, MutableList<String>>by greatEqLazy
+    val greatEqLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val greatEqualsOperation: MutableMap<String, MutableList<Any>>by greatEqLazy
 
-    val lessEqLazy = lazy { HashMap<String, MutableList<String>>() }
-    val lessEqualsOperation: MutableMap<String, MutableList<String>>by lessEqLazy
+    val lessEqLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val lessEqualsOperation: MutableMap<String, MutableList<Any>>by lessEqLazy
 
-    val eqLazy = lazy { HashMap<String, MutableList<String>>() }
-    val equalsOperation: MutableMap<String, MutableList<String>>by eqLazy
+    val eqLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val equalsOperation: MutableMap<String, MutableList<Any>>by eqLazy
 
     val inLazy = lazy { HashMap<String, MutableList<*>>() }
     val inOperation: MutableMap<String, MutableList<*>>by inLazy
 
-    val orEqLazy = lazy { HashMap<String, MutableList<String>>() }
-    val orEqualsOperation: MutableMap<String, MutableList<String>>by orEqLazy
+    val orEqLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val orEqualsOperation: MutableMap<String, MutableList<Any>>by orEqLazy
 
-    val notEqLazy = lazy { HashMap<String, MutableList<String>>() }
-    val notEqualsOperation: MutableMap<String, MutableList<String>>by notEqLazy
+    val notEqLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val notEqualsOperation: MutableMap<String, MutableList<Any>>by notEqLazy
 
-    val orNotEqLazy = lazy { HashMap<String, MutableList<String>>() }
-    val orNotEqualsOperation: MutableMap<String, MutableList<String>>by orNotEqLazy
+    val orNotEqLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val orNotEqualsOperation: MutableMap<String, MutableList<Any>>by orNotEqLazy
 
-    val searchLazy = lazy { HashMap<String, MutableList<String>>() }
-    val searchOperation: MutableMap<String, MutableList<String>>by searchLazy
+    val searchLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val searchOperation: MutableMap<String, MutableList<Any>>by searchLazy
 
-    val orSearchLazy = lazy { HashMap<String, MutableList<String>>() }
-    val orSearchOperation: MutableMap<String, MutableList<String>> by orSearchLazy
+    val orSearchLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val orSearchOperation: MutableMap<String, MutableList<Any>> by orSearchLazy
 
     private val sumLazy = lazy { return@lazy HashMap<String, String>() }
     private val sumMap: MutableMap<String, String>by sumLazy
@@ -141,7 +140,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
-    private fun getOperationList(map: MutableMap<String, MutableList<String>>, key: String): MutableList<String>? {
+    private fun getOperationList(map: MutableMap<String, MutableList<Any>>, key: String): MutableList<Any>? {
 
         map[key] = map[key] ?: ArrayList()
 
@@ -231,11 +230,11 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
-    private fun put(map: MutableMap<String, MutableList<String>>, column: String, value: Any?) {
+    private fun put(map: MutableMap<String, MutableList<Any>>, column: String, value: Any?) {
 
         val tableColumn = getColumnName(column)
         val operationList = getOperationList(map, tableColumn)
-        operationList!!.add(TypeAdapter.convertAdapter(componentClass, column, value).toString())
+        operationList!!.add(TypeAdapter.convertAdapter(componentClass, column, value))
     }
 
     protected fun getColumnName(column: String) = component.getColumnNameByFieldName(column) ?: convert(column)
@@ -328,6 +327,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
+    @JvmOverloads
     fun orderBy(column: String?, desc: Boolean = false): Query<T> {
 
         column ?: return this
@@ -477,10 +477,11 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         @JvmStatic
         fun init(dbConfig: DbConfig) {
             db = DbUltimate(dbConfig)
-            if (dbConfig.develop) {
-                HotSwapSupport.startHotSwapListener(dbConfig)
-            }
+//            if (dbConfig.develop) {
+//                HotSwapSupport.startHotSwapListener(dbConfig)
+//            }
 
+            ComponentInfo.init(GroupFunction::class.java)
             dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
             DBInitialer(dbConfig).initalerTable()
 

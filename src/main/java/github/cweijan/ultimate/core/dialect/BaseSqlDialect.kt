@@ -169,7 +169,7 @@ abstract class BaseSqlDialect : SqlDialect {
         return sql.toString()
     }
 
-    private fun <T> generateOperationSql0(operationMap: Map<String, List<String>>?, condition: String, separator: String, query: Query<T>): String {
+    private fun <T> generateOperationSql0(operationMap: Map<String, List<Any>>?, condition: String, separator: String, query: Query<T>): String {
 
         val sql = StringBuilder()
 
