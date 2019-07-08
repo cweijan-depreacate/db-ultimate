@@ -15,6 +15,7 @@ import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.util.Json
 import github.cweijan.ultimate.util.Log
+import github.cweijan.ultimate.util.StringUtils
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -131,8 +132,8 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         val foreignTableName = foreignComponent.tableName
         val foreignKeyInfo = component.getForeignKey(clazz)
 
-        val tableAlias = component.tableAlias ?: component.tableName
-        val foreignTableAlias = foreignComponent.tableAlias ?: foreignTableName
+        val tableAlias = if (StringUtils.isBlank(component.tableAlias)) component.tableName else component.tableAlias
+        val foreignTableAlias = if (StringUtils.isBlank(foreignComponent.tableAlias)) foreignTableName else foreignComponent.tableAlias
 
         val segment = " join $foreignTableName $foreignTableAlias on $tableAlias.${foreignKeyInfo.foreignKey}=$foreignTableAlias.${foreignKeyInfo.joinKey} "
         joinTables.add(segment)
@@ -151,7 +152,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         var covertColumn = column
 
         if (isAutoConvert) {
-            covertColumn =TypeAdapter.convertHumpToUnderLine(covertColumn)!!
+            covertColumn = TypeAdapter.convertHumpToUnderLine(covertColumn)!!
         }
 
         return covertColumn
