@@ -14,9 +14,11 @@ public final class ExtraDataService {
     private ExtraDataService() {
     }
 
-    public static void save(Object key, Object extraObject,String extraName) {
+    public static void save(Object key, Object extraObject, String extraName) {
 
-        String finalExtraName = StringUtils.isEmpty(extraName)?getExtraName(extraObject.getClass()):extraName;
+        if (key == null || extraObject==null) return;
+
+        String finalExtraName = StringUtils.isEmpty(extraName) ? getExtraName(extraObject.getClass()) : extraName;
         ExtraData extraData = getQuery(key, finalExtraName).get();
         if (extraData == null) {
             extraData = new ExtraData();
@@ -35,13 +37,15 @@ public final class ExtraDataService {
     }
 
     public static void save(Object key, Object extraObject) {
-        save(key,extraObject,null);
+        save(key, extraObject, null);
     }
-    
 
-    public static <T> T getExtraData(Object key,Class<T> extraType,String extraName) {
 
-        String finalExtraName = StringUtils.isEmpty(extraName)?getExtraName(extraType):extraName;
+    public static <T> T getExtraData(Object key, Class<T> extraType, String extraName) {
+
+        if(key==null || extraType==null)return null;
+
+        String finalExtraName = StringUtils.isEmpty(extraName) ? getExtraName(extraType) : extraName;
         ExtraData extraData = getQuery(key, finalExtraName).get();
         if (extraData != null && (extraData.getExprieMinute() == -1 || extraData.getUpdateDate().plusMinutes(extraData.getExprieMinute()).isAfter(LocalDateTime.now()))) {
             return Json.parse(new String(extraData.getData(), Charsets.UTF_8), extraType);
@@ -49,10 +53,10 @@ public final class ExtraDataService {
             return null;
         }
     }
-    
-    
+
+
     public static <T> T getExtraData(Object key, Class<T> extraType) {
-        return getExtraData(key,extraType,null);
+        return getExtraData(key, extraType, null);
     }
 
     public static void expireExtraData(@NotNull Object key, @NotNull Class<?> extraType, int minute) {

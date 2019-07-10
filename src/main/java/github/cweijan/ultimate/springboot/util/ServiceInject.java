@@ -3,6 +3,7 @@ package github.cweijan.ultimate.springboot.util;
 import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.core.component.TableInfo;
 import github.cweijan.ultimate.core.extra.ExtraDataService;
+import github.cweijan.ultimate.core.page.Pagination;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,8 +55,8 @@ public abstract class ServiceInject<T> implements InitializingBean {
     }
 
     @Transactional(readOnly = true)
-    public List<T> findByPage(Integer page, Integer pageSize) {
-        return Query.of(componentClass).page(page).pageSize(pageSize).list();
+    public Pagination<T> findByPage(Integer page, Integer pageSize) {
+        return Query.of(componentClass).page(page).pageSize(pageSize).pageList();
     }
 
     @Transactional(readOnly = true)

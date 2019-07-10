@@ -119,15 +119,18 @@ abstract class BaseSqlDialect : SqlDialect {
         if (query.searchLazy.isInitialized()) sql += generateOperationSql0(query.searchOperation, "LIKE", and, query)
         if (query.orSearchLazy.isInitialized()) sql += generateOperationSql0(query.orSearchOperation, "LIKE", or, query)
 
-        var inSql = StringBuilder()
+        if (query.isNullLazy.isInitialized()) query.isNullList.forEach { sql += "$and $it IS NULL " }
+        if (query.isNotNullLazy.isInitialized()) query.isNotNullList.forEach { sql += "$and $it IS NOT NULL " }
 
+        //生成in查询语句
+        var inSql = StringBuilder()
         if (query.inLazy.isInitialized()) query.inOperation.forEach { (key, operations) ->
             inSql.append("$and $key in (")
             operations.forEach { value ->
                 inSql.append(",?")
                 query.addParam(value)
             }
-            inSql=StringBuilder(inSql.replaceFirst(",".toRegex(),""))
+            inSql = StringBuilder(inSql.replaceFirst(",".toRegex(), ""))
             inSql.append(")")
         }
         sql += inSql.toString()

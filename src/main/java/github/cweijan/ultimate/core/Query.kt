@@ -59,6 +59,12 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     val updateLazy = lazy { return@lazy HashMap<String, Any>() }
     val updateMap: MutableMap<String, Any>by updateLazy
 
+    val isNullLazy = lazy { return@lazy ArrayList<String>() }
+    val isNullList: MutableList<String> by isNullLazy
+
+    val isNotNullLazy = lazy { return@lazy ArrayList<String>() }
+    val isNotNullList: MutableList<String> by isNotNullLazy
+
     val greatEqLazy = lazy { HashMap<String, MutableList<Any>>() }
     val greatEqualsOperation: MutableMap<String, MutableList<Any>>by greatEqLazy
 
@@ -345,6 +351,24 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     fun setColumn(column: String?): Query<T> {
 
         column?.let { this.column = convert(column) }
+        return this
+    }
+
+    /**
+     * 列为空查询，该查询直接拼接sql，需要防止sql注入
+     */
+    fun isNull(column:String?):Query<T>{
+        column ?: return this
+        isNullList.add(getColumnName(column))
+        return this
+    }
+
+    /**
+     * 列不为空查询，该查询直接拼接sql，需要防止sql注入
+     */
+    fun isNotNull(column:String?):Query<T>{
+        column ?: return this
+        isNotNullList.add(getColumnName(column))
         return this
     }
 

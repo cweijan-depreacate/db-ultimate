@@ -29,6 +29,25 @@ public class SelectTest extends BaseTest{
     }
 
     @Test
+    public void isNullTest(){
+
+        List<Lib> msd = Query.of(Lib.class).isNull("msd").list();
+        System.out.println(msd);
+
+
+    }
+
+    @Test
+    public void isNotNullTest(){
+
+        List<Lib> msd = Query.of(Lib.class).isNotNull("message").list();
+        System.out.println(msd);
+
+
+    }
+
+
+    @Test
     public void testGetMap(){
 
         String sql = "select * from rh_admin";
