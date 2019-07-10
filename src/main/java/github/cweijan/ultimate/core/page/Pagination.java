@@ -12,6 +12,10 @@ public class Pagination<T> {
      * 设置起始页，记录页面从哪里开始，可选属性
      */
     private Integer startPage;
+    /**
+     * 设置分页从哪里结束
+     */
+    private Integer endPage;
     private Integer currentPage;
     private Integer pageSize;
     private Integer count;
@@ -19,13 +23,33 @@ public class Pagination<T> {
     private List<T> data;
 
     /**
-     * 修改当前起始页数，默认为当前页
+     * 设置分页的起始页和结束页
      *
-     * @param number 相当于当前页数之前页数
+     * @param offset  相当于当前页数之前页数
+     * @param pageNum 总共显示多少页
      */
-    public void range(Integer number) {
-        if (totalPage == null) return;
-        this.startPage = totalPage - number < 0 ? 1 : totalPage - number;
+    public Pagination<T> range(Integer offset, Integer pageNum) {
+        if (currentPage == null) return null;
+        this.startPage = currentPage - offset < 0 ? 1 : currentPage - offset;
+
+        if (this.totalPage != null && pageNum != null ) {
+            int maxPage = pageNum - 1;
+            this.endPage = this.startPage + maxPage;
+            if (this.endPage > totalPage) {
+                this.endPage = totalPage;
+            }
+        }
+        return this;
+    }
+
+    public Integer getPrePage() {
+        if (currentPage != null && currentPage != 1) return currentPage - 1;
+        return null;
+    }
+
+    public Integer getNextPage() {
+        if (currentPage != null && currentPage < totalPage) return currentPage + 1;
+        return null;
     }
 
     public Integer getCurrentPage() {
@@ -76,4 +100,11 @@ public class Pagination<T> {
         this.startPage = startPage;
     }
 
+    public Integer getEndPage() {
+        return endPage;
+    }
+
+    public void setEndPage(Integer endPage) {
+        this.endPage = endPage;
+    }
 }
