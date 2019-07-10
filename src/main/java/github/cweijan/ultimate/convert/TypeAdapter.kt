@@ -4,11 +4,10 @@ import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.util.DateUtils
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
-import kotlin.collections.ArrayList
 
 object TypeAdapter {
 
-    private val NUMBER_TYPE = mutableListOf("java.math.BigInteger","byte", "short", "int", "float", "double", "long", JavaType.Byte, JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
+    private val NUMBER_TYPE = mutableListOf("java.math.BigInteger", "byte", "short", "int", "float", "double", "long", JavaType.Byte, JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
     private val BOOLEAN_TYPE = mutableListOf(JavaType.Boolean, "boolean")
     private val BLOB_TYPE = mutableListOf(JavaType.byteArray)
     val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
@@ -41,9 +40,15 @@ object TypeAdapter {
     }
 
     fun convertJavaObject(componentClass: Class<*>, field: Field, javaObject: Any?): Any? {
-        if (javaObject == null) return null
 
         val fieldType = field.type
+        if (javaObject == null) {
+            if (fieldType.isPrimitive) {
+                return 0
+            }
+            return null
+        }
+
         if (fieldType.isEnum && CHARACTER_TYPE.contains(javaObject::class.java.name)) {
             return EnumConvert.valueOfEnum(fieldType, javaObject.toString())
         }

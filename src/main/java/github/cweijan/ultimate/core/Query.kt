@@ -11,6 +11,7 @@ import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.core.excel.ExcelOperator
 import github.cweijan.ultimate.core.excel.ExcludeExcel
 import github.cweijan.ultimate.core.extra.GroupFunction
+import github.cweijan.ultimate.core.page.Pagination
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.util.Json
@@ -250,6 +251,18 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
+    /**
+     * like查询
+     */
+    fun like(column: String, content: Any?): Query<T> {
+
+        content?.let { put(searchOperation, column, "%$it%") }
+        return this
+    }
+
+    /**
+     * like查询
+     */
     fun search(column: String, content: Any?): Query<T> {
 
         content?.let { put(searchOperation, column, "%$it%") }
@@ -309,6 +322,13 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         this.pageSize = limit
         return this
     }
+
+    fun lime(limit: Int?): Query<T> {
+
+        this.pageSize = limit
+        return this
+    }
+
 
     fun page(page: Int?): Query<T> {
 
@@ -427,6 +447,27 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
         methodName?.run { Log.debug("Execute method $methodName ") }
         return db.find(this)
+    }
+
+    fun pageList(): Pagination<T> {
+
+        methodName?.run { Log.debug("Execute method $methodName ") }
+        val pagination = Pagination<T>()
+        pagination.count = db.getCount(this)
+        pagination.pageSize = this.pageSize
+        pagination.currentPage = this.page?:1
+        pagination.startPage = this.page?:1
+
+        //计算总页数
+        if (pagination.pageSize != null) {
+            pagination.totalPage = pagination.count / pagination.pageSize;
+            if (pagination.count % pagination.pageSize != 0) {
+                pagination.totalPage++;
+            }
+        } else pagination.totalPage = 1
+
+        pagination.data = db.find(this)
+        return pagination
     }
 
     fun get(): T? {
