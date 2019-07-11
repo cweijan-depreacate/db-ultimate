@@ -34,7 +34,7 @@ public interface TableStruct {
             if(tableStruct.getColumnName().equals(columnName)) return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
