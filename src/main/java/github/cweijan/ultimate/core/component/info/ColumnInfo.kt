@@ -8,6 +8,7 @@ import java.lang.reflect.Field
 
 class ColumnInfo {
 
+    lateinit var field: Field
     lateinit var columnName: String
     lateinit var fieldType: Class<*>
     lateinit var excelHeader: String
@@ -34,6 +35,7 @@ class ColumnInfo {
 
             val columnInfo = ColumnInfo()
             columnInfo.fieldType = field.type
+            columnInfo.field = field
 
             //生成exclude信息
             field.getAnnotation(Exclude::class.java)?.run {

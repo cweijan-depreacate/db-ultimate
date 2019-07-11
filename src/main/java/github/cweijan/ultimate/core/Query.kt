@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.core
 
+import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.annotation.query.*
 import github.cweijan.ultimate.annotation.query.pagination.Offset
 import github.cweijan.ultimate.annotation.query.pagination.Page
@@ -232,8 +233,12 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     fun update(column: String, value: Any?): Query<T> {
 
         value?.let {
-            val columnName = component.getColumnNameByFieldName(column)
-            updateMap[columnName ?: convert(column)] = TypeAdapter.convertAdapter(componentClass, column, it)
+            val convertColumnName = convert(column)
+            component.getColumnInfoByColumnName(convertColumnName)?.field?.getAnnotation(Blob::class.java)?.run {
+                updateMap[convertColumnName] = Json.toJson(value).toByteArray()
+                return@let
+            }
+            updateMap[convertColumnName] = TypeAdapter.convertAdapter(componentClass, column, it)
         }
         return this
     }
@@ -357,7 +362,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     /**
      * 列为空查询，该查询直接拼接sql，需要防止sql注入
      */
-    fun isNull(column:String?):Query<T>{
+    fun isNull(column: String?): Query<T> {
         column ?: return this
         isNullList.add(getColumnName(column))
         return this
@@ -366,7 +371,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     /**
      * 列不为空查询，该查询直接拼接sql，需要防止sql注入
      */
-    fun isNotNull(column:String?):Query<T>{
+    fun isNotNull(column: String?): Query<T> {
         column ?: return this
         isNotNullList.add(getColumnName(column))
         return this
@@ -479,8 +484,8 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         val pagination = Pagination<T>()
         pagination.count = db.getCount(this)
         pagination.pageSize = this.pageSize
-        pagination.currentPage = this.page?:1
-        pagination.startPage = this.page?:1
+        pagination.currentPage = this.page ?: 1
+        pagination.startPage = this.page ?: 1
 
         //计算总页数
         if (pagination.pageSize != null) {

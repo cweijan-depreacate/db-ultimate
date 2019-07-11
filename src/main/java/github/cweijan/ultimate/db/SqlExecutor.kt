@@ -45,7 +45,7 @@ class SqlExecutor(private val dbConfig: DbConfig) {
         }
         if (dbConfig.showSql) {
             Log.getLogger().info("Execute SQL : $sql")
-            if (params != null) {
+            if (params != null && params.isNotEmpty()) {
                 var paramContent=" param count ${params.size} : "
                 IntStream.range(0, params.size).forEach { index ->
                     paramContent+=",${params[index]}"
