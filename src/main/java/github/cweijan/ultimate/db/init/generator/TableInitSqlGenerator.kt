@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.db.init.generator
 
+import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import java.lang.reflect.Field
@@ -18,8 +19,8 @@ interface TableInitSqlGenerator {
 
         TypeAdapter.getAllField(componentInfo.componentClass).let { fields ->
             fields.forEach { field ->
-                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type)) {
-                    return@forEach
+                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type) ) {
+                    if(field.getAnnotation(Blob::class.java)==null) return@forEach
                 }
                 val columnDefination = getColumnDefination(field, componentInfo)
                 //拼接sql

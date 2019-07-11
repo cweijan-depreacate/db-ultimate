@@ -1,9 +1,11 @@
 package github.cweijan.ultimate.core.dialect
 
-import github.cweijan.ultimate.core.component.TableInfo
+import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.Query
+import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
+import github.cweijan.ultimate.util.Json
 
 abstract class BaseSqlDialect : SqlDialect {
 
@@ -19,6 +21,7 @@ abstract class BaseSqlDialect : SqlDialect {
             field.get(component)?.run {
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
                 values += "?,"
+                field.getAnnotation(Blob::class.java)?.let { params.add(Json.toJson(this).toByteArray()); return@run }
                 params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, this))
             }
         }
@@ -48,6 +51,7 @@ abstract class BaseSqlDialect : SqlDialect {
             }
             field.get(component)?.run {
                 sql += "${componentInfo.getColumnNameByFieldName(field.name)}=?,"
+                field.getAnnotation(Blob::class.java)?.let { params.add(Json.toJson(this).toByteArray()); return@run }
                 params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, this))
             }
         }

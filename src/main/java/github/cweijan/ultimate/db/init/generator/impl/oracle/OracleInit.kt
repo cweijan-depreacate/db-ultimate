@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.db.init.generator.impl.oracle
 
+import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.convert.JavaType
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.info.ComponentInfo
@@ -51,6 +52,7 @@ class OracleInit : TableInitSqlGenerator {
 
     override fun getColumnTypeByField(field: Field, length: Int?): String {
         if (field.type.isEnum) return "VARCHAR2(${length ?: 50})"
+        field.getAnnotation(Blob::class.java)?.run { return "RAW" }
         return when (field.type.name) {
             JavaType.String -> "VARCHAR2(${length ?: 100})"
             JavaType.Character, "char" -> "CHAR(${length ?: 1})"

@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.db.init.generator.impl.postgresql
 
+import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.convert.JavaType
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.info.ComponentInfo
@@ -63,6 +64,7 @@ class PostgresqlInit : TableInitSqlGenerator {
 
     override fun getColumnTypeByField(field: Field, length: Int?): String {
         if (field.type.isEnum) return "VARCHAR(${length ?: 50})"
+        field.getAnnotation(Blob::class.java)?.run { return "bytea" }
         return when (field.type.name) {
             JavaType.String -> "varchar(${length ?: 100})"
             JavaType.Character, "char" -> "char(${length ?: 1})"

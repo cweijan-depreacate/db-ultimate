@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.test.bean
 
+import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.annotation.Column
 import github.cweijan.ultimate.annotation.Primary
 import github.cweijan.ultimate.annotation.Table
@@ -13,6 +14,9 @@ class CreateTest {
 
     @Primary(value = "id", autoIncrement = true, comment = "主键", length = 3)
     var id: Int? = null
+
+    @Blob
+    var magenetList:List<String>?=null
 
     @Column(value = "name1", comment = "姓名", defaultValue = "cwj", nullable = true, length = 30,unique = true)
     var name: String? = null

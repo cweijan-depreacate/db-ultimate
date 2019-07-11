@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.db.init
 
+import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.component.info.ComponentInfo
@@ -42,7 +43,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
         val component = TableInfo.componentList.stream().filter { componentInfo -> !excludeList.contains(componentInfo.componentClass) }
         when (dbConfig.tableMode) {
             TableAutoMode.none -> return
-            TableAutoMode.create -> {
+            TableAutoMode.init -> {
                 component.forEach { componentInfo -> recreateTable(componentInfo) }
             }
             TableAutoMode.update -> {
@@ -66,7 +67,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
         if (componentInfo == null || tableExists(componentInfo.tableName)) return
 
         if (componentInfo.nonExistsColumn()) {
-            Log.debug("${componentInfo.componentClass.name} dont have any columns, skip create table ")
+            Log.debug("${componentInfo.componentClass.name} dont have any columns, skip init table ")
             return
         }
 
@@ -110,7 +111,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
         }
 
         if (componentInfo.nonExistsColumn()) {
-            Log.debug("${componentInfo.componentClass.name} dont have any columns, skip create table ")
+            Log.debug("${componentInfo.componentClass.name} dont have any columns, skip init table ")
             return
         }
         val updateSqlList = HashSet<String>()
@@ -126,8 +127,8 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
             fields.forEachIndexed { _, field ->
 
-                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type)) {
-                    return@forEachIndexed
+                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type) ) {
+                    if(field.getAnnotation(Blob::class.java)==null) return@forEachIndexed
                 }
 
                 field.isAccessible = true

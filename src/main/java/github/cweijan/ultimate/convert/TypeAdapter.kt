@@ -1,7 +1,9 @@
 package github.cweijan.ultimate.convert
 
+import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.util.DateUtils
+import github.cweijan.ultimate.util.Json
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
@@ -47,6 +49,11 @@ object TypeAdapter {
                 return 0
             }
             return null
+        }
+
+        field.getAnnotation(Blob::class.java)?.run {
+            javaObject as ByteArray
+            return Json.parse(String(javaObject),field.type)
         }
 
         if (fieldType.isEnum && CHARACTER_TYPE.contains(javaObject::class.java.name)) {

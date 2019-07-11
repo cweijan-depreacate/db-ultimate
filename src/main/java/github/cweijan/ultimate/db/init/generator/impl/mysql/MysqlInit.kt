@@ -1,11 +1,10 @@
 package github.cweijan.ultimate.db.init.generator.impl.mysql
 
+import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.convert.JavaType
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.db.init.generator.TableInitSqlGenerator
-import github.cweijan.ultimate.util.StringUtils
-
 import java.lang.reflect.Field
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -54,6 +53,7 @@ class MysqlInit : TableInitSqlGenerator {
 
     override fun getColumnTypeByField(field: Field, length: Int?): String {
         if (field.type.isEnum) return "VARCHAR(${length ?: 50})"
+        field.getAnnotation(Blob::class.java)?.run { return "BLOB" }
         return when (field.type.name) {
             JavaType.String -> "VARCHAR(${length ?: 100})"
             JavaType.Character, "char" -> "char(${length ?: 1})"

@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.convert
 
+import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.util.Log
 import java.lang.reflect.Field
@@ -22,7 +23,6 @@ object TypeConvert {
         if (!hadNext && !resultSet.next()) return null
 
         val columns = getColumns(resultSet)
-
 
         return toJavaBean(resultSet, beanClass, columns)
     }
@@ -101,7 +101,7 @@ object TypeConvert {
 
             try {
                 when {
-                    TypeAdapter.isAdapterType(field.type) -> field.set(beanInstance, TypeAdapter.convertJavaObject(component.componentClass, field, try {
+                    TypeAdapter.isAdapterType(field.type) || field.getAnnotation(Blob::class.java) != null -> field.set(beanInstance, TypeAdapter.convertJavaObject(component.componentClass, field, try {
                         resultSet.getObject(columnName)
                     } catch (e: Exception) {
                         Log.error(e.message);null

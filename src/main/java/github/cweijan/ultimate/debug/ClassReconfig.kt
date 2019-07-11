@@ -4,7 +4,7 @@ import github.cweijan.ultimate.core.component.ComponentScan
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
-import github.cweijan.ultimate.db.init.generator.TableAutoMode.create
+import github.cweijan.ultimate.db.init.generator.TableAutoMode.init
 import github.cweijan.ultimate.db.init.generator.TableAutoMode.update
 import github.cweijan.ultimate.util.Log
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor
@@ -23,7 +23,7 @@ class ClassReconfig(private val baseClasspath: String,val dbconfig:DbConfig) : F
         if(ComponentScan.isComponent(componentClass)){
             val componentInfo = ComponentInfo.init(componentClass, false)
             when(dbconfig.tableMode){
-                create ->initialer.createTable(componentInfo)
+                init ->initialer.createTable(componentInfo)
                 update ->initialer.recreateTable(componentInfo)
                 else -> ""
             }

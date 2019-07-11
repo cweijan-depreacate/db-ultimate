@@ -14,6 +14,7 @@ class ColumnInfo {
     var length: Int? = null
     var nullable: Boolean = true
     var autoIncrement: Boolean = false
+    var isBlob: Boolean = false
     var unique: Boolean=false
     var comment: String?=null
     var defaultValue: String?=null
@@ -48,6 +49,11 @@ class ColumnInfo {
             //生成日期格式化信息
             field.getAnnotation(JsonFormat::class.java)?.run {
                 columnInfo.dateFormat = this.pattern
+            }
+
+            //生成日期格式化信息
+            field.getAnnotation(JsonFormat::class.java)?.run {
+                columnInfo.isBlob =true
             }
 
             //生成column info

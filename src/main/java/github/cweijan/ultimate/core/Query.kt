@@ -329,7 +329,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
-    fun lime(limit: Int?): Query<T> {
+    fun limit(limit: Int?): Query<T> {
 
         this.pageSize = limit
         return this

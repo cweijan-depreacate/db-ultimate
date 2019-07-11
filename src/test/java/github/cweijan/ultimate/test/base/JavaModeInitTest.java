@@ -20,7 +20,7 @@ public class JavaModeInitTest{
         dbConfig.setUsername("root");
         dbConfig.setPassword("665420");
         dbConfig.setScanPackage("github.cweijan");
-        dbConfig.setTableMode(TableAutoMode.create);
+        dbConfig.setTableMode(TableAutoMode.init);
         DbUltimate dbUltimate = new DbUltimate(dbConfig);
         List<Admin> admins = dbUltimate.find(Query.of(Admin.class));
         System.out.println(admins);
