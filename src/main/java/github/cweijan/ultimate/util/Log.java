@@ -21,7 +21,7 @@ public class Log {
     @JvmStatic
     public static void error(Object content) {
         if (loggerChecker.isErrorEnabled()) {
-            getLoggerInner().error(content != null ? content.toString() : null, "");
+            getLoggerInner().error(content != null ? Json.toJson(content) : null, "");
         }
 
     }
@@ -29,7 +29,7 @@ public class Log {
     @JvmStatic
     public static void error(Object content, Throwable throwable) {
         if (loggerChecker.isErrorEnabled()) {
-            getLoggerInner().error(content != null ? content.toString() : null, "", throwable);
+            getLoggerInner().error(content != null ? Json.toJson(content) : null, "", throwable);
         }
 
     }
@@ -37,7 +37,7 @@ public class Log {
     @JvmStatic
     public static void warn(Object content) {
         if (loggerChecker.isWarnEnabled()) {
-            getLoggerInner().warn(content != null ? content.toString() : null, "");
+            getLoggerInner().warn(content != null ? Json.toJson(content) : null, "");
         }
 
     }
@@ -45,7 +45,7 @@ public class Log {
     @JvmStatic
     public static void debug(Object content) {
         if (loggerChecker.isDebugEnabled()) {
-            getLoggerInner().debug(content != null ? content.toString() : null, "");
+            getLoggerInner().debug(content != null ? Json.toJson(content) : null, "");
         }
 
     }
@@ -53,7 +53,7 @@ public class Log {
     @JvmStatic
     public static void info(Object content) {
         if (loggerChecker.isInfoEnabled()) {
-            getLoggerInner().info(content != null ? content.toString() : null, "");
+            getLoggerInner().info(content != null ? Json.toJson(content) : null, "");
         }
 
     }

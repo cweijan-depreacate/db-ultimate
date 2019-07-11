@@ -1,16 +1,17 @@
 package github.cweijan.ultimate.test.crud;
 
+import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.core.component.TableInfo;
 import github.cweijan.ultimate.core.component.info.ComponentInfo;
-import github.cweijan.ultimate.core.Query;
-import github.cweijan.ultimate.util.Json;
 import github.cweijan.ultimate.test.base.BaseTest;
 import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.test.bean.Lib;
+import github.cweijan.ultimate.util.Json;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +26,13 @@ public class SelectTest extends BaseTest{
         //        query.setColumn("id, message");
         query.pageSize(1);
         Admin admin = query.get();
-        Log.info(admin.toString());
+        Log.info(admin);
+        Log.info(2);
+        Log.info("sdfsdf");
+        Log.info(true);
+        Log.info('s');
+        Log.info(Arrays.asList("sdf"));
+
     }
 
     @Test
