@@ -41,16 +41,16 @@ class DbConfig {
     var showSql = DefaultProperties.SHOW_SQL
     var enable = DefaultProperties.ENABLE
     var develop = DefaultProperties.DEVELOP
-    var tableMode=DefaultProperties.DEFAULT_TABLE_MODE
+    var tableMode = DefaultProperties.DEFAULT_TABLE_MODE
     var scanPackage: String? = null
     private val threadLocal = ThreadLocal<Connection?>()
 
-    fun getDatabaseType():DatabaseType{
-        return when{
-            url!!.indexOf("jdbc:mysql")!=-1->DatabaseType.mysql
-            url!!.indexOf("jdbc:oracle")!=-1->DatabaseType.oracle
-            url!!.indexOf("jdbc:postgresql")!=-1->DatabaseType.mysql
-            url!!.indexOf("jdbc:sqlite")!=-1->DatabaseType.sqllite
+    fun getDatabaseType(): DatabaseType {
+        return when {
+            url!!.indexOf("jdbc:mysql") != -1 -> DatabaseType.mysql
+            url!!.indexOf("jdbc:oracle") != -1 -> DatabaseType.oracle
+            url!!.indexOf("jdbc:postgresql") != -1 -> DatabaseType.mysql
+            url!!.indexOf("jdbc:sqlite") != -1 -> DatabaseType.sqllite
             else -> DatabaseType.none
         }
     }
@@ -64,11 +64,18 @@ class DbConfig {
         } else if (DataSourceUtils.isConnectionTransactional(currentConnection, dataSource)) {
             DataSourceUtils.doGetConnection(dataSource!!)
         } else {
-            DataSourceUtils.doCloseConnection(currentConnection,dataSource)
+            DataSourceUtils.doCloseConnection(currentConnection, dataSource)
             threadLocal.set(DataSourceUtils.doGetConnection(dataSource!!))
             threadLocal.get()!!
         }
 
+    }
+
+    fun tryCloseConnection() {
+        val currentConnection = threadLocal.get()
+        if (currentConnection != null && !currentConnection.isClosed && !DataSourceUtils.isConnectionTransactional(currentConnection, dataSource)) {
+            DataSourceUtils.doCloseConnection(currentConnection, dataSource)
+        }
     }
 
 }

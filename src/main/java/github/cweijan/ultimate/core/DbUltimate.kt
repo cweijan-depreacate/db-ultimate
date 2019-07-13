@@ -1,21 +1,20 @@
 package github.cweijan.ultimate.core
 
-import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.convert.TypeConvert
-import github.cweijan.ultimate.core.extra.ExtraDataService
+import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.dialect.DialectAdapter
+import github.cweijan.ultimate.core.dialect.SqlDialect
+import github.cweijan.ultimate.core.extra.ExtraDataService
+import github.cweijan.ultimate.core.extra.GroupFunction
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
-import github.cweijan.ultimate.exception.TooManyResultException
-import github.cweijan.ultimate.core.dialect.SqlDialect
-import github.cweijan.ultimate.core.extra.GroupFunction
 import github.cweijan.ultimate.util.Log
 import java.sql.ResultSet
 
 /**
  * 核心Api,用于Crud操作
  */
-class DbUltimate internal constructor(dbConfig: DbConfig) {
+class DbUltimate internal constructor(var dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
     var sqlGenerator: SqlDialect = DialectAdapter.getSqlGenerator(dbConfig.getDatabaseType())
@@ -68,14 +67,18 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
 
         val sql = sqlGenerator.generateCountSql(query)
 
-        return getBySql(sql, query.consumeParams(), GroupFunction::class.java)!!.count.toInt()
+        val toInt = getBySql(sql, query.consumeParams(), GroupFunction::class.java)!!.count.toInt()
+        dbConfig.tryCloseConnection()
+        return toInt
     }
 
     fun <T> getByQuery(query: Query<T>): T? {
 
         val sql = sqlGenerator.generateSelectSql(query)
 
-        return getBySql(sql, query.consumeParams(), query.componentClass)
+        val bySql = getBySql(sql, query.consumeParams(), query.componentClass)
+        dbConfig.tryCloseConnection()
+        return bySql
     }
 
     fun <T> getByPrimaryKey(clazz: Class<T>, value: Any?): T? {
@@ -85,6 +88,7 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
 
     fun deleteByPrimaryKey(clazz: Class<*>, value: Any) {
         Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value).executeDelete();
+        dbConfig.tryCloseConnection()
     }
 
     fun <T> find(query: Query<T>): List<T> {
@@ -93,7 +97,9 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
 
         val resultSet = sqlExecutor.executeSql(sql, query.consumeParams())
 
-        return TypeConvert.resultSetToBeanList(resultSet!!, query.componentClass)
+        val resultSetToBeanList = TypeConvert.resultSetToBeanList(resultSet!!, query.componentClass)
+        dbConfig.tryCloseConnection()
+        return resultSetToBeanList
     }
 
     /**
@@ -131,6 +137,7 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
         if (executeSql?.next() == true) {
             TableInfo.getComponent(component.javaClass).setPrimaryValue(component, executeSql.getInt(1))
         }
+        dbConfig.tryCloseConnection()
 
     }
 
@@ -168,16 +175,19 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
 
     fun <T> batchDelete(query: Query<T>, privateKeyList: List<Any>) {
         privateKeyList.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey).executeDelete() }
+        dbConfig.tryCloseConnection()
     }
 
     fun <T> batchDelete(query: Query<T>, privateKeys: Array<Any>) {
         privateKeys.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey).executeDelete() }
+        dbConfig.tryCloseConnection()
     }
 
     fun <T> delete(query: Query<T>) {
 
         val sql = sqlGenerator.generateDeleteSql(query)
         executeSql(sql, query.consumeParams())
+        dbConfig.tryCloseConnection()
     }
 
     fun update(component: Any) {
@@ -185,6 +195,7 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
         try {
             val sqlObject = sqlGenerator.generateUpdateSqlByObject(component)
             executeSql(sqlObject.sql, sqlObject.params.toTypedArray())
+            dbConfig.tryCloseConnection()
         } catch (e: IllegalAccessException) {
             Log.error(e.message, e)
         }
@@ -195,6 +206,7 @@ class DbUltimate internal constructor(dbConfig: DbConfig) {
 
         val sql = sqlGenerator.generateUpdateSqlByObject(query)
         executeSql(sql, query.consumeParams())
+        dbConfig.tryCloseConnection()
     }
 
 }

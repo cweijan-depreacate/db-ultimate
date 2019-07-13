@@ -6,6 +6,7 @@ import github.cweijan.ultimate.util.DateUtils
 import github.cweijan.ultimate.util.Json
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
+import java.lang.reflect.ParameterizedType
 
 object TypeAdapter {
 
@@ -52,8 +53,19 @@ object TypeAdapter {
         }
 
         field.getAnnotation(Blob::class.java)?.run {
+            val listGenericType = field.genericType as ParameterizedType
+            val listActualTypeArguments = listGenericType.actualTypeArguments
+            val valueType = if (listActualTypeArguments != null && listActualTypeArguments.isNotEmpty()) {
+                listActualTypeArguments[0] as Class<*>
+            } else {
+                Any::class.java
+            }
             javaObject as ByteArray
-            return Json.parse(String(javaObject),field.type)
+            return if (field.type.isAssignableFrom(List::class.java)) {
+                Json.parseList(String(javaObject), valueType)
+            } else {
+                Json.parse(String(javaObject), field.type)
+            }
         }
 
         if (fieldType.isEnum && CHARACTER_TYPE.contains(javaObject::class.java.name)) {
