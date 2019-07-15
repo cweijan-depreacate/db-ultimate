@@ -1,12 +1,13 @@
 package github.cweijan.ultimate.core.page;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * @author cweijan
  * @version 2019/7/10/010 9:58
  */
-public class Pagination<T> {
+public class Pagination<T> implements Serializable {
 
     /**
      * 设置起始页，记录页面从哪里开始，可选属性

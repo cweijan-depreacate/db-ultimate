@@ -13,8 +13,6 @@ import github.cweijan.ultimate.util.json.deserializer.LocalTimeDeserializer;
 import github.cweijan.ultimate.util.json.serializer.LocalDateSerializer;
 import github.cweijan.ultimate.util.json.serializer.LocalDateTimeSerializer;
 import github.cweijan.ultimate.util.json.serializer.LocalTimeSerializer;
-import github.cweijan.ultimate.util.Log;
-import github.cweijan.ultimate.util.StringUtils;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -59,6 +57,24 @@ public final class Json {
         String json=null;
         try {
             json = mapper.writeValueAsString(originalObject);
+        } catch (Exception e) {
+            Log.error("toJson error:", e);
+        }
+
+        return json;
+    }
+
+    /**
+     * 将对象转换成json
+     * @param originalObject 要转换的对象
+     */
+    public static byte[] toJsonByte(Object originalObject) {
+
+        if(originalObject==null)return null;
+
+        byte[] json=null;
+        try {
+            json = mapper.writeValueAsBytes(originalObject);
         } catch (Exception e) {
             Log.error("toJson error:", e);
         }

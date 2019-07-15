@@ -23,6 +23,7 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.LinkedHashMap
 
 /**
  * @param isAutoConvert convertCamelToUnderScore
@@ -66,13 +67,13 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     val isNotNullLazy = lazy { return@lazy ArrayList<String>() }
     val isNotNullList: MutableList<String> by isNotNullLazy
 
-    val greatEqLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val greatEqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
     val greatEqualsOperation: MutableMap<String, MutableList<Any>>by greatEqLazy
 
-    val lessEqLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val lessEqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
     val lessEqualsOperation: MutableMap<String, MutableList<Any>>by lessEqLazy
 
-    val eqLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val eqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
     val equalsOperation: MutableMap<String, MutableList<Any>>by eqLazy
 
     val inLazy = lazy { HashMap<String, MutableList<*>>() }
@@ -81,7 +82,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     val orEqLazy = lazy { HashMap<String, MutableList<Any>>() }
     val orEqualsOperation: MutableMap<String, MutableList<Any>>by orEqLazy
 
-    val notEqLazy = lazy { HashMap<String, MutableList<Any>>() }
+    val notEqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
     val notEqualsOperation: MutableMap<String, MutableList<Any>>by notEqLazy
 
     val orNotEqLazy = lazy { HashMap<String, MutableList<Any>>() }

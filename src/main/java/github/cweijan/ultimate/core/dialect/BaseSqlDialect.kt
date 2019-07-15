@@ -158,7 +158,7 @@ abstract class BaseSqlDialect : SqlDialect {
             sql += havingSql
         }
 
-        query.orderByList.forEachIndexed { index, orderBy ->
+        if (query.orderByLazy.isInitialized()) query.orderByList.forEachIndexed { index, orderBy ->
             sql += if (index == 0) " ORDER BY $orderBy" else ",$orderBy"
         }
 

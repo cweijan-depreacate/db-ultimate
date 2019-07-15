@@ -53,11 +53,14 @@ object TypeAdapter {
         }
 
         field.getAnnotation(Blob::class.java)?.run {
-            val listGenericType = field.genericType as ParameterizedType
-            val listActualTypeArguments = listGenericType.actualTypeArguments
-            val valueType = if (listActualTypeArguments != null && listActualTypeArguments.isNotEmpty()) {
-                listActualTypeArguments[0] as Class<*>
-            } else {
+            val valueType = try {
+                val listActualTypeArguments = (field.genericType as ParameterizedType).actualTypeArguments
+                if (listActualTypeArguments != null && listActualTypeArguments.isNotEmpty()) {
+                    listActualTypeArguments[0] as Class<*>
+                } else {
+                    Any::class.java
+                }
+            } catch (e: Exception) {
                 Any::class.java
             }
             javaObject as ByteArray
