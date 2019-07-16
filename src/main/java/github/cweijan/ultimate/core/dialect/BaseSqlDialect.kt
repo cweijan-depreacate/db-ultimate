@@ -105,8 +105,11 @@ abstract class BaseSqlDialect : SqlDialect {
 
         val and = "AND"
         val or = "OR"
-        var joinSql: String? = null
+        var joinSql = ""
         var sql = ""
+
+
+        query.forceIndex?.let { if (it) joinSql += " FORCE INDEX (PRIMARY) " }
 
         if (query.component.autoJoinLazy.isInitialized()) query.component.autoJoinComponentList.let { it.forEach { autoJoinComponent -> query.join(autoJoinComponent) } }
         if (query.joinLazy.isInitialized()) joinSql = generateJoinTablesSql(query.joinTables)
@@ -148,7 +151,7 @@ abstract class BaseSqlDialect : SqlDialect {
             sql = " WHERE$sql"
         }
 
-        joinSql?.run { sql = this + sql }
+        sql = joinSql+sql
 
         if (query.groupLazy.isInitialized()) query.groupByList.forEachIndexed { index, groupBy ->
             sql += if (index == 0) " GROUP BY $groupBy" else ",$groupBy"

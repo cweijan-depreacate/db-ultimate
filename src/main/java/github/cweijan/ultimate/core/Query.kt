@@ -41,6 +41,8 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         private set
     var page: Int? = null
         private set
+    var forceIndex: Boolean? = null
+        private set
     var pageSize: Int? = null
         private set
     var alias: String? = null
@@ -341,6 +343,11 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
+    fun forceIndex(forceIndex: Boolean?): Query<T> {
+
+        this.forceIndex = forceIndex?:false
+        return this
+    }
 
     fun page(page: Int?): Query<T> {
 
@@ -479,11 +486,15 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return db.find(this)
     }
 
-    fun pageList(): Pagination<T> {
+    /**
+     * @param forceIndex 是否强制使用索引，可加快count速度
+     */
+    @JvmOverloads
+    fun pageList(forceIndex: Boolean =false): Pagination<T> {
 
         methodName?.run { Log.debug("Execute method $methodName ") }
         val pagination = Pagination<T>()
-        pagination.count = db.getCount(this)
+        pagination.count = db.getCount(this.forceIndex(forceIndex))
         pagination.pageSize = this.pageSize
         pagination.currentPage = this.page ?: 1
         pagination.startPage = this.page ?: 1

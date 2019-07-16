@@ -20,8 +20,8 @@ import kotlin.collections.HashMap
 @SuppressWarnings("all")
 object ExcelOperator {
 
-    val numberPattern = Regex("^(-?\\d+)(\\.\\d+)?$")
-    val integerPattern = Regex("^[-\\+]?[\\d]*$")
+    private val numberPattern = Regex("^(-?\\d+)(\\.\\d+)?$")
+    private val integerPattern = Regex("^[-\\+]?[\\d]*$")
 
     /**
      * 导出Excel
@@ -116,23 +116,18 @@ object ExcelOperator {
         return list
     }
 
-    fun getCellValue(cell: Cell?): String {
-        var cellValue = ""
-        if (cell == null) {
-            return cellValue
-        }
-        //把数字当成String来读，避免出现1读成1.0的情况
-        if (cell.cellType === Cell.CELL_TYPE_NUMERIC) {
-            cell.cellType = Cell.CELL_TYPE_STRING
-        }
+    private fun getCellValue(cell: Cell?): String {
+
+        cell?:return ""
+
         //判断数据的类型
-        return when (cell.cellType) {
-            Cell.CELL_TYPE_NUMERIC -> cell.numericCellValue.toString()
-            Cell.CELL_TYPE_STRING -> cell.stringCellValue.toString()
-            Cell.CELL_TYPE_BOOLEAN -> cell.booleanCellValue.toString()
-            Cell.CELL_TYPE_FORMULA -> cell.cellFormula.toString()
-            Cell.CELL_TYPE_BLANK -> ""
-            Cell.CELL_TYPE_ERROR -> "非法字符"
+        return when (cell.cellTypeEnum) {
+            CellType.NUMERIC -> cell.stringCellValue.toString()
+            CellType.STRING -> cell.stringCellValue.toString()
+            CellType.BOOLEAN -> cell.booleanCellValue.toString()
+            CellType.FORMULA -> cell.cellFormula.toString()
+            CellType.BLANK -> ""
+            CellType.ERROR -> "非法字符"
             else -> "未知类型"
         }
     }
