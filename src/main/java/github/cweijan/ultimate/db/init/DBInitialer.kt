@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.db.init
 
 import github.cweijan.ultimate.annotation.Blob
+import github.cweijan.ultimate.annotation.Table
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.component.info.ComponentInfo
@@ -40,7 +41,9 @@ class DBInitialer(private val dbConfig: DbConfig) {
         initSqlGenetator.initStruct()
 
         val excludeList = listOf(MysqlTableStruct::class.java, ExtraData::class.java)
-        val component = TableInfo.componentList.stream().filter { componentInfo -> !excludeList.contains(componentInfo.componentClass) }
+        val component = TableInfo.componentList.stream().filter { componentInfo ->
+           !excludeList.contains(componentInfo.componentClass) && componentInfo.componentClass.getAnnotation(Table::class.java) != null
+        }
         when (dbConfig.tableMode) {
             TableAutoMode.none -> return
             TableAutoMode.init -> {
@@ -127,8 +130,8 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
             fields.forEachIndexed { _, field ->
 
-                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type) ) {
-                    if(field.getAnnotation(Blob::class.java)==null) return@forEachIndexed
+                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type)) {
+                    if (field.getAnnotation(Blob::class.java) == null) return@forEachIndexed
                 }
 
                 field.isAccessible = true
@@ -162,7 +165,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
             Log.error("Update table ${componentInfo.tableName} error!", e)
             return
         }
-        if(updateSqlList.size>0){
+        if (updateSqlList.size > 0) {
             Log.info("Update component table ${componentInfo.tableName} success!")
         }
 
