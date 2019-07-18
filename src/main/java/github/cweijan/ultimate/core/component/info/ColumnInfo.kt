@@ -29,7 +29,7 @@ class ColumnInfo {
     companion object{
 
         @JvmStatic
-        fun init(componentInfo: ComponentInfo,field:Field): ColumnInfo {
+        fun init(componentInfo: ComponentInfo, field: Field, camelcaseToUnderLine: Boolean): ColumnInfo {
 
             field.isAccessible = true
 
@@ -76,7 +76,7 @@ class ColumnInfo {
             }
             componentInfo.excelHeaderFieldMap[columnInfo.excelHeader] = field
 
-            if (true) {
+            if (camelcaseToUnderLine) {
                 columnInfo.columnName = TypeAdapter.convertHumpToUnderLine(columnInfo.columnName)!!
             }
 

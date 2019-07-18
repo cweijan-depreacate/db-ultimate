@@ -1,13 +1,11 @@
 package github.cweijan.ultimate.core.component.info
 
-import com.fasterxml.jackson.annotation.JsonFormat
-import github.cweijan.ultimate.annotation.*
-import github.cweijan.ultimate.core.component.TableInfo
+import github.cweijan.ultimate.annotation.Table
 import github.cweijan.ultimate.convert.TypeAdapter
+import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.exception.ForeignKeyNotSetException
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.Log
-import github.cweijan.ultimate.util.StringUtils
 import java.lang.reflect.Field
 
 class ComponentInfo(var componentClass: Class<*>) {
@@ -73,7 +71,9 @@ class ComponentInfo(var componentClass: Class<*>) {
      * @param fieldName 属性名
      * @return 对应的属性名
      */
-    fun getColumnInfoByFieldName(fieldName: String): ColumnInfo? {
+    fun getColumnInfoByFieldName(fieldName: String?): ColumnInfo? {
+
+        fieldName?:return null
 
         return fieldColumnInfoMap[fieldName]
     }
@@ -170,7 +170,10 @@ class ComponentInfo(var componentClass: Class<*>) {
             componentInfo.tableName = tableName
             componentInfo.selectColumns = table?.selectColumns ?: "*"
             componentInfo.tableAlias = table?.alias
-            generateColumns(componentInfo, table?.camelcaseToUnderLine ?: true)
+            //生成列信息
+            for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
+                ColumnInfo.init(componentInfo, field,table?.camelcaseToUnderLine ?: true)
+            }
             TableInfo.putComponent(componentClass, componentInfo)
             Log.debug("load component ${componentClass.name}, table is $tableName")
             return componentInfo
@@ -184,21 +187,6 @@ class ComponentInfo(var componentClass: Class<*>) {
             }
         }
 
-        /**
-         * 生成component的列信息
-         *
-         * @param componentInfo component实例
-         * @param camelcaseToUnderLine         是否将驼峰变量转为下划线列名
-         */
-        private fun generateColumns(componentInfo: ComponentInfo, camelcaseToUnderLine: Boolean = true) {
-
-            var columnInfo: ColumnInfo
-
-            for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
-                columnInfo = ColumnInfo.init(componentInfo, field)
-            }
-
-        }
     }
 
 }

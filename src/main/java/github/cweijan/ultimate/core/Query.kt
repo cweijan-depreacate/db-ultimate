@@ -2,7 +2,6 @@ package github.cweijan.ultimate.core
 
 import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.annotation.query.*
-import github.cweijan.ultimate.annotation.query.pagination.Offset
 import github.cweijan.ultimate.annotation.query.pagination.Page
 import github.cweijan.ultimate.annotation.query.pagination.PageSize
 import github.cweijan.ultimate.convert.TypeAdapter
@@ -39,8 +38,14 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
     var offset: Int? = null
         private set
-    var page: Int? = null
-        private set
+        get() {
+            if (this.page != null && this.pageSize != 0) {
+                return if (page!! <= 0) 0 else (page!! - 1) * (pageSize ?: 100)
+            }
+            return null
+        }
+
+    private var page: Int? = null
     var forceIndex: Boolean? = null
         private set
     var pageSize: Int? = null
@@ -279,12 +284,18 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
      */
     fun search(column: String, content: Any?): Query<T> {
 
-        content?.let { put(searchOperation, column, "%$it%") }
+        content?.let {
+            if (content.javaClass == String::class.java && StringUtils.isEmpty(content as String)) return this
+            put(searchOperation, column, "%$it%")
+        }
         return this
     }
 
     fun orSearch(column: String, value: Any?): Query<T> {
-        value?.let { put(orSearchOperation, column, "%$it%") }
+        value?.let {
+            if (value.javaClass == String::class.java && StringUtils.isEmpty(value as String)) return this
+            put(orSearchOperation, column, "%$it%")
+        }
         return this
     }
 
@@ -345,19 +356,13 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
 
     fun forceIndex(forceIndex: Boolean?): Query<T> {
 
-        this.forceIndex = forceIndex?:false
+        this.forceIndex = forceIndex ?: false
         return this
     }
 
     fun page(page: Int?): Query<T> {
 
         this.page = page
-        return this
-    }
-
-    fun offset(offset: Int?): Query<T> {
-
-        this.offset = offset
         return this
     }
 
@@ -385,11 +390,18 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return this
     }
 
-    @JvmOverloads
-    fun orderBy(column: String?, desc: Boolean = false): Query<T> {
+    fun orderBy(column: String?): Query<T> {
 
         column ?: return this
-        orderByList.add("${getColumnName(column)}${if (desc) " desc" else ""}")
+        orderByList.add(getColumnName(column))
+
+        return this
+    }
+
+    fun orderDescBy(column: String?): Query<T> {
+
+        column ?: return this
+        orderByList.add("${getColumnName(column)} desc")
 
         return this
     }
@@ -461,7 +473,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
                     var haveCondition = false
                     field.getAnnotation(NotQuery::class.java)?.run { return@let }
                     field.getAnnotation(Page::class.java)?.run { haveCondition = true; page(it.toString().toInt()) }
-                    field.getAnnotation(Offset::class.java)?.run { haveCondition = true; offset(it.toString().toInt()) }
                     field.getAnnotation(PageSize::class.java)?.run { haveCondition = true; pageSize(it.toString().toInt()) }
                     field.getAnnotation(Equals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; eq(fieldName, it) }
                     field.getAnnotation(OrEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orEq(fieldName, it) }
@@ -490,7 +501,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
      * @param forceIndex 是否强制使用索引，可加快count速度
      */
     @JvmOverloads
-    fun pageList(forceIndex: Boolean =false): Pagination<T> {
+    fun pageList(forceIndex: Boolean = false): Pagination<T> {
 
         methodName?.run { Log.debug("Execute method $methodName ") }
         val pagination = Pagination<T>()
@@ -529,7 +540,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     fun name(methodName: String?) {
         this.methodName = methodName
     }
-
 
     fun generateColumns(): String? {
 

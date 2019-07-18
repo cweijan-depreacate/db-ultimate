@@ -70,6 +70,12 @@
       "type": "java.lang.Boolean",
       "description": "Enable or disable develop mode,develop mode support reconfig component.",
       "sourceType": "github.cweijan.ultimate.db.config.DbConfig"
+    },
+    {
+      "name": "ultimate.lucene.index-dir-path",
+      "type": "java.lang.String",
+      "description": "Set lucene index path.",
+      "sourceType": "github.cweijan.ultimate.core.lucene.config.LuceneConfig"
     }
   ]
 }

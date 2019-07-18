@@ -49,7 +49,7 @@ public class Pagination<T> implements Serializable {
     }
 
     public Integer getNextPage() {
-        if (currentPage != null && currentPage < totalPage) return currentPage + 1;
+        if ((currentPage != null && totalPage!=null) && currentPage < totalPage) return currentPage + 1;
         return null;
     }
 

@@ -90,10 +90,6 @@ abstract class BaseSqlDialect : SqlDialect {
     override fun <T> generateSelectSql(query: Query<T>): String {
 
         val componentInfo = query.component
-        if (query.page != null && query.pageSize != 0) {
-            val start = if (query.page!! <= 0) 0 else (query.page!! - 1) * (query.pageSize ?: 100)
-            query.offset(start)
-        }
 
         val column = query.generateColumns() ?: query.getColumn() ?: componentInfo.selectColumns
 

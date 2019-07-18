@@ -8,18 +8,21 @@ import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 
+
 object TypeAdapter {
 
-    private val NUMBER_TYPE = mutableListOf("java.math.BigInteger", "byte", "short", "int", "float", "double", "long", JavaType.Byte, JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
+    val NUMBER_TYPE = mutableListOf("byte", "short", "int", "float", "double", "long", JavaType.Byte, JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
     private val BOOLEAN_TYPE = mutableListOf(JavaType.Boolean, "boolean")
     private val BLOB_TYPE = mutableListOf(JavaType.byteArray)
     val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
     val DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
 
+    @JvmStatic
     fun isAdapterType(type: Class<*>): Boolean {
         val typeName = type.name
         return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName)
                 || BOOLEAN_TYPE.contains(typeName) || BLOB_TYPE.contains(typeName) || type.isEnum
+                || type.name=="java.math.BigInteger"
     }
 
     fun getAllField(componentClass: Class<*>?): List<Field> {
@@ -42,7 +45,26 @@ object TypeAdapter {
         return hump.replace(regex, replacement).toLowerCase()
     }
 
-    fun convertJavaObject(componentClass: Class<*>, field: Field, javaObject: Any?): Any? {
+    private const val UNDERLINE = "_"
+    fun underlineToHump(para: String): String {
+        val result = StringBuilder()
+        val a = para.split(UNDERLINE.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        for (s in a) {
+            if (!para.contains(UNDERLINE)) {
+                result.append(s)
+                continue
+            }
+            if (result.isEmpty()) {
+                result.append(s.toLowerCase())
+            } else {
+                result.append(s.substring(0, 1).toUpperCase())
+                result.append(s.substring(1).toLowerCase())
+            }
+        }
+        return result.toString()
+    }
+
+    fun convertJavaObject(componentClass: Class<*>?, field: Field, javaObject: Any?): Any? {
 
         val fieldType = field.type
         if (javaObject == null) {
@@ -75,7 +97,7 @@ object TypeAdapter {
             return EnumConvert.valueOfEnum(fieldType, javaObject.toString())
         }
         if (DATE_TYPE.contains(fieldType.name)) {
-            TableInfo.getComponent(componentClass).getColumnInfoByFieldName(field.name)?.run {
+            TableInfo.getComponent(componentClass,true)?.getColumnInfoByFieldName(field.name)?.run {
                 return DateUtils.toDateObject(javaObject.toString(), fieldType, this.dateFormat)
             }
         }
@@ -86,7 +108,7 @@ object TypeAdapter {
     /**
      * convertAdapter
      */
-    fun convertAdapter(componentClass: Class<*>, fieldName: String, fieldValue: Any?): Any {
+    fun convertAdapter(componentClass: Class<*>?, fieldName: String?, fieldValue: Any?): Any {
 
         if (fieldValue == null) return ""
 
@@ -95,12 +117,20 @@ object TypeAdapter {
         }
 
         if (DATE_TYPE.contains(fieldValue::class.java.name)) {
-            val dateFormat: String = TableInfo.getComponent(componentClass).getColumnInfoByFieldName(fieldName)?.dateFormat
+            val dateFormat: String = TableInfo.getComponent(componentClass,true)?.getColumnInfoByFieldName(fieldName)?.dateFormat
                     ?: DateUtils.DEFAULT_PATTERN
             return DateUtils.toDateString(fieldValue, dateFormat) ?: fieldValue
         }
 
         return fieldValue
+    }
+
+    /**
+     * convertAdapter
+     */
+    @JvmStatic
+    fun convertAdapter(fieldValue: Any?): Any {
+        return convertAdapter(null, null, fieldValue)
     }
 
     fun contentWrapper(contentObject: Any?): String {
