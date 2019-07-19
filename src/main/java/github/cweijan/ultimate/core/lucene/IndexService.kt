@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.core.lucene
 
 import github.cweijan.ultimate.core.page.Pagination
+import github.cweijan.ultimate.util.Log
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.index.DirectoryReader
@@ -33,30 +34,32 @@ class IndexService(indexDirPath: String) {
     }
     private val indexWriter: IndexWriter by writerLazy
 
-    private val readerLazy = lazy {
-        return@lazy DirectoryReader.open(directory)
-    }
-    private val indexReader by readerLazy
-//    openIfChanged
+    private var indexReader: DirectoryReader? = null
+        get() {
+            if (field == null) indexReader = DirectoryReader.open(directory)
+            return field
+        }
+    private var indexSearcher: IndexSearcher? = null
+        get() {
+            if (field == null) indexSearcher = IndexSearcher(indexReader)
 
-    private val indexSearcher by lazy {
-        return@lazy IndexSearcher(indexReader)
-    }
+            return field
+        }
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
             if (writerLazy.isInitialized()) indexWriter.close()
-            if (readerLazy.isInitialized()) indexReader.close()
+            indexReader?.run { this.close() }
         })
     }
 
     fun searchByQuery(query: Query, n: Int): ArrayList<Document>? {
 
-        val scoreDocs = indexSearcher.search(query, n).scoreDocs
+        val scoreDocs = indexSearcher!!.search(query, n).scoreDocs
         if (scoreDocs != null && scoreDocs.isNotEmpty()) {
             val docs = ArrayList<Document>();
             for (scoreDoc in scoreDocs) {
-                docs.add(indexSearcher.doc(scoreDoc.doc))
+                docs.add(indexSearcher!!.doc(scoreDoc.doc))
             }
             return docs
         }
@@ -78,7 +81,9 @@ class IndexService(indexDirPath: String) {
         queryParser.fuzzyMinSim = 2f
         queryParser.allowLeadingWildcard = true
 
-        val query = queryParser.parse(luceneQuery.getLuceneSearch())
+        val luceneSearch = luceneQuery.getLuceneSearch()
+        Log.getLogger().info("lucene query is $luceneSearch")
+        val query = queryParser.parse(luceneSearch)
 
         val sort = Sort()
         if (luceneQuery.sortLazy.isInitialized()) {
@@ -86,10 +91,10 @@ class IndexService(indexDirPath: String) {
         }
         val collector = TopFieldCollector.create(sort, pagination.currentPage * pagination.pageSize, 0)
 
-        indexSearcher.search(query, collector)
+        indexSearcher!!.search(query, collector)
         val scoreDocs = collector.topDocs((pagination.currentPage - 1) * pagination.pageSize, pagination.pageSize).scoreDocs
         for (scoreDoc in scoreDocs) {
-            val doc = indexSearcher.doc(scoreDoc.doc)
+            val doc = indexSearcher!!.doc(scoreDoc.doc)
             pagination.data.add(LuceneHelper.documentToObject(doc, luceneQuery.componentClass))
         }
         pagination.count = collector.totalHits
@@ -101,10 +106,15 @@ class IndexService(indexDirPath: String) {
         indexWriter.addDocument(document)
 
     }
-    fun commit(){
-        indexWriter.commit()
-    }
 
+    fun commit() {
+        indexWriter.commit()
+        val reader = DirectoryReader.openIfChanged(indexReader)
+        if (indexReader != reader) {
+            indexReader = reader
+            indexSearcher = IndexSearcher(indexReader)
+        }
+    }
 
     fun updateDocument(id: Int?, document: Document) {
         val term = Term("id", id!!.toString() + "")
@@ -123,7 +133,7 @@ class IndexService(indexDirPath: String) {
      */
     fun deleteAllIndex() {
         indexWriter.deleteAll()
-        indexWriter.commit()
+        commit()
     }
 
 }

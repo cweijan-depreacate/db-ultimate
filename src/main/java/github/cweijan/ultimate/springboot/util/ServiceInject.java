@@ -1,8 +1,8 @@
 package github.cweijan.ultimate.springboot.util;
 
 import github.cweijan.ultimate.core.Query;
-import github.cweijan.ultimate.core.component.TableInfo;
 import github.cweijan.ultimate.core.extra.ExtraDataService;
+import github.cweijan.ultimate.core.lucene.LuceneQuery;
 import github.cweijan.ultimate.core.page.Pagination;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -29,6 +29,10 @@ public abstract class ServiceInject<T> implements InitializingBean {
 
     public Query<T> getQuery() {
         return Query.of(componentClass);
+    }
+
+    public LuceneQuery<T> getLuceneQuery() {
+        return LuceneQuery.of(componentClass);
     }
 
     public List<T> findByExample(Object... examples) {

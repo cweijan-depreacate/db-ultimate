@@ -1,8 +1,11 @@
 package github.cweijan.ultimate.core.lucene
 
+import github.cweijan.ultimate.annotation.query.NotQuery
 import github.cweijan.ultimate.annotation.query.OrderBy
-import github.cweijan.ultimate.annotation.query.Search
+import github.cweijan.ultimate.annotation.query.pagination.Page
+import github.cweijan.ultimate.annotation.query.pagination.PageSize
 import github.cweijan.ultimate.convert.TypeAdapter
+import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.lucene.type.LuceneDocument
 import github.cweijan.ultimate.core.page.Pagination
 import github.cweijan.ultimate.util.StringUtils
@@ -107,7 +110,7 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
     fun orderBy(column: String?): LuceneQuery<T> {
 
         column ?: return this
-        sortFieldList.add(SortField(LuceneHelper.getClassKey(componentClass, column), LuceneHelper.getSortFieldType(componentClass,column)))
+        sortFieldList.add(SortField(LuceneHelper.getClassKey(componentClass, column), LuceneHelper.getSortFieldType(componentClass, column)))
 
         return this
     }
@@ -115,7 +118,7 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
     fun orderDescBy(column: String?): LuceneQuery<T> {
 
         column ?: return this
-        sortFieldList.add(SortField(LuceneHelper.getClassKey(componentClass, column), LuceneHelper.getSortFieldType(componentClass,column),true))
+        sortFieldList.add(SortField(LuceneHelper.getClassKey(componentClass, column), LuceneHelper.getSortFieldType(componentClass, column), true))
 
         return this
     }
@@ -126,8 +129,12 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
             field.isAccessible = true
             var fieldName = field.name
             field.get(paramObject)?.let {
-                field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;search(fieldName, it) }
-                field.getAnnotation(OrderBy::class.java)?.run { if (this.value != "") fieldName = this.value; orderBy(fieldName) }
+                field.getAnnotation(NotQuery::class.java)?.run { return@let }
+                field.getAnnotation(Page::class.java)?.run { page(it.toString().toInt());return@let }
+                field.getAnnotation(PageSize::class.java)?.run { pageSize(it.toString().toInt());return@let }
+                field.getAnnotation(OrderBy::class.java)?.run { if (this.value != "") fieldName = this.value; orderBy(fieldName);return@let }
+                if (TableInfo.getComponent(componentClass,true)?.getColumnInfoByFieldName(fieldName) != null)
+                        search(fieldName, it)
             }
         }
         return this
