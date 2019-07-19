@@ -6,6 +6,9 @@ import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.lucene.type.LuceneDocument
 import github.cweijan.ultimate.core.page.Pagination
 import github.cweijan.ultimate.util.StringUtils
+import org.apache.lucene.index.Term
+import org.apache.lucene.search.SortField
+import org.apache.lucene.search.TermQuery
 
 /**
  * @author cweijan
@@ -17,8 +20,8 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
     val searhLazy = lazy { LinkedHashMap<String, MutableList<String>>() }
     val searchOperation: MutableMap<String, MutableList<String>>by searhLazy
 
-    val orderByLazy = lazy { return@lazy ArrayList<String>() }
-    val orderByList: MutableList<String> by orderByLazy
+    val sortLazy = lazy { return@lazy ArrayList<SortField>() }
+    val sortFieldList: MutableList<SortField> by sortLazy
 
     var offset: Int? = null
         private set
@@ -36,7 +39,8 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
 
     fun page(page: Int?): LuceneQuery<T> {
 
-        this.page = page
+        page ?: return this
+        this.page = if (page <= 0) 1 else page
         return this
     }
 
@@ -62,19 +66,34 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         return indexService.search(searchFields, this)
     }
 
+    fun getByPrimaryKey(value: Any?): T? {
+
+        value ?: return null
+
+        val primaryKeyField = componentClass.getAnnotation(LuceneDocument::class.java).primaryKeyField
+
+        val query = TermQuery(Term(LuceneHelper.getClassKey(componentClass, primaryKeyField), value.toString()))
+        val searchByQuery = indexService.searchByQuery(query, 1)
+        if (searchByQuery != null) {
+            return LuceneHelper.documentToObject(searchByQuery[0], componentClass)
+        }
+
+        return null
+    }
+
     fun getLuceneSearch(): String {
         return LuceneQueryGenerator.generateOperationSql(this)
     }
 
-    fun all():LuceneQuery<T>{
+    fun all(): LuceneQuery<T> {
         searchOperation["*"] = mutableListOf("*")
         return this
     }
 
     fun search(column: String?, content: Any?): LuceneQuery<T> {
 
-        column?:return this
-        val realColumn=LuceneHelper.getClassKey(componentClass,column)
+        column ?: return this
+        val realColumn = LuceneHelper.getClassKey(componentClass, column)
 
         content?.let {
             if (content.javaClass == String::class.java && StringUtils.isEmpty(content as String)) return this
@@ -85,18 +104,18 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         return this
     }
 
-    fun index(component: T) {
-
-        LuceneHelper.objectToDocument(component)?.run { indexService.addDocument(this) }
-
-    }
-
-
-    @JvmOverloads
-    fun orderBy(column: String?, desc: Boolean = false): LuceneQuery<T> {
+    fun orderBy(column: String?): LuceneQuery<T> {
 
         column ?: return this
-        orderByList.add("$column${if (desc) " desc" else ""}")
+        sortFieldList.add(SortField(LuceneHelper.getClassKey(componentClass, column), LuceneHelper.getSortFieldType(componentClass,column)))
+
+        return this
+    }
+
+    fun orderDescBy(column: String?): LuceneQuery<T> {
+
+        column ?: return this
+        sortFieldList.add(SortField(LuceneHelper.getClassKey(componentClass, column), LuceneHelper.getSortFieldType(componentClass,column),true))
 
         return this
     }
@@ -122,6 +141,11 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
                     ?: throw RuntimeException("索引类必须配置LuceneConfig注解!")
 
             return LuceneQuery(componentClass, luceneSearch.value)
+        }
+
+        @JvmStatic
+        fun index(component: Any) {
+            LuceneHelper.objectToDocument(component)?.run { indexService.addDocument(this) }
         }
 
         @JvmStatic

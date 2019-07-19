@@ -9,11 +9,14 @@ import org.apache.lucene.index.IndexWriterConfig
 import org.apache.lucene.index.Term
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser
 import org.apache.lucene.queryparser.classic.QueryParser
-import org.apache.lucene.search.*
+import org.apache.lucene.search.IndexSearcher
+import org.apache.lucene.search.Query
+import org.apache.lucene.search.Sort
+import org.apache.lucene.search.TopFieldCollector
 import org.apache.lucene.store.Directory
 import org.apache.lucene.store.FSDirectory
 import java.io.File
-import java.util.*
+
 
 /**
  * @author cweijan
@@ -47,6 +50,19 @@ class IndexService(indexDirPath: String) {
         })
     }
 
+    fun searchByQuery(query: Query, n: Int): ArrayList<Document>? {
+
+        val scoreDocs = indexSearcher.search(query, n).scoreDocs
+        if (scoreDocs != null && scoreDocs.isNotEmpty()) {
+            val docs = ArrayList<Document>();
+            for (scoreDoc in scoreDocs) {
+                docs.add(indexSearcher.doc(scoreDoc.doc))
+            }
+            return docs
+        }
+        return null
+    }
+
     /**
      * 搜索
      */
@@ -64,20 +80,19 @@ class IndexService(indexDirPath: String) {
 
         val query = queryParser.parse(luceneQuery.getLuceneSearch())
 
-        // TODO 分页目前获取的总数是不对的
-        val results = TopScoreDocCollector.create(pagination.currentPage * pagination.pageSize, 0)
+        val sort = Sort()
+        if (luceneQuery.sortLazy.isInitialized()) {
+            sort.setSort(*luceneQuery.sortFieldList.toTypedArray())
+        }
+        val collector = TopFieldCollector.create(sort, pagination.currentPage * pagination.pageSize, 0)
 
-        //TODO 排序
-        val sort = Sort(SortedNumericSortField("github.cweijan.bean.VideoItem_id", SortField.Type.LONG))
-        val r = TopFieldCollector.create(sort, pagination.currentPage * pagination.pageSize, 0)
-
-        indexSearcher.search(query, results)
-        val scoreDocs = results.topDocs((pagination.currentPage - 1) * pagination.pageSize, pagination.pageSize).scoreDocs
+        indexSearcher.search(query, collector)
+        val scoreDocs = collector.topDocs((pagination.currentPage - 1) * pagination.pageSize, pagination.pageSize).scoreDocs
         for (scoreDoc in scoreDocs) {
             val doc = indexSearcher.doc(scoreDoc.doc)
             pagination.data.add(LuceneHelper.documentToObject(doc, luceneQuery.componentClass))
         }
-        pagination.count = results.totalHits
+        pagination.count = collector.totalHits
 
         return pagination
     }
@@ -93,8 +108,8 @@ class IndexService(indexDirPath: String) {
         indexWriter.commit()
     }
 
-    fun deleteDocument(id: Int?) {
-        val term = Term("id", id!!.toString() + "")
+    fun deleteDocument(primaryKeyName: String, id: Any) {
+        val term = Term(primaryKeyName, id.toString() + "")
         indexWriter.deleteDocuments(term)
         indexWriter.commit()
     }

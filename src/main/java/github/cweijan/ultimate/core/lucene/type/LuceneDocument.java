@@ -22,7 +22,7 @@ public @interface LuceneDocument {
     /**
      * 主键fieldName
      */
-    String primaryKeyField();
+    String primaryKeyField() default "";
 
     /**
      * field默认是否分词

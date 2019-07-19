@@ -1,10 +1,8 @@
 package github.cweijan.ultimate.util
 
+import github.cweijan.ultimate.convert.TypeAdapter
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.HashMap
@@ -133,6 +131,26 @@ object DateUtils {
         formatCache[dateFormat]?.run { return this }
         formatCache[dateFormat] = SimpleDateFormat(dateFormat)
         return formatCache[dateFormat]!!
+    }
+
+    fun convertDateToLong(dateValue: Any?): Long? {
+        dateValue ?: return null
+        return when (dateValue::class.java.name) {
+            Date::class.java.name -> (dateValue as Date).time
+            LocalDateTime::class.java.name -> (dateValue as LocalDateTime).atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli()
+            else -> null
+        }
+    }
+
+    fun convertLongToDate(timestamp: Long?, dateType: Class<*>): Any? {
+        timestamp ?: return null
+        if (!TypeAdapter.LUCENE_DATE_TYPE.contains(dateType.name)) return null
+        return when (dateType::class.java.name) {
+            Date::class.java.name -> Date(timestamp)
+            LocalDateTime::class.java.name -> Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime()
+            else -> null
+        }
+
     }
 
 }

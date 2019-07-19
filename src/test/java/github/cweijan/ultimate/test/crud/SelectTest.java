@@ -178,7 +178,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void findByComponentClass(){
 
-        List<Admin> admins = Query.of(Admin.class).offset(0).pageSize(20).list();
+        List<Admin> admins = Query.of(Admin.class).pageSize(20).list();
         Log.info(admins.toString());
 
     }
@@ -188,7 +188,7 @@ public class SelectTest extends BaseTest{
 
         Query<Admin> query = Query.of(Admin.class);
         List<Admin> admins = query.list();
-        ComponentInfo component = TableInfo.INSTANCE.getComponent(Admin.class);
+        ComponentInfo component = TableInfo.getComponent(Admin.class);
         Log.info(admins.toString());
     }
 

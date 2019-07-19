@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  github.cweijan.ultimate.springboot.UltimateAutoConfiguration,github.cweijan.ultimate.springboot.LuceneAutoConfiguration
+  github.cweijan.ultimate.springboot.UltimateDataSourceAutoConfiguration,github.cweijan.ultimate.springboot.UltimateAutoConfiguration,github.cweijan.ultimate.springboot.LuceneAutoConfiguration

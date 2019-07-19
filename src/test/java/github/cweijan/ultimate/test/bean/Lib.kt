@@ -2,8 +2,10 @@ package github.cweijan.ultimate.test.bean
 
 import github.cweijan.ultimate.annotation.Primary
 import github.cweijan.ultimate.annotation.Table
+import github.cweijan.ultimate.core.lucene.type.LuceneDocument
 
 @Table(alias = "l")
+@LuceneDocument(value=["id","message","test","msd"],primaryKeyField = "id")
 class Lib {
 
     @Primary

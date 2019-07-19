@@ -45,6 +45,33 @@ class DbConfig {
     var scanPackage: String? = null
     private val threadLocal = ThreadLocal<Connection?>()
 
+    fun configCheck(): Boolean {
+        return when {
+            !this.enable -> {
+                Log.info("db-ultimate is disabled, skip..")
+                false
+            }
+            this.url == null -> {
+                Log.error("jdbc url property not found! skip..")
+                false
+            }
+            this.driver == null -> {
+                Log.error("jdbc driver name property not found! skip..")
+                false
+            }
+            this.username == null -> {
+                Log.error("jdbc username property not found! skip..")
+                false
+            }
+            this.password == null -> {
+                Log.error("jdbc password property not found! skip..")
+                false
+            }
+            else -> true
+        }
+
+    }
+
     fun getDatabaseType(): DatabaseType {
         return when {
             url!!.indexOf("jdbc:mysql") != -1 -> DatabaseType.mysql

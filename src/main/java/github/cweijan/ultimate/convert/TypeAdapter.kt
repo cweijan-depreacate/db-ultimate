@@ -16,13 +16,14 @@ object TypeAdapter {
     private val BLOB_TYPE = mutableListOf(JavaType.byteArray)
     val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
     val DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
+    val LUCENE_DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalDateTime", "java.util.Date")
 
     @JvmStatic
     fun isAdapterType(type: Class<*>): Boolean {
         val typeName = type.name
         return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName)
                 || BOOLEAN_TYPE.contains(typeName) || BLOB_TYPE.contains(typeName) || type.isEnum
-                || type.name=="java.math.BigInteger"
+                || type.name == "java.math.BigInteger"
     }
 
     fun getAllField(componentClass: Class<*>?): List<Field> {
@@ -97,7 +98,7 @@ object TypeAdapter {
             return EnumConvert.valueOfEnum(fieldType, javaObject.toString())
         }
         if (DATE_TYPE.contains(fieldType.name)) {
-            TableInfo.getComponent(componentClass,true)?.getColumnInfoByFieldName(field.name)?.run {
+            TableInfo.getComponent(componentClass, true)?.getColumnInfoByFieldName(field.name)?.run {
                 return DateUtils.toDateObject(javaObject.toString(), fieldType, this.dateFormat)
             }
         }
@@ -110,14 +111,14 @@ object TypeAdapter {
      */
     fun convertAdapter(componentClass: Class<*>?, fieldName: String?, fieldValue: Any?): Any {
 
-        if (fieldValue == null) return ""
+        fieldValue ?: return ""
 
         if (fieldValue::class.java.isEnum) {
             return (fieldValue as Enum<*>).name
         }
 
         if (DATE_TYPE.contains(fieldValue::class.java.name)) {
-            val dateFormat: String = TableInfo.getComponent(componentClass,true)?.getColumnInfoByFieldName(fieldName)?.dateFormat
+            val dateFormat: String = TableInfo.getComponent(componentClass, true)?.getColumnInfoByFieldName(fieldName)?.dateFormat
                     ?: DateUtils.DEFAULT_PATTERN
             return DateUtils.toDateString(fieldValue, dateFormat) ?: fieldValue
         }
@@ -129,8 +130,18 @@ object TypeAdapter {
      * convertAdapter
      */
     @JvmStatic
-    fun convertAdapter(fieldValue: Any?): Any {
-        return convertAdapter(null, null, fieldValue)
+    fun convertLuceneAdapter(fieldValue: Any?): String? {
+        if (fieldValue == null) return null
+
+        if (fieldValue::class.java.isEnum) {
+            return (fieldValue as Enum<*>).name
+        }
+
+        if (LUCENE_DATE_TYPE.contains(fieldValue::class.java.name)) {
+            return DateUtils.convertDateToLong(fieldValue)?.toString()
+        }
+
+        return fieldValue.toString()
     }
 
     fun contentWrapper(contentObject: Any?): String {
