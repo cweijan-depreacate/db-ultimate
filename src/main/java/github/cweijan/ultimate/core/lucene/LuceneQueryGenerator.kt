@@ -1,6 +1,6 @@
 package github.cweijan.ultimate.core.lucene
 
-import github.cweijan.ultimate.convert.TypeAdapter
+import github.cweijan.ultimate.util.StringUtils
 
 /**
  * @author cweijan
@@ -24,6 +24,7 @@ object LuceneQueryGenerator {
             queryString = queryString.replaceFirst(or.toRegex(), "")
         }
 
+        if(StringUtils.isEmpty(queryString))queryString="*:*"
         return queryString
     }
 
@@ -33,7 +34,7 @@ object LuceneQueryGenerator {
 
         operationMap?.forEach { key, operations ->
             operations.forEach { value ->
-                tempQueryString.append("$separator ${TypeAdapter.underlineToHump(key)}:${condition + value} ")
+                tempQueryString.append("$separator $key:${condition + value} ")
             }
         }
 

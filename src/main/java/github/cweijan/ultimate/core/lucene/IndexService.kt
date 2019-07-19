@@ -99,8 +99,12 @@ class IndexService(indexDirPath: String) {
 
     fun addDocument(document: Document) {
         indexWriter.addDocument(document)
+
+    }
+    fun commit(){
         indexWriter.commit()
     }
+
 
     fun updateDocument(id: Int?, document: Document) {
         val term = Term("id", id!!.toString() + "")

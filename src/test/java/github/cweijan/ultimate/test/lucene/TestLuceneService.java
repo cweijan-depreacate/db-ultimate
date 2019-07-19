@@ -31,7 +31,7 @@ public class TestLuceneService extends BaseTest {
 
     @Test
     public void testSearch() {
-        Pagination<Lib> libPagination = LuceneQuery.of(Lib.class).all().page(0).pageSize(50).orderDescBy("id").pageList();
+        Pagination<Lib> libPagination = LuceneQuery.of(Lib.class).all().page(0).pageSize(50).orderDescBy("id").list();
         Log.info(libPagination);
     }
 

@@ -145,7 +145,7 @@ object DateUtils {
     fun convertLongToDate(timestamp: Long?, dateType: Class<*>): Any? {
         timestamp ?: return null
         if (!TypeAdapter.LUCENE_DATE_TYPE.contains(dateType.name)) return null
-        return when (dateType::class.java.name) {
+        return when (dateType.name) {
             Date::class.java.name -> Date(timestamp)
             LocalDateTime::class.java.name -> Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime()
             else -> null

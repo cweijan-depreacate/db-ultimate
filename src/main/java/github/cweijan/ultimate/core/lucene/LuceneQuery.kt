@@ -62,7 +62,7 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         return this
     }
 
-    fun pageList(): Pagination<T> {
+    fun list(): Pagination<T> {
         return indexService.search(searchFields, this)
     }
 
@@ -98,7 +98,7 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         content?.let {
             if (content.javaClass == String::class.java && StringUtils.isEmpty(content as String)) return this
             searchOperation[realColumn] = searchOperation[realColumn] ?: ArrayList()
-            searchOperation[realColumn]!!.add("*$it*")
+            searchOperation[realColumn]!!.add("*${TypeAdapter.convertLuceneAdapter(it)}*")
         }
 
         return this
