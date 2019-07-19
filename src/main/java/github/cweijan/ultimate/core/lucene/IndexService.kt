@@ -75,6 +75,7 @@ class IndexService(indexDirPath: String) {
         pagination.data = ArrayList<T?>()
         pagination.pageSize = luceneQuery.pageSize ?: 100
         pagination.currentPage = luceneQuery.page ?: 1
+        pagination.startPage = luceneQuery.page ?: 1
 
         val queryParser = MultiFieldQueryParser(fields, StandardAnalyzer())
         queryParser.defaultOperator = QueryParser.AND_OPERATOR

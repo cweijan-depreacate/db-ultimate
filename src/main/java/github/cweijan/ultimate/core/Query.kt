@@ -510,14 +510,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         pagination.currentPage = this.page ?: 1
         pagination.startPage = this.page ?: 1
 
-        //计算总页数
-        if (pagination.pageSize != null) {
-            pagination.totalPage = pagination.count / pagination.pageSize;
-            if (pagination.count % pagination.pageSize != 0) {
-                pagination.totalPage++;
-            }
-        } else pagination.totalPage = 1
-
         pagination.data = db.find(this)
         return pagination
     }
