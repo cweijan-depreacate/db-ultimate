@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author cweijan
@@ -21,7 +22,7 @@ public class TestLuceneService extends BaseTest {
 
     @Test
     public void testAdd() {
-//        LuceneQuery.indexService.deleteAllIndex();
+        LuceneQuery.indexService.deleteAllIndex();
         LuceneObject luceneObject = new LuceneObject();
         luceneObject.setCreateTime(LocalDateTime.now());
         luceneObject.setUpdateTime(new Date());
@@ -39,7 +40,9 @@ public class TestLuceneService extends BaseTest {
     @Test
     public void testSearch() {
         Pagination<LuceneObject> luceneObjectPagination = LuceneQuery.of(LuceneObject.class).all().page(0).pageSize(50).orderDescBy("id").list();
-        Log.info(luceneObjectPagination);
+        List<LuceneObject> data = luceneObjectPagination.getData();
+        Log.info(data);
+        data.forEach(d->Log.info(new String(d.getData())));
     }
 
     @Test

@@ -80,10 +80,14 @@ object LuceneHelper {
         for (field in document.fields) {
             val fieldName = getFieldName(objectClass, field.name())
             val objectField = objectClass.getDeclaredField(fieldName)
-            if (JavaType.DATE_TYPE.contains(objectField.type.name)) {
-                data[fieldName] = DateUtils.convertLongToDate(field.numericValue().toLong(), objectField.type)
-            } else {
-                data[fieldName] = field.stringValue()
+            when (objectField.type.name) {
+                "java.time.LocalDateTime", "java.util.Date" -> {
+                    data[fieldName] = DateUtils.convertLongToDate(field.numericValue().toLong(), objectField.type)
+                }
+                JavaType.byteArray, JavaType.ByteArray ->{
+                    data[fieldName] = field.binaryValue().bytes
+                }
+                else -> data[fieldName] = field.stringValue()
             }
         }
 

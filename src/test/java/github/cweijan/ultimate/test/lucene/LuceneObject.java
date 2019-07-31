@@ -20,10 +20,18 @@ public class LuceneObject {
     private String hello;
     @LuceneField(tokenize = true)
     private String text;
-    private Boolean isVip;
+    private Boolean vip;
     private byte[] data;
     private LocalDateTime createTime;
     private Date updateTime;
+
+    public Boolean getVip() {
+        return vip;
+    }
+
+    public void setVip(Boolean vip) {
+        this.vip = vip;
+    }
 
     public Integer getId() {
         return id;
@@ -81,13 +89,7 @@ public class LuceneObject {
         this.updateTime = updateTime;
     }
 
-    public Boolean getVip() {
-        return isVip;
-    }
 
-    public void setVip(Boolean vip) {
-        isVip = vip;
-    }
 
     public Float getAnotherPrice() {
         return anotherPrice;
