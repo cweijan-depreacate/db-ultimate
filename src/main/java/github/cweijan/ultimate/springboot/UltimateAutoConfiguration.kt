@@ -26,7 +26,7 @@ open class UltimateAutoConfiguration {
 
         dbConfig?:return null
         if (dbConfig.configCheck())
-            return DataSourceTransactionManager(dataSource ?: dbConfig!!.dataSource!!)
+            return DataSourceTransactionManager(dataSource ?: dbConfig.dataSource!!)
         Log.info("please add \n" +
                 "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration,org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration" +
                 "\nto application.properties")

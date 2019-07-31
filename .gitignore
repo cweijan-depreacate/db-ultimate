@@ -4,3 +4,8 @@
 bin
 out
 build
+target/
+gradle/
+gradlew
+gradlew.bat
+pom.xml

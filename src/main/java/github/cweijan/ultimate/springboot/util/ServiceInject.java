@@ -35,9 +35,9 @@ public abstract class ServiceInject<T> implements InitializingBean {
         return LuceneQuery.of(componentClass);
     }
 
-    public List<T> findByExample(Object... examples) {
+    public List<T> findByOBject(Object... objects) {
         Query<T> query = getQuery();
-        for (Object example : examples) {
+        for (Object example : objects) {
             query.read(example);
         }
         return query.list();
@@ -69,9 +69,9 @@ public abstract class ServiceInject<T> implements InitializingBean {
     }
 
     @Transactional(readOnly = true)
-    public T getByExample(Object example) {
+    public T getByOBject(Object object) {
 
-        List<T> list = getQuery().read(example).list();
+        List<T> list = getQuery().read(object).list();
         return list.size() > 0 ? list.get(0) : null;
     }
 

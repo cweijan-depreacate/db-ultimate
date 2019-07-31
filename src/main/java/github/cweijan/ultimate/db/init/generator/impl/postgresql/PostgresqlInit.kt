@@ -74,6 +74,7 @@ class PostgresqlInit : TableInitSqlGenerator {
             JavaType.Double, "double" -> "float8"
             JavaType.Boolean, "boolean" -> "bool"
             JavaType.byteArray -> "bytea"
+            JavaType.ByteArray -> "bytea"
             Date::class.java.name, LocalDateTime::class.java.name -> "timestamp"
             LocalDate::class.java.name -> "DATE"
             LocalTime::class.java.name -> "TIME"

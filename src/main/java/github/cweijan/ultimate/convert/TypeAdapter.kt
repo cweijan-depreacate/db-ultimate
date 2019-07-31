@@ -13,16 +13,14 @@ object TypeAdapter {
 
     val NUMBER_TYPE = mutableListOf("byte", "short", "int", "float", "double", "long", JavaType.Byte, JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
     private val BOOLEAN_TYPE = mutableListOf(JavaType.Boolean, "boolean")
-    private val BLOB_TYPE = mutableListOf(JavaType.byteArray)
     val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
     val DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
-    val LUCENE_DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalDateTime", "java.util.Date")
 
     @JvmStatic
     fun isAdapterType(type: Class<*>): Boolean {
         val typeName = type.name
         return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName)
-                || BOOLEAN_TYPE.contains(typeName) || BLOB_TYPE.contains(typeName) || type.isEnum
+                || BOOLEAN_TYPE.contains(typeName) || JavaType.BYTE_ARRAY_TYPE.contains(typeName) || type.isEnum
                 || type.name == "java.math.BigInteger"
     }
 
@@ -130,18 +128,18 @@ object TypeAdapter {
      * convertAdapter
      */
     @JvmStatic
-    fun convertLuceneAdapter(fieldValue: Any?): String? {
+    fun convertLuceneAdapter(fieldValue: Any?): Any? {
         if (fieldValue == null) return null
 
         if (fieldValue::class.java.isEnum) {
             return (fieldValue as Enum<*>).name
         }
 
-        if (LUCENE_DATE_TYPE.contains(fieldValue::class.java.name)) {
+        if (JavaType.DATE_TYPE.contains(fieldValue::class.java.name)) {
             return DateUtils.convertDateToLong(fieldValue)?.toString()
         }
 
-        return fieldValue.toString()
+        return fieldValue
     }
 
     fun contentWrapper(contentObject: Any?): String {

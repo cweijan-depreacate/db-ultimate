@@ -59,6 +59,7 @@ class MysqlInit : TableInitSqlGenerator {
             JavaType.Character, "char" -> "char(${length ?: 1})"
             JavaType.Integer, "int" -> "int"
             JavaType.byteArray -> "BLOB"
+            JavaType.ByteArray -> "BLOB"
             JavaType.Boolean, "boolean" -> "BIT"
             JavaType.Long, "long" -> "bigint"
             JavaType.Float, "float", JavaType.Double, "double" -> "DECIMAL(${length ?: 10},2)"
