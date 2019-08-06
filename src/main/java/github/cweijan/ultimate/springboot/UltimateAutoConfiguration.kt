@@ -24,8 +24,8 @@ open class UltimateAutoConfiguration {
     @Bean
     open fun createTransactionManager(): PlatformTransactionManager? {
 
-        dbConfig?:return null
-        if (dbConfig.configCheck())
+        dbConfig ?: return null
+        if (dbConfig.configCheck() || dataSource != null)
             return DataSourceTransactionManager(dataSource ?: dbConfig.dataSource!!)
         Log.info("please add \n" +
                 "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration,org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration" +
@@ -36,8 +36,8 @@ open class UltimateAutoConfiguration {
     @Bean
     open fun createUltimate(): DbUltimate? {
 
-        dbConfig?:return null
-        if (dbConfig.configCheck()){
+        dbConfig ?: return null
+        if (dbConfig.configCheck() || dataSource != null) {
             dataSource?.let {
                 Log.debug("use datasource init dbultimate..")
                 dbConfig.dataSource = it
