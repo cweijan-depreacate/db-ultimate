@@ -64,6 +64,11 @@ public abstract class ServiceInject<T> implements InitializingBean {
     }
 
     @Transactional(readOnly = true)
+    public Pagination<T> findByOffset(Integer offset, Integer pageSize) {
+        return Query.of(componentClass).offset(offset).pageSize(pageSize).pageList();
+    }
+
+    @Transactional(readOnly = true)
     public T getByPrimaryKey(Object primaryKey) {
         return Query.db.getByPrimaryKey(componentClass, primaryKey);
     }

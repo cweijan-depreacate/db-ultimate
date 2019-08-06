@@ -39,6 +39,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     var offset: Int? = null
         private set
         get() {
+            if (field != null) return field
             if (this.page != null && this.pageSize != 0) {
                 return if (page!! <= 0) 0 else (page!! - 1) * (pageSize ?: 100)
             }
@@ -555,6 +556,11 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         }
 
         return if (columnSql == "") null else columnSql
+    }
+
+    fun offset(offset: Int?): Query<T> {
+        this.offset=offset
+        return this
     }
 
     companion object {
