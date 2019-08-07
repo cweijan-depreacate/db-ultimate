@@ -73,17 +73,13 @@ object TypeAdapter {
             return null
         }
 
+        if(Collection::class.java.isAssignableFrom(fieldType)){
+            val valueType = getGenericType(field)
+            return Json.parseCollection(javaObject.toString(),fieldType as Class<Collection<*>>,valueType)
+        }
+
         field.getAnnotation(Blob::class.java)?.run {
-            val valueType = try {
-                val listActualTypeArguments = (field.genericType as ParameterizedType).actualTypeArguments
-                if (listActualTypeArguments != null && listActualTypeArguments.isNotEmpty()) {
-                    listActualTypeArguments[0] as Class<*>
-                } else {
-                    Any::class.java
-                }
-            } catch (e: Exception) {
-                Any::class.java
-            }
+            val valueType = getGenericType(field)
             javaObject as ByteArray
             return if (field.type.isAssignableFrom(List::class.java)) {
                 Json.parseList(String(javaObject), valueType)
@@ -104,6 +100,19 @@ object TypeAdapter {
         return javaObject
     }
 
+    private fun getGenericType(field: Field): Class<out Any> {
+        return try {
+            val listActualTypeArguments = (field.genericType as ParameterizedType).actualTypeArguments
+            if (listActualTypeArguments != null && listActualTypeArguments.isNotEmpty()) {
+                listActualTypeArguments[0] as Class<*>
+            } else {
+                Any::class.java
+            }
+        } catch (e: Exception) {
+            Any::class.java
+        }
+    }
+
     /**
      * convertAdapter
      */
@@ -113,6 +122,10 @@ object TypeAdapter {
 
         if (fieldValue::class.java.isEnum) {
             return (fieldValue as Enum<*>).name
+        }
+
+        if(fieldValue is Collection<*>){
+            return Json.toJson(fieldValue)
         }
 
         if (DATE_TYPE.contains(fieldValue::class.java.name)) {

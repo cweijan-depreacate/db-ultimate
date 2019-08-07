@@ -101,7 +101,8 @@ object TypeConvert {
 
             try {
                 when {
-                    TypeAdapter.isAdapterType(field.type) || field.getAnnotation(Blob::class.java) != null -> field.set(beanInstance, TypeAdapter.convertJavaObject(component.componentClass, field, try {
+                    TypeAdapter.isAdapterType(field.type) || Collection::class.java.isAssignableFrom(field.type) || field.getAnnotation(Blob::class.java) != null
+                    -> field.set(beanInstance, TypeAdapter.convertJavaObject(component.componentClass, field, try {
                         resultSet.getObject(columnName)
                     } catch (e: Exception) {
                         Log.error(e.message);null

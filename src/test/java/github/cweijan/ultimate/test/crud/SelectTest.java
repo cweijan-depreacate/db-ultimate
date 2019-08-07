@@ -18,6 +18,14 @@ import java.util.Map;
 public class SelectTest extends BaseTest{
 
     @Test
+    public void testGetById(){
+
+        Lib id = Query.of(Lib.class).eq("id", 8).get();
+        Log.info(id);
+
+    }
+
+    @Test
     public void testGetByEquals(){
 
         Query<Admin> query = Query.of(Admin.class);
