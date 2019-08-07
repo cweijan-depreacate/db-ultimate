@@ -6,6 +6,7 @@ import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.Json
+import github.cweijan.ultimate.util.StringUtils
 
 abstract class BaseSqlDialect : SqlDialect {
 
@@ -14,10 +15,10 @@ abstract class BaseSqlDialect : SqlDialect {
         val componentInfo = TableInfo.getComponent(component.javaClass)
         var columns = ""
         var values = ""
-        val params = ArrayList<Any>();
+        val params = ArrayList<Any>()
         for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
             field.isAccessible = true
-            if (componentInfo.isInsertExcludeField(field)) continue
+            if (componentInfo.isExcludeField(field)) continue
             field.get(component)?.run {
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
                 values += "?,"
@@ -46,7 +47,7 @@ abstract class BaseSqlDialect : SqlDialect {
 
         for (field in TypeAdapter.getAllField(component.javaClass)) {
             field.isAccessible = true
-            if (componentInfo.isUpdateExcludeField(field)) {
+            if (componentInfo.isExcludeField(field)) {
                 continue
             }
             field.get(component)?.run {
@@ -107,8 +108,7 @@ abstract class BaseSqlDialect : SqlDialect {
 
         query.forceIndex?.let { if (it) joinSql += " FORCE INDEX (PRIMARY) " }
 
-        if (query.component.autoJoinLazy.isInitialized()) query.component.autoJoinComponentList.let { it.forEach { autoJoinComponent -> query.join(autoJoinComponent) } }
-        if (query.joinLazy.isInitialized()) joinSql = generateJoinTablesSql(query.joinTables)
+        if (query.component.joinLazy.isInitialized()) joinSql = generateJoinTablesSql(query)
 
         if (query.eqLazy.isInitialized()) sql += generateOperationSql0(query.equalsOperation, "=", and, query)
         if (query.orEqLazy.isInitialized()) sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
@@ -147,7 +147,7 @@ abstract class BaseSqlDialect : SqlDialect {
             sql = " WHERE$sql"
         }
 
-        sql = joinSql+sql
+        sql = joinSql + sql
 
         if (query.groupLazy.isInitialized()) query.groupByList.forEachIndexed { index, groupBy ->
             sql += if (index == 0) " GROUP BY $groupBy" else ",$groupBy"
@@ -164,12 +164,22 @@ abstract class BaseSqlDialect : SqlDialect {
         return if (useAlias) query.alias + sql else sql
     }
 
-    private fun generateJoinTablesSql(joinTableSqls: MutableList<String>?): String {
+    private fun generateJoinTablesSql(query: Query<*>): String {
 
         val sql = StringBuilder()
+        query.component.joinComponentList.let {
+            it.forEach { clazz ->
 
-        joinTableSqls?.forEach { joinTableSql ->
-            sql.append(joinTableSql)
+                val foreignComponent = TableInfo.getComponent(clazz)
+                val foreignTableName = foreignComponent.tableName
+                val foreignKeyInfo = query.component.getForeignKey(clazz)
+
+                val tableAlias = if (StringUtils.isBlank(query.component.tableAlias)) query.component.tableName else query.component.tableAlias
+                val foreignTableAlias = if (StringUtils.isBlank(foreignComponent.tableAlias)) foreignTableName else foreignComponent.tableAlias
+
+                val segment = " left join $foreignTableName $foreignTableAlias on $tableAlias.${foreignKeyInfo.foreignKey}=$foreignTableAlias.${foreignKeyInfo.joinKey} "
+                sql.append(segment)
+            }
         }
 
         return sql.toString()

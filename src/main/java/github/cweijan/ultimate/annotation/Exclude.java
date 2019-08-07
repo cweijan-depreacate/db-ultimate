@@ -11,8 +11,4 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Exclude{
-    boolean excludeInsert () default true;
-    boolean excludeUpdate () default true;
-    boolean excludeResult() default true;
-    boolean excludeTable() default true;
 }

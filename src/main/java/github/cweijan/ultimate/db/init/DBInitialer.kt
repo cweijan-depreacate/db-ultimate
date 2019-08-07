@@ -130,7 +130,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
             fields.forEachIndexed { _, field ->
 
-                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type)) {
+                if (componentInfo.isExcludeField(field) || !TypeAdapter.isAdapterType(field.type)) {
                     if (field.getAnnotation(Blob::class.java) == null) return@forEachIndexed
                 }
 

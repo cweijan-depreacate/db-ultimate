@@ -45,14 +45,14 @@ class ComponentInfo(var componentClass: Class<*>) {
      * 外键映射
      */
     internal val foreignKeyMap by lazy {
-        return@lazy HashMap<Class<*>, ForeignKeyInfo>();
+        return@lazy HashMap<Class<*>, ForeignKeyInfo>()
     }
 
-    val autoJoinLazy = lazy { return@lazy ArrayList<Class<*>>(); }
+    val joinLazy = lazy { return@lazy ArrayList<Class<*>>(); }
     /**
-     * 自动关联的外键列表
+     * 关联的外键列表
      */
-    val autoJoinComponentList by autoJoinLazy
+    val joinComponentList by joinLazy
 
     /**
      * 根据属性名找列名
@@ -73,7 +73,7 @@ class ComponentInfo(var componentClass: Class<*>) {
      */
     fun getColumnInfoByFieldName(fieldName: String?): ColumnInfo? {
 
-        fieldName?:return null
+        fieldName ?: return null
 
         return fieldColumnInfoMap[fieldName]
     }
@@ -129,24 +129,9 @@ class ComponentInfo(var componentClass: Class<*>) {
         return foreignKeyInfo
     }
 
-    fun isQueryExcludeField(field: Field?): Boolean {
+    fun isExcludeField(field: Field?): Boolean {
         val columnInfo = fieldColumnInfoMap[field?.name]
-        return null != columnInfo && columnInfo.excludeResult
-    }
-
-    fun isInsertExcludeField(field: Field?): Boolean {
-        val columnInfo = fieldColumnInfoMap[field?.name]
-        return null != columnInfo && columnInfo.excludeInsert
-    }
-
-    fun isUpdateExcludeField(field: Field?): Boolean {
-        val columnInfo = fieldColumnInfoMap[field?.name]
-        return null != columnInfo && columnInfo.excludeUpdate
-    }
-
-    fun isTableExcludeField(field: Field?): Boolean {
-        val columnInfo = fieldColumnInfoMap[field?.name]
-        return null != columnInfo && columnInfo.excludeTable
+        return null != columnInfo && columnInfo.exclude
     }
 
     companion object {
@@ -168,12 +153,17 @@ class ComponentInfo(var componentClass: Class<*>) {
 
             val componentInfo = ComponentInfo(componentClass)
             componentInfo.tableName = tableName
-            componentInfo.selectColumns = table?.selectColumns ?: "*"
             componentInfo.tableAlias = table?.alias
             //生成列信息
             for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
-                ColumnInfo.init(componentInfo, field,table?.camelcaseToUnderLine ?: true)
+                ColumnInfo.init(componentInfo, field)
             }
+            var selectColumns=""
+            componentInfo.columnInfoMap.forEach { (columnName, _) ->
+                selectColumns+= ",$columnName"
+            }
+
+            componentInfo.selectColumns = selectColumns.replaceFirst(",","")
             TableInfo.putComponent(componentClass, componentInfo)
             Log.debug("load component ${componentClass.name}, table is $tableName")
             return componentInfo

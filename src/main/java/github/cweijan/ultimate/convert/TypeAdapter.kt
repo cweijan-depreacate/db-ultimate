@@ -15,13 +15,14 @@ object TypeAdapter {
     private val BOOLEAN_TYPE = mutableListOf(JavaType.Boolean, "boolean")
     val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
     val DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
+    private val BIG_TYPE: MutableList<String> = mutableListOf("java.math.BigInteger","java.math.BigDecimal")
 
     @JvmStatic
     fun isAdapterType(type: Class<*>): Boolean {
         val typeName = type.name
         return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName)
                 || BOOLEAN_TYPE.contains(typeName) || JavaType.BYTE_ARRAY_TYPE.contains(typeName) || type.isEnum
-                || type.name == "java.math.BigInteger"
+                || BIG_TYPE.contains(typeName)
     }
 
     fun getAllField(componentClass: Class<*>?): List<Field> {

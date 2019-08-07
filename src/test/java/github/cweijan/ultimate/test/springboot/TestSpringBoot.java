@@ -1,6 +1,6 @@
 package github.cweijan.ultimate.test.springboot;
 
-import github.cweijan.ultimate.annotation.TableComponentScan;
+import github.cweijan.ultimate.annotation.TableScan;
 import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.core.page.Pagination;
 import github.cweijan.ultimate.springboot.UltimateAutoConfiguration;
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = {UltimateAutoConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @SpringBootApplication(scanBasePackages = {"github.cweijan"})
-@TableComponentScan("github.cweijan")
+@TableScan("github.cweijan")
 public class TestSpringBoot {
 
     @Autowired

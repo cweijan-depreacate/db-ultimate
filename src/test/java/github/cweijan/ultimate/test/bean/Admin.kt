@@ -1,16 +1,19 @@
 package github.cweijan.ultimate.test.bean
 
-import github.cweijan.ultimate.annotation.*
+import github.cweijan.ultimate.annotation.Column
+import github.cweijan.ultimate.annotation.OneToOne
+import github.cweijan.ultimate.annotation.Primary
+import github.cweijan.ultimate.annotation.Table
 import github.cweijan.ultimate.annotation.query.Search
 import github.cweijan.ultimate.core.excel.ExcludeExcel
 import github.cweijan.ultimate.test.code.AdminTypeEnum
 import java.time.LocalDateTime
 
-@Table(value = "rh_admin", selectColumns = "*", alias = "ad", camelcaseToUnderLine = true)
+@Table(value = "rh_admin",  alias = "ad")
 open class Admin {
 
     @Primary
-    @ForeignKey(value = Lib::class)
+    @OneToOne(value = Lib::class)
     var id: Int = 0
 
     @Column
@@ -35,9 +38,6 @@ open class Admin {
     var test: String? = null
 
     var isDelete:Boolean?=false
-
-    @ExcludeExcel
-    var lib: Lib? = null
 
     override fun toString(): String {
         return "Admin(id=$id, message=$message,  helloWorldTest=$helloWorldTest, date=$date)"

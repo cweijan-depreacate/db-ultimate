@@ -93,7 +93,7 @@ object TypeConvert {
             val fieldName = field.name
             val fieldType = field.type.name
             val key = component.getColumnNameByFieldName(fieldName)?.toLowerCase()
-            if (component.isQueryExcludeField(field) ||
+            if (component.isExcludeField(field) ||
                     (!columns.containsKey(key) && TypeAdapter.isAdapterType(field.type))) {
                 continue
             }

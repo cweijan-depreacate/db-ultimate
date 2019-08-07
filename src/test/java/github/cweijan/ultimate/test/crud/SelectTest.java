@@ -142,7 +142,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testJoin(){
 
-        List<Admin> adminList = Query.of(Admin.class).join(Lib.class).eq("ad.id", "1").list();
+        List<Admin> adminList = Query.of(Admin.class).eq("ad.id", "1").list();
 
         Log.info(adminList);
 

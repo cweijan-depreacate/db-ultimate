@@ -14,6 +14,7 @@ import github.cweijan.ultimate.core.extra.GroupFunction
 import github.cweijan.ultimate.core.page.Pagination
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
+import github.cweijan.ultimate.debug.HotSwapSupport
 import github.cweijan.ultimate.util.Json
 import github.cweijan.ultimate.util.Log
 import github.cweijan.ultimate.util.StringUtils
@@ -59,9 +60,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
                 else -> ""
             }
         }
-
-    val joinLazy = lazy { return@lazy ArrayList<String>() }
-    val joinTables: MutableList<String> by joinLazy
 
     val orderByLazy = lazy { return@lazy ArrayList<String>() }
     val orderByList: MutableList<String> by orderByLazy
@@ -141,21 +139,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         val array = params.toTypedArray()
         params = ArrayList()
         return array
-    }
-
-    fun join(clazz: Class<*>): Query<T> {
-
-        val foreignComponent = TableInfo.getComponent(clazz)
-        val foreignTableName = foreignComponent.tableName
-        val foreignKeyInfo = component.getForeignKey(clazz)
-
-        val tableAlias = if (StringUtils.isBlank(component.tableAlias)) component.tableName else component.tableAlias
-        val foreignTableAlias = if (StringUtils.isBlank(foreignComponent.tableAlias)) foreignTableName else foreignComponent.tableAlias
-
-        val segment = " join $foreignTableName $foreignTableAlias on $tableAlias.${foreignKeyInfo.foreignKey}=$foreignTableAlias.${foreignKeyInfo.joinKey} "
-        joinTables.add(segment)
-
-        return this
     }
 
     private fun getOperationList(map: MutableMap<String, MutableList<Any>>, key: String): MutableList<Any>? {
@@ -576,9 +559,9 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         @JvmStatic
         fun init(dbConfig: DbConfig) {
             db = DbUltimate(dbConfig)
-//            if (dbConfig.develop) {
-//                HotSwapSupport.startHotSwapListener(dbConfig)
-//            }
+            if (dbConfig.develop) {
+                HotSwapSupport.startHotSwapListener(dbConfig)
+            }
 
             ComponentInfo.init(GroupFunction::class.java)
             dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
