@@ -33,7 +33,8 @@ object TableInfo {
 
     fun getComponent(clazz: Class<*>?, nullable: Boolean = false): ComponentInfo? {
 
-        return TypeMap[clazz?.name] ?: if (nullable) return null else throw ComponentNotExistsException("$clazz component is not exists!")
+        val componentInfo = TypeMap[clazz?.name]?:clazz?.let { ComponentInfo.init(it) }
+        return componentInfo ?: if (nullable) return null else throw ComponentNotExistsException("$clazz component is not exists!")
     }
 
     @JvmStatic

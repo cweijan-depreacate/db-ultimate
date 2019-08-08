@@ -43,29 +43,86 @@ public abstract class ServiceInject<T> implements InitializingBean {
         return query.list();
     }
 
+    /**
+     * 对指定列进行条件查询
+     */
     @Transactional(readOnly = true)
     public List<T> findBy(String column, Object value) {
         return getQuery().eq(column, value).list();
     }
 
+    /**
+     * 对指定列进行查询,并可进行分页
+     */
     @Transactional(readOnly = true)
     public List<T> findBy(String column, Object value, Integer page, Integer pageSize) {
         return getQuery().eq(column, value).page(page).pageSize(pageSize).list();
     }
 
+    /**
+     * 获取所有数据
+     */
     @Transactional(readOnly = true)
     public List<T> findAll() {
         return getQuery().list();
     }
 
+    /**
+     * 分页查询
+     *
+     * @param page     页码
+     * @param pageSize 每页数量
+     */
     @Transactional(readOnly = true)
     public Pagination<T> findByPage(Integer page, Integer pageSize) {
         return Query.of(componentClass).page(page).pageSize(pageSize).pageList();
     }
 
+    /**
+     * 分页查询
+     *
+     * @param page   页码
+     * @param pageSize 每页数量
+     * @param objects  查询参数,自动使用readObject读取
+     */
+    @Transactional(readOnly = true)
+    public Pagination<T> findByPage(Integer page, Integer pageSize, Object... objects) {
+        Query<T> query = Query.of(componentClass);
+        if (objects != null) {
+            for (Object object : objects) {
+                query.read(object);
+            }
+        }
+        return query.page(page).pageSize(pageSize).pageList();
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param offset   需要跳过的数据量
+     * @param pageSize 每页数量
+     */
     @Transactional(readOnly = true)
     public Pagination<T> findByOffset(Integer offset, Integer pageSize) {
         return Query.of(componentClass).offset(offset).pageSize(pageSize).pageList();
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param offset   需要跳过的数据量
+     * @param pageSize 每页数量
+     * @param objects  查询参数,自动使用readObject读取
+     */
+    @Transactional(readOnly = true)
+    public Pagination<T> findByOffset(Integer offset, Integer pageSize, Object... objects) {
+        Query<T> query = Query.of(componentClass);
+        if (objects != null) {
+            for (Object object : objects) {
+                query.read(object);
+            }
+        }
+        return query.offset(offset).pageSize(pageSize).pageList();
     }
 
     @Transactional(readOnly = true)
@@ -92,7 +149,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
     }
 
     @Transactional
-    public void ignoreSave(T component) {
+    public void saveIgnore(T component) {
 
         Query.db.ignoreInsert(component);
     }

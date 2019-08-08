@@ -22,7 +22,7 @@ class ColumnInfo {
     var unique: Boolean = false
     var comment: String? = null
     var defaultValue: String? = null
-    var dateFormat: String = "yyyy-MM-dd HH:mm:ss"
+    lateinit var dateFormat: String
     var exclude: Boolean = false
     var isPrimary: Boolean = false
 
@@ -43,8 +43,13 @@ class ColumnInfo {
             }
 
             //生成日期格式化信息
-            field.getAnnotation(JsonFormat::class.java)?.run {
-                columnInfo.dateFormat = this.pattern
+            val jsonFormat = field.getAnnotation(JsonFormat::class.java)
+            if(jsonFormat==null){
+                if(TypeAdapter.DATE_TYPE.contains(field.type.name)){
+                    columnInfo.dateFormat =TypeAdapter.getDefaultFormat(field.type)
+                }
+            }else{
+                columnInfo.dateFormat = jsonFormat.pattern
             }
 
             //生成日期格式化信息

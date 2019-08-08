@@ -159,8 +159,9 @@ class ComponentInfo(var componentClass: Class<*>) {
                 ColumnInfo.init(componentInfo, field)
             }
             var selectColumns=""
-            componentInfo.columnInfoMap.forEach { (columnName, _) ->
-                selectColumns+= ",$columnName"
+            componentInfo.columnInfoMap.forEach { (columnName, columnInfo) ->
+                if(!columnInfo.exclude)
+                    selectColumns+= ",$columnName"
             }
 
             componentInfo.selectColumns = selectColumns.replaceFirst(",","")

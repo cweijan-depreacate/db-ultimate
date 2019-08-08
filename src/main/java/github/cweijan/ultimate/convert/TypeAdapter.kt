@@ -130,12 +130,24 @@ object TypeAdapter {
         }
 
         if (DATE_TYPE.contains(fieldValue::class.java.name)) {
-            val dateFormat: String = TableInfo.getComponent(componentClass, true)?.getColumnInfoByFieldName(fieldName)?.dateFormat
-                    ?: DateUtils.DEFAULT_PATTERN
+            val columnInfo = TableInfo.getComponent(componentClass, true)?.getColumnInfoByFieldName(fieldName)
+            val dateFormat=if(columnInfo?.fieldType==fieldValue::class.java){
+                columnInfo.dateFormat
+            }else{
+                getDefaultFormat(fieldValue::class.java)
+            }
             return DateUtils.toDateString(fieldValue, dateFormat) ?: fieldValue
         }
 
         return fieldValue
+    }
+
+    fun getDefaultFormat(type: Class<*>): String {
+        return when(type.name){
+            "java.time.LocalDate"-> "yyyy-MM-dd"
+            "java.time.LocalTime"-> "HH:mm:ss"
+            else -> "yyyy-MM-dd HH:mm:ss"
+        }
     }
 
     /**
