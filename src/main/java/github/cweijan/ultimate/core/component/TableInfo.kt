@@ -5,6 +5,12 @@ import github.cweijan.ultimate.exception.ComponentNotExistsException
 
 object TableInfo {
 
+    private var developMode = false;
+
+    fun enableDevelopMode() {
+        developMode = true
+    }
+
     private val TypeMap: MutableMap<String?, ComponentInfo> by lazy {
         return@lazy HashMap<String?, ComponentInfo>()
     }
@@ -33,14 +39,19 @@ object TableInfo {
 
     fun getComponent(clazz: Class<*>?, nullable: Boolean = false): ComponentInfo? {
 
-        val componentInfo = TypeMap[clazz?.name]?:clazz?.let { ComponentInfo.init(it) }
-        return componentInfo ?: if (nullable) return null else throw ComponentNotExistsException("$clazz component is not exists!")
+        if(developMode){
+            clazz?.let { ComponentInfo.init(it,false) }
+        }
+
+        val componentInfo = TypeMap[clazz?.name] ?: clazz?.let { ComponentInfo.init(it) }
+        return componentInfo
+                ?: if (nullable) return null else throw ComponentNotExistsException("$clazz component is not exists!")
     }
 
     @JvmStatic
     fun getComponent(clazz: Class<*>?): ComponentInfo {
 
-        return getComponent(clazz,false)!!
+        return getComponent(clazz, false)!!
     }
 
     fun getTableName(clazz: Class<*>): String? {

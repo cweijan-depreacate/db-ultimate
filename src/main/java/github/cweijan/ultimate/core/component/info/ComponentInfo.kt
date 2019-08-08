@@ -140,6 +140,7 @@ class ComponentInfo(var componentClass: Class<*>) {
          * 生成component信息
          *
          * @param componentClass 实体类
+         * @param scanMode 是否扫描模式,扫描模式不会重新加载Componnet
          */
         @JvmStatic
         fun init(componentClass: Class<*>, scanMode: Boolean = true): ComponentInfo {
@@ -166,7 +167,8 @@ class ComponentInfo(var componentClass: Class<*>) {
 
             componentInfo.selectColumns = selectColumns.replaceFirst(",","")
             TableInfo.putComponent(componentClass, componentInfo)
-            Log.debug("load component ${componentClass.name}, table is $tableName")
+            if(scanMode)
+                Log.debug("load component ${componentClass.name}, table is $tableName")
             return componentInfo
         }
 
