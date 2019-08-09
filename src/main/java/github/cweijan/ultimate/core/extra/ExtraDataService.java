@@ -4,7 +4,6 @@ import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.util.Json;
 import github.cweijan.ultimate.util.StringUtils;
 import kotlin.text.Charsets;
-import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 
@@ -55,10 +54,6 @@ public final class ExtraDataService {
 
     public static <T> T getExtraData(Object key, Class<T> extraType) {
         return getExtraData(key, extraType, null);
-    }
-
-    public static void expireExtraData(@NotNull Object key, @NotNull Class<?> extraType, int minute) {
-        getQuery(key, extraType.getName()).update("exprieMinute", minute).executeUpdate();
     }
 
     private static Query<ExtraData> getQuery(Object key, String extraName) {

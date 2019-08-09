@@ -53,6 +53,11 @@ class ComponentInfo(var componentClass: Class<*>) {
      * 关联的外键列表
      */
     val joinComponentList by joinLazy
+    val oneToManyLazy = lazy { return@lazy ArrayList<OneToManyInfo>(); }
+    /**
+     * 关联的外键列表
+     */
+    val oneToManyList by oneToManyLazy
 
     /**
      * 根据属性名找列名
@@ -96,8 +101,8 @@ class ComponentInfo(var componentClass: Class<*>) {
         return columnInfoMap[columnName]
     }
 
-    fun getValueByFieldName(component: Any?,fieldName:String?):Any?{
-        component?:return null
+    fun getValueByFieldName(component: Any?, fieldName: String?): Any? {
+        component ?: return null
         return fieldColumnInfoMap[fieldName]?.field?.get(component)
     }
 
@@ -164,15 +169,15 @@ class ComponentInfo(var componentClass: Class<*>) {
             for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
                 ColumnInfo.init(componentInfo, field)
             }
-            var selectColumns=""
+            var selectColumns = ""
             componentInfo.columnInfoMap.forEach { (columnName, columnInfo) ->
-                if(!columnInfo.exclude)
-                    selectColumns+= ",$columnName"
+                if (!columnInfo.exclude)
+                    selectColumns += ",$columnName"
             }
 
-            componentInfo.selectColumns = selectColumns.replaceFirst(",","")
+            componentInfo.selectColumns = selectColumns.replaceFirst(",", "")
             TableInfo.putComponent(componentClass, componentInfo)
-            if(scanMode)
+            if (scanMode)
                 Log.debug("load component ${componentClass.name}, table is $tableName")
             return componentInfo
         }

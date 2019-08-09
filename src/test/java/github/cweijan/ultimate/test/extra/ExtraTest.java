@@ -18,11 +18,6 @@ public class ExtraTest extends BaseTest {
     }
 
     @Test
-    public void testExprieExtra(){
-        Query.db.expireExtra(1,ImageEntry.class,3);
-    }
-
-    @Test
     public void testGetExtra(){
         System.out.println(Query.db.getExtra(1,ImageEntry.class));
     }

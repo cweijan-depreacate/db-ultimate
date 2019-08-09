@@ -13,7 +13,6 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class SelectTest extends BaseTest{
 
@@ -61,17 +60,6 @@ public class SelectTest extends BaseTest{
 
     }
 
-
-    @Test
-    public void testGetMap(){
-
-        String sql = "select * from rh_admin";
-        Map<String, Object> result =Query.db.executeSqlOfMap(sql);
-
-        Log.info(result + "");
-
-    }
-
     @Test
     public void testInSelect(){
 
@@ -112,14 +100,6 @@ public class SelectTest extends BaseTest{
 
         Admin admin = Query.of(Admin.class).eq("id", 1).get();
         Log.info(Json.toJson(admin));
-
-    }
-
-    @Test
-    public void testChildenClass(){
-
-        //        AdminC admin = Query.of(AdminC.class).eq("id", 1).get();
-        //        Log.info(admin);
 
     }
 

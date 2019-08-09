@@ -2,7 +2,9 @@ package github.cweijan.ultimate.convert
 
 import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.core.component.TableInfo
+import github.cweijan.ultimate.springboot.util.ServiceMap
 import github.cweijan.ultimate.util.Log
+import org.springframework.beans.BeanUtils
 import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
@@ -40,21 +42,21 @@ object TypeConvert {
         while (resultSet.next()) {
             beanList.add(resultSetToBean(resultSet, beanClass, true)!!)
         }
+        val component = TableInfo.getComponent(beanClass)
+        beanList.forEach { bean ->
+            //一对多赋值
+            if (component.oneToManyLazy.isInitialized()) {
+                component.oneToManyList.forEach { oneToManyInfo ->
+                    oneToManyInfo.oneTomanyField.set(bean, ServiceMap.get(oneToManyInfo.relationClass.javaObjectType)
+                            .findBy(oneToManyInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
+                }
+            }
+        }
 
         return beanList
     }
 
-    fun resultSetToMapList(resultSet: ResultSet): List<Map<String, Any?>> {
-        val list = ArrayList<Map<String, Any?>>()
-        while (resultSet.next()) {
-            list.add(resultSetToMap(resultSet, true)!!)
-        }
-        return list
-    }
-
-    fun resultSetToMap(resultSet: ResultSet, hadNext: Boolean = false): Map<String, Any?>? {
-
-        if (!hadNext && !resultSet.next()) return null
+    private fun resultSetToMap(resultSet: ResultSet): Map<out Any, Any?>? {
 
         val md = resultSet.metaData
         val columns = md.columnCount
@@ -77,9 +79,18 @@ object TypeConvert {
 
         val beanInstance: T
         try {
-            beanInstance = clazz.newInstance()
+            if (Map::class.java.isAssignableFrom(clazz)) {
+                beanInstance = if (clazz.isInterface) BeanUtils.instantiateClass(HashMap::class.java) as T
+                else BeanUtils.instantiateClass(clazz)
+                resultSetToMap(resultSet)?.run {
+                    (beanInstance as MutableMap<Any,Any?>).putAll(this)
+                }
+                return beanInstance
+            } else {
+                beanInstance = clazz.newInstance()
+            }
         } catch (e: Exception) {
-            Log.getLogger().error(e.message)
+            Log.getLogger().error(e.message, e)
             return null
         }
         if (columns.keys.isEmpty()) return beanInstance
@@ -115,7 +126,7 @@ object TypeConvert {
             }
 
         }
-        objectMap.forEach { field, fieldClass -> field.set(beanInstance, toJavaBean(resultSet, fieldClass, columns)) }
+//        objectMap.forEach { field, fieldClass -> field.set(beanInstance, toJavaBean(resultSet, fieldClass, columns)) }
 
         return beanInstance
     }

@@ -1,10 +1,7 @@
 package github.cweijan.ultimate.core.component.info
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import github.cweijan.ultimate.annotation.Column
-import github.cweijan.ultimate.annotation.Exclude
-import github.cweijan.ultimate.annotation.OneToOne
-import github.cweijan.ultimate.annotation.Primary
+import github.cweijan.ultimate.annotation.*
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.util.StringUtils
 import java.lang.reflect.Field
@@ -100,6 +97,15 @@ class ColumnInfo {
                 componentInfo.joinComponentList.add(value.java)
                 val foreignKeyInfo = ForeignKeyInfo(columnInfo.columnName, joinColumnName)
                 componentInfo.foreignKeyMap[value.java] = foreignKeyInfo
+                columnInfo.exclude = true
+            }
+            field.getAnnotation(OneToMany::class.java)?.run {
+                if(!Collection::class.java.isAssignableFrom(field.type)){
+                    throw RuntimeException("OneToMany annotation only annotate Collection!")
+                }
+
+                val joinColumnName = TypeAdapter.convertHumpToUnderLine(relationColumn)!!
+                componentInfo.oneToManyList.add(OneToManyInfo(field,joinColumnName,relationClass))
                 columnInfo.exclude = true
             }
             componentInfo.fieldColumnInfoMap[field.name] = columnInfo

@@ -1,6 +1,5 @@
 package github.cweijan.ultimate.springboot
 
-import github.cweijan.ultimate.core.DbUltimate
 import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.util.Log
@@ -22,29 +21,21 @@ open class UltimateAutoConfiguration {
     private val dataSource: DataSource? = null
 
     @Bean
-    open fun createTransactionManager(): PlatformTransactionManager? {
+    open fun initUltimate(): PlatformTransactionManager? {
 
         dbConfig ?: return null
         if (dbConfig.configCheck() || dataSource != null)
-            return DataSourceTransactionManager(dataSource ?: dbConfig.dataSource!!)
-        Log.info("please add \n" +
-                "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration,org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration" +
-                "\nto application.properties")
-        return null
-    }
-
-    @Bean
-    open fun createUltimate(): DbUltimate? {
-
-        dbConfig ?: return null
-        if (dbConfig.configCheck() || dataSource != null) {
+        {
             dataSource?.let {
                 Log.debug("use datasource init dbultimate..")
                 dbConfig.dataSource = it
             }
             Query.init(dbConfig)
-            return Query.db
+            return DataSourceTransactionManager(dataSource ?: dbConfig.dataSource!!)
         }
+        Log.info("please add \n" +
+                "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration,org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration" +
+                "\nto application.properties")
         return null
     }
 

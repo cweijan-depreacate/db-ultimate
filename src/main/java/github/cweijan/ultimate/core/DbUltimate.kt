@@ -20,27 +20,9 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
     var sqlGenerator: SqlDialect = DialectAdapter.getSqlGenerator(dbConfig.getDatabaseType())
 
     @JvmOverloads
-    fun <T> executeSqlOf(sql: String, params: Array<Any>? = null, clazz: Class<T>): T? {
-
-        return TypeConvert.resultSetToBean(sqlExecutor.executeSql(sql, params)!!, clazz)
-    }
-
-    @JvmOverloads
-    fun <T> executeSqlOfList(sql: String, params: Array<Any>? = null, clazz: Class<T>): List<T> {
+    fun <T> findBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): List<T> {
 
         return TypeConvert.resultSetToBeanList(sqlExecutor.executeSql(sql, params)!!, clazz)
-    }
-
-    @JvmOverloads
-    fun executeSqlOfMap(sql: String, params: Array<Any>? = null): Map<String, Any?>? {
-
-        return TypeConvert.resultSetToMap(sqlExecutor.executeSql(sql, params)!!)
-    }
-
-    @JvmOverloads
-    fun executeSqlOfMapList(sql: String, params: Array<Any>? = null): List<Map<String, Any?>> {
-
-        return TypeConvert.resultSetToMapList(sqlExecutor.executeSql(sql, params)!!)
     }
 
     fun executeSql(sql: String, params: Array<Any>? = null): ResultSet? {
@@ -115,14 +97,6 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
     fun <T> getExtra(key: Any, extraType: Class<T>): T? {
 
         return ExtraDataService.getExtraData(key, extraType)
-    }
-
-    /**
-     * 设置附加对象过期时间
-     */
-    @JvmOverloads
-    fun expireExtra(key: Any, extraType: Class<*>, minute: Int = 0) {
-        ExtraDataService.expireExtraData(key, extraType, minute)
     }
 
     /**

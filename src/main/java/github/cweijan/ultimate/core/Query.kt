@@ -154,8 +154,8 @@ internal constructor(val componentClass: Class<out T>) {
         return TypeAdapter.convertHumpToUnderLine(column)!!
     }
 
-    fun statistic(): List<Map<String, Any?>> {
-        return db.executeSqlOfMapList(db.sqlGenerator.generateSelectSql(this), this.consumeParams())
+    fun statistic(): List<Map<String, Any>> {
+        return db.findBySql(db.sqlGenerator.generateSelectSql(this), this.consumeParams(),Map::class.java) as List<Map<String, Any>>
     }
 
     @JvmOverloads
@@ -545,11 +545,11 @@ internal constructor(val componentClass: Class<out T>) {
     fun generateColumns(): String? {
 
         var columnSql = ""
-        if (countLazy.isInitialized()) countMap.forEach { columnName, showColumnName -> columnSql += "COUNT(DISTINCT $columnName) $showColumnName," }
-        if (sumLazy.isInitialized()) sumMap.forEach { columnName, showColumnName -> columnSql += "SUM($columnName) $showColumnName," }
-        if (avgLazy.isInitialized()) avgMap.forEach { columnName, showColumnName -> columnSql += "AVG($columnName) $showColumnName," }
-        if (minLazy.isInitialized()) minMap.forEach { columnName, showColumnName -> columnSql += "MIN($columnName) $showColumnName," }
-        if (maxLazy.isInitialized()) maxMap.forEach { columnName, showColumnName -> columnSql += "MAX($columnName) $showColumnName," }
+        if (countLazy.isInitialized()) countMap.forEach { (columnName, showColumnName) -> columnSql += "COUNT(DISTINCT $columnName) $showColumnName," }
+        if (sumLazy.isInitialized()) sumMap.forEach { (columnName, showColumnName) -> columnSql += "SUM($columnName) $showColumnName," }
+        if (avgLazy.isInitialized()) avgMap.forEach { (columnName, showColumnName) -> columnSql += "AVG($columnName) $showColumnName," }
+        if (minLazy.isInitialized()) minMap.forEach { (columnName, showColumnName) -> columnSql += "MIN($columnName) $showColumnName," }
+        if (maxLazy.isInitialized()) maxMap.forEach { (columnName, showColumnName) -> columnSql += "MAX($columnName) $showColumnName," }
         if (showColumnLazy.isInitialized()) showColumnList.forEach { columnName -> columnSql += "$columnName," }
         if (columnSql.lastIndexOf(",") != -1) {
             columnSql = columnSql.substring(0, columnSql.lastIndexOf(","))

@@ -4,7 +4,6 @@ import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.core.extra.ExtraDataService;
 import github.cweijan.ultimate.core.lucene.LuceneQuery;
 import github.cweijan.ultimate.core.page.Pagination;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -199,13 +198,25 @@ public abstract class ServiceInject<T> implements InitializingBean {
         return getQuery().count();
     }
 
+    public List<T> findBySql(String sql){
+        return findBySql(sql,null);
+    }
+
+    public List<T> findBySql(String sql,Object[] params){
+        return Query.db.findBySql(sql,params,componentClass);
+    }
+
+    public T getBySql(String sql){
+        return getBySql(sql,null);
+    }
+
+    public T getBySql(String sql,Object[] params){
+        return Query.db.getBySql(sql,params,componentClass);
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
         ServiceMap.mapService(componentClass.getName(), this);
-    }
-
-    public static void copyProperties(Object target, Object source) {
-        BeanUtils.copyProperties(target, source);
     }
 
 }
