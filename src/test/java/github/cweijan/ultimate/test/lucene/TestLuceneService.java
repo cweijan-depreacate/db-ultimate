@@ -40,7 +40,7 @@ public class TestLuceneService extends BaseTest {
     @Test
     public void testSearch() {
         Pagination<LuceneObject> luceneObjectPagination = LuceneQuery.of(LuceneObject.class).all().page(0).pageSize(50).orderDescBy("id").list();
-        List<LuceneObject> data = luceneObjectPagination.getData();
+        List<LuceneObject> data = luceneObjectPagination.getList();
         Log.info(data);
         data.forEach(d->Log.info(new String(d.getData())));
     }

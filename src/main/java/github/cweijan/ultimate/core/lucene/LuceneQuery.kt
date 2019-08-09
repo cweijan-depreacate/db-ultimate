@@ -1,6 +1,8 @@
 package github.cweijan.ultimate.core.lucene
 
-import github.cweijan.ultimate.annotation.query.NotQuery
+import github.cweijan.ultimate.annotation.Exclude
+import github.cweijan.ultimate.annotation.OneToMany
+import github.cweijan.ultimate.annotation.OneToOne
 import github.cweijan.ultimate.annotation.query.OrderBy
 import github.cweijan.ultimate.annotation.query.pagination.Page
 import github.cweijan.ultimate.annotation.query.pagination.PageSize
@@ -129,7 +131,9 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
             field.isAccessible = true
             var fieldName = field.name
             field.get(paramObject)?.let {
-                field.getAnnotation(NotQuery::class.java)?.run { return@let }
+                field.getAnnotation(Exclude::class.java)?.run { return@let }
+                field.getAnnotation(OneToOne::class.java)?.run { return@let }
+                field.getAnnotation(OneToMany::class.java)?.run { return@let }
                 field.getAnnotation(Page::class.java)?.run { page(it.toString().toInt());return@let }
                 field.getAnnotation(PageSize::class.java)?.run { pageSize(it.toString().toInt());return@let }
                 field.getAnnotation(OrderBy::class.java)?.run { if (this.value != "") fieldName = this.value; orderBy(fieldName);return@let }

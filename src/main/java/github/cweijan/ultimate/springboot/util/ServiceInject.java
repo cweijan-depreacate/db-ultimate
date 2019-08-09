@@ -74,7 +74,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
      * @param pageSize 每页数量
      */
     @Transactional(readOnly = true)
-    public Pagination<T> findByPage(Integer page, Integer pageSize) {
+    public Pagination<T> findAllByPage(Integer page, Integer pageSize) {
         return Query.of(componentClass).page(page).pageSize(pageSize).pageList();
     }
 
@@ -103,7 +103,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
      * @param pageSize 每页数量
      */
     @Transactional(readOnly = true)
-    public Pagination<T> findByOffset(Integer offset, Integer pageSize) {
+    public Pagination<T> findAllByOffset(Integer offset, Integer pageSize) {
         return Query.of(componentClass).offset(offset).pageSize(pageSize).pageList();
     }
 
@@ -162,6 +162,11 @@ public abstract class ServiceInject<T> implements InitializingBean {
     @Transactional
     public void update(T component) {
         Query.db.update(component);
+    }
+
+    @Transactional
+    public void updateBy(String columnName,T component) {
+        Query.db.updateBy(columnName,component);
     }
 
     @Transactional

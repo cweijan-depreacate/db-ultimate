@@ -96,6 +96,11 @@ class ComponentInfo(var componentClass: Class<*>) {
         return columnInfoMap[columnName]
     }
 
+    fun getValueByFieldName(component: Any?,fieldName:String?):Any?{
+        component?:return null
+        return fieldColumnInfoMap[fieldName]?.field?.get(component)
+    }
+
     fun getPrimaryValue(component: Any): Any? {
 
         return primaryField?.get(component)

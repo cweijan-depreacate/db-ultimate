@@ -192,8 +192,14 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
 
     fun update(component: Any) {
 
+        updateBy(null,component)
+
+    }
+
+    fun updateBy(columnName:String?,component: Any) {
+
         try {
-            val sqlObject = sqlGenerator.generateUpdateSqlByObject(component)
+            val sqlObject = sqlGenerator.generateUpdateSqlByObject(component,columnName)
             executeSql(sqlObject.sql, sqlObject.params.toTypedArray())
             dbConfig.tryCloseConnection()
         } catch (e: IllegalAccessException) {
@@ -204,7 +210,7 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
 
     fun <T> update(query: Query<T>) {
 
-        val sql = sqlGenerator.generateUpdateSqlByObject(query)
+        val sql = sqlGenerator.generateUpdateSqlByQuery(query)
         executeSql(sql, query.consumeParams())
         dbConfig.tryCloseConnection()
     }

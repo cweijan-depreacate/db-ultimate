@@ -7,9 +7,9 @@ interface SqlDialect {
     fun generateInsertSql(component: Any): SqlObject
 
     @Throws(IllegalAccessException::class)
-    fun generateUpdateSqlByObject(component: Any): SqlObject
+    fun generateUpdateSqlByObject(component: Any,byColumn:String?=null): SqlObject
 
-    fun <T> generateUpdateSqlByObject(query: Query<T>): String
+    fun <T> generateUpdateSqlByQuery(query: Query<T>): String
 
     fun <T> generateDeleteSql(query: Query<T>): String
 

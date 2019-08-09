@@ -72,7 +72,7 @@ class IndexService(indexDirPath: String) {
     fun <T> search(fields: Array<String>, luceneQuery: LuceneQuery<T>): Pagination<T> {
 
         val pagination = Pagination<T>()
-        pagination.data = ArrayList<T?>()
+        pagination.list = ArrayList<T?>()
         pagination.pageSize = luceneQuery.pageSize ?: 100
         pagination.currentPage = luceneQuery.page ?: 1
 
@@ -96,7 +96,7 @@ class IndexService(indexDirPath: String) {
         val scoreDocs = collector.topDocs((pagination.currentPage - 1) * pagination.pageSize, pagination.pageSize).scoreDocs
         for (scoreDoc in scoreDocs) {
             val doc = indexSearcher!!.doc(scoreDoc.doc)
-            pagination.data.add(LuceneHelper.documentToObject(doc, luceneQuery.componentClass))
+            pagination.list.add(LuceneHelper.documentToObject(doc, luceneQuery.componentClass))
         }
         pagination.count = collector.totalHits
 
