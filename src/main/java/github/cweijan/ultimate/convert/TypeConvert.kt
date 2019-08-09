@@ -2,7 +2,6 @@ package github.cweijan.ultimate.convert
 
 import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.core.component.TableInfo
-import github.cweijan.ultimate.springboot.util.ServiceMap
 import github.cweijan.ultimate.util.Log
 import org.springframework.beans.BeanUtils
 import java.lang.reflect.Field
@@ -36,6 +35,7 @@ object TypeConvert {
      * @param beanClass 要转换的类型
      * @return 转换完成的实体列表
      */
+    @JvmStatic
     fun <T> resultSetToBeanList(resultSet: ResultSet, beanClass: Class<T>): List<T> {
 
         val beanList = ArrayList<T>()
@@ -43,16 +43,6 @@ object TypeConvert {
             beanList.add(resultSetToBean(resultSet, beanClass, true)!!)
         }
         val component = TableInfo.getComponent(beanClass)
-        beanList.forEach { bean ->
-            //一对多赋值
-            if (component.oneToManyLazy.isInitialized()) {
-                component.oneToManyList.forEach { oneToManyInfo ->
-                    oneToManyInfo.oneTomanyField.set(bean, ServiceMap.get(oneToManyInfo.relationClass.javaObjectType)
-                            .findBy(oneToManyInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
-                }
-            }
-        }
-
         return beanList
     }
 

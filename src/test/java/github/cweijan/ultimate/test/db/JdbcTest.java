@@ -5,7 +5,6 @@ import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.test.base.BaseTest;
 import github.cweijan.ultimate.test.bean.Admin;
 import org.junit.Test;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,7 +21,7 @@ public class JdbcTest extends BaseTest{
         PreparedStatement preparedStatement = connection.prepareStatement("select * from rh_admin where message=? ");
         preparedStatement.setString(1,"'msg' or 1=1");
         ResultSet resultSet = preparedStatement.executeQuery();
-        List<Admin> admins = TypeConvert.INSTANCE.resultSetToBeanList(resultSet, Admin.class);
+        List<Admin> admins = TypeConvert.resultSetToBeanList(resultSet, Admin.class);
         System.out.println(admins);
 
     }

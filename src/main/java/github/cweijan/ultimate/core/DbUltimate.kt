@@ -8,6 +8,7 @@ import github.cweijan.ultimate.core.extra.ExtraDataService
 import github.cweijan.ultimate.core.extra.GroupFunction
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
+import github.cweijan.ultimate.springboot.util.ServiceMap
 import github.cweijan.ultimate.util.Log
 import java.sql.ResultSet
 
@@ -22,7 +23,12 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
     @JvmOverloads
     fun <T> findBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): List<T> {
 
-        return TypeConvert.resultSetToBeanList(sqlExecutor.executeSql(sql, params)!!, clazz)
+        val beanList = TypeConvert.resultSetToBeanList(sqlExecutor.executeSql(sql, params)!!, clazz)
+        dbConfig.tryCloseConnection()
+        beanList.forEach { bean ->
+            handlerRelation(bean)
+        }
+        return beanList
     }
 
     fun executeSql(sql: String, params: Array<Any>? = null): ResultSet? {
@@ -39,10 +45,26 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
         val rowCount = resultSet.row
         resultSet.beforeFirst()
         if (rowCount > 1) {
-//            throw TooManyResultException("Expect 1 result,but fond $rowCount")
             Log.getLogger().warn("TooManyResultWarn: Get expect 1 result,but fond $rowCount")
         }
-        return TypeConvert.resultSetToBean(resultSet, clazz)
+        val bean = TypeConvert.resultSetToBean(resultSet, clazz)
+        dbConfig.tryCloseConnection()
+        handlerRelation(bean)
+        return bean
+    }
+
+    /**
+     * 一对多赋值
+     */
+    private fun handlerRelation(bean: Any?) {
+        bean ?: return
+        val component = TableInfo.getComponent(bean.javaClass)
+        if (component.oneToManyLazy.isInitialized()) {
+            component.oneToManyList.forEach { oneToManyInfo ->
+                oneToManyInfo.oneTomanyField.set(bean, ServiceMap.get(oneToManyInfo.relationClass.javaObjectType)
+                        .findBy(oneToManyInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
+            }
+        }
     }
 
     fun <T> getCount(query: Query<T>): Int {
@@ -64,7 +86,7 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
     }
 
     fun <T> getByPrimaryKey(clazz: Class<T>, value: Any?): T? {
-        if(value==null)return null
+        if (value == null) return null
         return getByQuery(Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
 
@@ -76,12 +98,9 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
     fun <T> find(query: Query<T>): List<T> {
 
         val sql = sqlGenerator.generateSelectSql(query)
+        return findBySql(sql, query.consumeParams(), query.componentClass)
 
-        val resultSet = sqlExecutor.executeSql(sql, query.consumeParams())
 
-        val resultSetToBeanList = TypeConvert.resultSetToBeanList(resultSet!!, query.componentClass)
-        dbConfig.tryCloseConnection()
-        return resultSetToBeanList
     }
 
     /**
@@ -123,7 +142,7 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
     fun ignoreInsert(component: Any) {
 
         val primaryValue = TableInfo.getComponent(component::class.java).getPrimaryValue(component)
-        val byPrimaryKey = getByPrimaryKey(component::class.java,primaryValue)
+        val byPrimaryKey = getByPrimaryKey(component::class.java, primaryValue)
         if (byPrimaryKey != null) return
         val byData = Query.of(component::class.java).read(component).get()
         if (byData != null) return
@@ -166,14 +185,14 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
 
     fun update(component: Any) {
 
-        updateBy(null,component)
+        updateBy(null, component)
 
     }
 
-    fun updateBy(columnName:String?,component: Any) {
+    fun updateBy(columnName: String?, component: Any) {
 
         try {
-            val sqlObject = sqlGenerator.generateUpdateSqlByObject(component,columnName)
+            val sqlObject = sqlGenerator.generateUpdateSqlByObject(component, columnName)
             executeSql(sqlObject.sql, sqlObject.params.toTypedArray())
             dbConfig.tryCloseConnection()
         } catch (e: IllegalAccessException) {
