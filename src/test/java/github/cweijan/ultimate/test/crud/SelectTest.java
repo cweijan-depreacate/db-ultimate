@@ -131,7 +131,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testFind(){
 
-        List<Admin> admins = Query.of(Admin.class).eq("id", "2").orEq("id", "3").orSearch("id", 4).list();
+        List<Admin> admins = Query.of(Admin.class).eq("id", "2").orEq("id", "3").list();
         System.out.println(admins.size());
     }
 
