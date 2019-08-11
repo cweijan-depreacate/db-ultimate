@@ -13,7 +13,7 @@ class AutoComponentScanner : ImportBeanDefinitionRegistrar {
 
         val annotationAttributes = importingClassMetadata.getAnnotationAttributes(TableScan::class.java.name)
 
-        AnnotationAttributes.fromMap(annotationAttributes)?.getStringArray("value")?.run{
+        AnnotationAttributes.fromMap(annotationAttributes)?.getStringArray("relationClass")?.run{
             ComponentScan.scan(this.asList())
 //            ServiceScan.scan(registry,this.asList());
         }

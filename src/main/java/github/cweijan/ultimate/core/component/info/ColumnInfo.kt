@@ -93,17 +93,18 @@ class ColumnInfo {
 
             //generate foreign key column info
             field.getAnnotation(OneToOne::class.java)?.run {
-                val joinColumnName = TypeAdapter.convertHumpToUnderLine(joinColumn)!!
-                componentInfo.joinComponentList.add(value.java)
-                val foreignKeyInfo = ForeignKeyInfo(columnInfo.columnName, joinColumnName)
-                componentInfo.foreignKeyMap[value.java] = foreignKeyInfo
+                if(!Collection::class.java.isAssignableFrom(field.type)){
+                    throw RuntimeException("OneToMany annotation only annotate Collection!")
+                }
+
+                val joinColumnName = TypeAdapter.convertHumpToUnderLine(relationColumn)!!
+                componentInfo.oneToOneList.add(OneToOneInfo(field,joinColumnName,relationClass))
                 columnInfo.exclude = true
             }
             field.getAnnotation(OneToMany::class.java)?.run {
                 if(!Collection::class.java.isAssignableFrom(field.type)){
                     throw RuntimeException("OneToMany annotation only annotate Collection!")
                 }
-
                 val joinColumnName = TypeAdapter.convertHumpToUnderLine(relationColumn)!!
                 componentInfo.oneToManyList.add(OneToManyInfo(field,joinColumnName,relationClass))
                 columnInfo.exclude = true

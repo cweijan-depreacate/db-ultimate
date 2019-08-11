@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 open class Admin {
 
     @Primary
-    @OneToOne(value = Lib::class)
+    @OneToOne(relationClass = Lib::class)
     var id: Int = 0
 
     @Column

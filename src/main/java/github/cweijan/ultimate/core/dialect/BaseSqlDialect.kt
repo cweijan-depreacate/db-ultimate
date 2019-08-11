@@ -10,7 +10,6 @@ import github.cweijan.ultimate.exception.PrimaryKeyNotExistsException
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.DateUtils
 import github.cweijan.ultimate.util.Json
-import github.cweijan.ultimate.util.StringUtils
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -57,7 +56,7 @@ abstract class BaseSqlDialect : SqlDialect {
         val fieldName = byColumn ?: componentInfo.primaryField?.name
         ?: throw PrimaryKeyNotExistsException("invoke update must annotation table primary key!")
         val conditionFieldValue = componentInfo.getValueByFieldName(component, fieldName)
-                ?: throw PrimaryValueNotSetException("update value must set!")
+                ?: throw PrimaryValueNotSetException("update relationClass must set!")
         var sql = "UPDATE ${componentInfo.tableName} a set "
         val params = ArrayList<Any>();
 
@@ -81,7 +80,7 @@ abstract class BaseSqlDialect : SqlDialect {
         }
 
         if (sql.lastIndexOf(",") == -1) {
-            throw RuntimeException("Cannot find any update value!")
+            throw RuntimeException("Cannot find any update relationClass!")
         } else {
             sql = sql.substring(0, sql.lastIndexOf(","))
         }
@@ -115,7 +114,7 @@ abstract class BaseSqlDialect : SqlDialect {
 
         val componentInfo = query.component
 
-        val column = query.generateColumns() ?: query.getColumn() ?: componentInfo.selectColumns
+        val column = query.generateColumns() ?: componentInfo.selectColumns
 
         val sql = "select $column from ${componentInfo.tableName + generateOperationSql(query, true)}"
         return generatePaginationSql(sql, query)
@@ -128,10 +127,7 @@ abstract class BaseSqlDialect : SqlDialect {
         var joinSql = ""
         var sql = ""
 
-
-        query.forceIndex?.let { if (it) joinSql += " FORCE INDEX (PRIMARY) " }
-
-        if (query.component.joinLazy.isInitialized()) joinSql = generateJoinTablesSql(query)
+        if (query.component.joinLazy.isInitialized()) joinSql += generateJoinTablesSql(query.joinTables)
 
         if (query.eqLazy.isInitialized()) sql += generateOperationSql0(query.equalsOperation, "=", and, query)
         if (query.orEqLazy.isInitialized()) sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
@@ -143,7 +139,6 @@ abstract class BaseSqlDialect : SqlDialect {
         if (query.lessEqLazy.isInitialized()) sql += generateOperationSql0(query.lessEqualsOperation, "<=", and, query)
 
         if (query.searchLazy.isInitialized()) sql += generateOperationSql0(query.searchOperation, "LIKE", and, query)
-        if (query.orSearchLazy.isInitialized()) sql += generateOperationSql0(query.orSearchOperation, "LIKE", or, query)
 
         if (query.isNullLazy.isInitialized()) query.isNullList.forEach { sql += "$and $it IS NULL " }
         if (query.isNotNullLazy.isInitialized()) query.isNotNullList.forEach { sql += "$and $it IS NOT NULL " }
@@ -187,22 +182,12 @@ abstract class BaseSqlDialect : SqlDialect {
         return if (useAlias) query.alias + sql else sql
     }
 
-    private fun generateJoinTablesSql(query: Query<*>): String {
+    private fun generateJoinTablesSql(joinTables: MutableList<String>?): String {
 
         val sql = StringBuilder()
-        query.component.joinComponentList.let {
-            it.forEach { clazz ->
 
-                val foreignComponent = TableInfo.getComponent(clazz)
-                val foreignTableName = foreignComponent.tableName
-                val foreignKeyInfo = query.component.getForeignKey(clazz)
-
-                val tableAlias = if (StringUtils.isBlank(query.component.tableAlias)) query.component.tableName else query.component.tableAlias
-                val foreignTableAlias = if (StringUtils.isBlank(foreignComponent.tableAlias)) foreignTableName else foreignComponent.tableAlias
-
-                val segment = " left join $foreignTableName $foreignTableAlias on $tableAlias.${foreignKeyInfo.foreignKey}=$foreignTableAlias.${foreignKeyInfo.joinKey} "
-                sql.append(segment)
-            }
+        joinTables?.forEach { joinTable ->
+            sql.append(joinTable)
         }
 
         return sql.toString()

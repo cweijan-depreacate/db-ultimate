@@ -36,7 +36,6 @@ internal constructor(val componentClass: Class<out T>) {
     private var methodName: String? = null
     var component: ComponentInfo = TableInfo.getComponent(componentClass)
 
-    private var column: String? = null
     private var params: MutableList<Any> = ArrayList()
 
     var offset: Int? = null
@@ -50,8 +49,6 @@ internal constructor(val componentClass: Class<out T>) {
         }
 
     private var page: Int? = null
-    var forceIndex: Boolean? = null
-        private set
     var pageSize: Int? = null
         private set
     var alias: String? = null
@@ -62,6 +59,9 @@ internal constructor(val componentClass: Class<out T>) {
                 else -> ""
             }
         }
+
+    val joinLazy = lazy { return@lazy ArrayList<String>() }
+    val joinTables: MutableList<String> by joinLazy
 
     val orderByLazy = lazy { return@lazy ArrayList<String>() }
     val orderByList: MutableList<String> by orderByLazy
@@ -98,9 +98,6 @@ internal constructor(val componentClass: Class<out T>) {
 
     val searchLazy = lazy { HashMap<String, MutableList<Any>>() }
     val searchOperation: MutableMap<String, MutableList<Any>>by searchLazy
-
-    val orSearchLazy = lazy { HashMap<String, MutableList<Any>>() }
-    val orSearchOperation: MutableMap<String, MutableList<Any>> by orSearchLazy
 
     private val sumLazy = lazy { return@lazy HashMap<String, String>() }
     private val sumMap: MutableMap<String, String>by sumLazy
@@ -150,6 +147,12 @@ internal constructor(val componentClass: Class<out T>) {
         return map[key]
     }
 
+    fun join(sql: String): Query<T> {
+
+        val segment = " join $sql "
+        joinTables.add(segment)
+        return this
+    }
     protected fun convert(column: String): String {
         return TypeAdapter.convertHumpToUnderLine(column)!!
     }
@@ -208,6 +211,9 @@ internal constructor(val componentClass: Class<out T>) {
         return this
     }
 
+    /**
+     * 统计接口增加显示Column
+     */
     fun addShowColumn(column: String): Query<T> {
         showColumnList.add(getColumnName(column))
         return this
@@ -271,14 +277,6 @@ internal constructor(val componentClass: Class<out T>) {
         return this
     }
 
-    fun orSearch(column: String, value: Any?): Query<T> {
-        value?.let {
-            if (value.javaClass == String::class.java && StringUtils.isEmpty(value as String)) return this
-            put(orSearchOperation, column, "%$it%")
-        }
-        return this
-    }
-
     /**
      * great equals then
      */
@@ -289,7 +287,7 @@ internal constructor(val componentClass: Class<out T>) {
     }
 
     /**
-     * less equals then, sql column<=value
+     * less equals then, sql column<=relationClass
      */
     fun le(column: String, value: Any?): Query<T> {
 
@@ -334,21 +332,9 @@ internal constructor(val componentClass: Class<out T>) {
         return this
     }
 
-    fun forceIndex(forceIndex: Boolean?): Query<T> {
-
-        this.forceIndex = forceIndex ?: false
-        return this
-    }
-
     fun page(page: Int?): Query<T> {
 
         this.page = page
-        return this
-    }
-
-    fun setColumn(column: String?): Query<T> {
-
-        column?.let { this.column = convert(column) }
         return this
     }
 
@@ -384,13 +370,6 @@ internal constructor(val componentClass: Class<out T>) {
         orderByList.add("${getColumnName(column)} desc")
 
         return this
-    }
-
-    fun getColumn(): String? {
-
-        if (column.equals("")) return null
-
-        return column
     }
 
     fun listJson(): String? {
@@ -466,7 +445,6 @@ internal constructor(val componentClass: Class<out T>) {
                     field.getAnnotation(GreatEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; ge(fieldName, it) }
                     field.getAnnotation(LessEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; le(fieldName, it) }
                     field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; search(fieldName, it) }
-                    field.getAnnotation(OrSearch::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orSearch(fieldName, it) }
                     field.getAnnotation(OrderBy::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orderBy(fieldName) }
                     if (!haveCondition && component.getColumnInfoByFieldName(fieldName) != null)
                         eq(fieldName, it)
@@ -504,9 +482,9 @@ internal constructor(val componentClass: Class<out T>) {
 
         //计算总页数
         if (pagination.pageSize != null) {
-            pagination.totalPage = pagination.count / pagination.pageSize;
+            pagination.totalPage = pagination.count / pagination.pageSize
             if (pagination.count % pagination.pageSize != 0) {
-                pagination.totalPage++;
+                pagination.totalPage++
             }
         } else pagination.totalPage = 1
         //计算当前页
@@ -538,6 +516,9 @@ internal constructor(val componentClass: Class<out T>) {
         db.delete(this)
     }
 
+    /**
+     * 标注方法名字
+     */
     fun name(methodName: String?) {
         this.methodName = methodName
     }
