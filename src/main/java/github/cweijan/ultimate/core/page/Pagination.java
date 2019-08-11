@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
+ * 分页查询对象
  * @author cweijan
  * @version 2019/7/10/010 9:58
  */
@@ -21,7 +22,7 @@ public class Pagination<T> implements Serializable {
     private Integer pageSize;
     private Integer count;
     private Integer totalPage;
-    private List<T> data;
+    private List<T> list;
 
     /**
      * 设置分页的起始页和结束页
@@ -92,12 +93,12 @@ public class Pagination<T> implements Serializable {
         this.totalPage = totalPage;
     }
 
-    public List<T> getData() {
-        return data;
+    public List<T> getList() {
+        return list;
     }
 
-    public void setData(List<T> data) {
-        this.data = data;
+    public void setList(List<T> list) {
+        this.list = list;
     }
 
     public Integer getStartPage() {

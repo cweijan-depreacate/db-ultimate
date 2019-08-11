@@ -1,6 +1,5 @@
 package github.cweijan.ultimate.test.lucene;
 
-import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.core.lucene.LuceneQuery;
 import github.cweijan.ultimate.core.page.Pagination;
 import github.cweijan.ultimate.test.base.BaseTest;
@@ -13,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author cweijan
@@ -22,17 +22,27 @@ public class TestLuceneService extends BaseTest {
 
     @Test
     public void testAdd() {
+        LuceneQuery.indexService.deleteAllIndex();
+        LuceneObject luceneObject = new LuceneObject();
+        luceneObject.setCreateTime(LocalDateTime.now());
+        luceneObject.setUpdateTime(new Date());
+        luceneObject.setIdNumber(2323799423L);
+        luceneObject.setId(1);
+        luceneObject.setData("测试".getBytes());
+        luceneObject.setHello("cweijan-document-呵呵呵1");
+        luceneObject.setText("cweijan-document-呵呵呵1");
+        luceneObject.setVip(true);
+        luceneObject.setPrice(1231.35);
+        LuceneQuery.index(luceneObject);
 
-        testDeleteAll();
-        LuceneQuery.index(Query.of(Lib.class).eq("id", 1).get());
-        LuceneQuery.index(Query.of(Lib.class).eq("id", 4).get());
-        LuceneQuery.index(Query.of(Lib.class).eq("id", 3).get());
     }
 
     @Test
     public void testSearch() {
-        Pagination<Lib> libPagination = LuceneQuery.of(Lib.class).all().page(0).pageSize(50).orderDescBy("id").list();
-        Log.info(libPagination);
+        Pagination<LuceneObject> luceneObjectPagination = LuceneQuery.of(LuceneObject.class).all().page(0).pageSize(50).orderDescBy("id").list();
+        List<LuceneObject> data = luceneObjectPagination.getList();
+        Log.info(data);
+        data.forEach(d->Log.info(new String(d.getData())));
     }
 
     @Test

@@ -24,7 +24,7 @@ public class BaseTest {
         dbConfig.setUsername("root");
         dbConfig.setPassword("123456");
         dbConfig.setDriver("com.mysql.jdbc.Driver");
-        dbConfig.setTableMode(TableAutoMode.update);
+        dbConfig.setTableMode(TableAutoMode.none);
         dbConfig.setScanPackage("github.cweijan.ultimate");
         Query.init(dbConfig);
         LuceneQuery.init("D:\\temp-index");

@@ -1,6 +1,9 @@
 package github.cweijan.ultimate.core
 
 import github.cweijan.ultimate.annotation.Blob
+import github.cweijan.ultimate.annotation.Exclude
+import github.cweijan.ultimate.annotation.OneToMany
+import github.cweijan.ultimate.annotation.OneToOne
 import github.cweijan.ultimate.annotation.query.*
 import github.cweijan.ultimate.annotation.query.pagination.Page
 import github.cweijan.ultimate.annotation.query.pagination.PageSize
@@ -25,10 +28,10 @@ import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 
 /**
- * @param isAutoConvert convertCamelToUnderScore
+ * Ultimate封装查询对象
  */
 open class Query<T>
-internal constructor(val componentClass: Class<out T>, private var isAutoConvert: Boolean = true) {
+internal constructor(val componentClass: Class<out T>) {
 
     private var methodName: String? = null
     var component: ComponentInfo = TableInfo.getComponent(componentClass)
@@ -39,6 +42,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     var offset: Int? = null
         private set
         get() {
+            if (field != null) return field
             if (this.page != null && this.pageSize != 0) {
                 return if (page!! <= 0) 0 else (page!! - 1) * (pageSize ?: 100)
             }
@@ -58,9 +62,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
                 else -> ""
             }
         }
-
-    val joinLazy = lazy { return@lazy ArrayList<String>() }
-    val joinTables: MutableList<String> by joinLazy
 
     val orderByLazy = lazy { return@lazy ArrayList<String>() }
     val orderByList: MutableList<String> by orderByLazy
@@ -142,21 +143,6 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return array
     }
 
-    fun join(clazz: Class<*>): Query<T> {
-
-        val foreignComponent = TableInfo.getComponent(clazz)
-        val foreignTableName = foreignComponent.tableName
-        val foreignKeyInfo = component.getForeignKey(clazz)
-
-        val tableAlias = if (StringUtils.isBlank(component.tableAlias)) component.tableName else component.tableAlias
-        val foreignTableAlias = if (StringUtils.isBlank(foreignComponent.tableAlias)) foreignTableName else foreignComponent.tableAlias
-
-        val segment = " join $foreignTableName $foreignTableAlias on $tableAlias.${foreignKeyInfo.foreignKey}=$foreignTableAlias.${foreignKeyInfo.joinKey} "
-        joinTables.add(segment)
-
-        return this
-    }
-
     private fun getOperationList(map: MutableMap<String, MutableList<Any>>, key: String): MutableList<Any>? {
 
         map[key] = map[key] ?: ArrayList()
@@ -165,17 +151,11 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     protected fun convert(column: String): String {
-        var covertColumn = column
-
-        if (isAutoConvert) {
-            covertColumn = TypeAdapter.convertHumpToUnderLine(covertColumn)!!
-        }
-
-        return covertColumn
+        return TypeAdapter.convertHumpToUnderLine(column)!!
     }
 
-    fun statistic(): List<Map<String, Any?>> {
-        return db.executeSqlOfMapList(db.sqlGenerator.generateSelectSql(this), this.consumeParams())
+    fun statistic(): List<Map<String, Any>> {
+        return db.findBySql(db.sqlGenerator.generateSelectSql(this), this.consumeParams(),Map::class.java) as List<Map<String, Any>>
     }
 
     @JvmOverloads
@@ -309,7 +289,7 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     }
 
     /**
-     * less equals then
+     * less equals then, sql column<=value
      */
     fun le(column: String, value: Any?): Query<T> {
 
@@ -471,7 +451,12 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
                 var fieldName = field.name
                 field.get(paramObject)?.let {
                     var haveCondition = false
-                    field.getAnnotation(NotQuery::class.java)?.run { return@let }
+                    field.getAnnotation(Exclude::class.java)?.run { return@let }
+                    field.getAnnotation(OneToOne::class.java)?.run { return@let }
+                    field.getAnnotation(OneToMany::class.java)?.run { return@let }
+                    if (field.type == String::class.java) {
+                        if (it as String == "") return@let
+                    }
                     field.getAnnotation(Page::class.java)?.run { haveCondition = true; page(it.toString().toInt()) }
                     field.getAnnotation(PageSize::class.java)?.run { haveCondition = true; pageSize(it.toString().toInt()) }
                     field.getAnnotation(Equals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; eq(fieldName, it) }
@@ -497,20 +482,44 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         return db.find(this)
     }
 
-    /**
-     * @param forceIndex 是否强制使用索引，可加快count速度
-     */
-    @JvmOverloads
-    fun pageList(forceIndex: Boolean = false): Pagination<T> {
+    fun pageList(page: Int?, pageSize: Int?): Pagination<T> {
+        page?.let { this.page = page }
+        pageSize?.let { this.pageSize = pageSize }
+        return pageList()
+    }
+
+    fun offsetList(offset: Int?, pageSize: Int?): Pagination<T> {
+        offset?.let { this.offset = offset }
+        pageSize?.let { this.pageSize = pageSize }
+        return pageList()
+    }
+
+
+    fun pageList(): Pagination<T> {
 
         methodName?.run { Log.debug("Execute method $methodName ") }
         val pagination = Pagination<T>()
-        pagination.count = db.getCount(this.forceIndex(forceIndex))
+        pagination.count = db.getCount(this)
         pagination.pageSize = this.pageSize
-        pagination.currentPage = this.page ?: 1
-        pagination.startPage = this.page ?: 1
 
-        pagination.data = db.find(this)
+        //计算总页数
+        if (pagination.pageSize != null) {
+            pagination.totalPage = pagination.count / pagination.pageSize;
+            if (pagination.count % pagination.pageSize != 0) {
+                pagination.totalPage++;
+            }
+        } else pagination.totalPage = 1
+        //计算当前页
+        pagination.currentPage = this.page ?: this.offset?.run {
+            when {
+                this == 0 -> 1
+                pagination.count % this == 0 -> pagination.count / this
+                else -> (pagination.count / this) + 1
+            }
+        } ?: 1
+        pagination.startPage = pagination.currentPage
+
+        pagination.list = db.find(this)
         return pagination
     }
 
@@ -536,17 +545,22 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
     fun generateColumns(): String? {
 
         var columnSql = ""
-        if (countLazy.isInitialized()) countMap.forEach { columnName, showColumnName -> columnSql += "COUNT(DISTINCT $columnName) $showColumnName," }
-        if (sumLazy.isInitialized()) sumMap.forEach { columnName, showColumnName -> columnSql += "SUM($columnName) $showColumnName," }
-        if (avgLazy.isInitialized()) avgMap.forEach { columnName, showColumnName -> columnSql += "AVG($columnName) $showColumnName," }
-        if (minLazy.isInitialized()) minMap.forEach { columnName, showColumnName -> columnSql += "MIN($columnName) $showColumnName," }
-        if (maxLazy.isInitialized()) maxMap.forEach { columnName, showColumnName -> columnSql += "MAX($columnName) $showColumnName," }
+        if (countLazy.isInitialized()) countMap.forEach { (columnName, showColumnName) -> columnSql += "COUNT(DISTINCT $columnName) $showColumnName," }
+        if (sumLazy.isInitialized()) sumMap.forEach { (columnName, showColumnName) -> columnSql += "SUM($columnName) $showColumnName," }
+        if (avgLazy.isInitialized()) avgMap.forEach { (columnName, showColumnName) -> columnSql += "AVG($columnName) $showColumnName," }
+        if (minLazy.isInitialized()) minMap.forEach { (columnName, showColumnName) -> columnSql += "MIN($columnName) $showColumnName," }
+        if (maxLazy.isInitialized()) maxMap.forEach { (columnName, showColumnName) -> columnSql += "MAX($columnName) $showColumnName," }
         if (showColumnLazy.isInitialized()) showColumnList.forEach { columnName -> columnSql += "$columnName," }
         if (columnSql.lastIndexOf(",") != -1) {
             columnSql = columnSql.substring(0, columnSql.lastIndexOf(","))
         }
 
         return if (columnSql == "") null else columnSql
+    }
+
+    fun offset(offset: Int?): Query<T> {
+        this.offset = offset
+        return this
     }
 
     companion object {
@@ -562,9 +576,9 @@ internal constructor(val componentClass: Class<out T>, private var isAutoConvert
         @JvmStatic
         fun init(dbConfig: DbConfig) {
             db = DbUltimate(dbConfig)
-//            if (dbConfig.develop) {
-//                HotSwapSupport.startHotSwapListener(dbConfig)
-//            }
+            if (dbConfig.develop) {
+                TableInfo.enableDevelopMode()
+            }
 
             ComponentInfo.init(GroupFunction::class.java)
             dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }

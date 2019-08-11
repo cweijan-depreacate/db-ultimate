@@ -16,20 +16,17 @@ class ColumnInfo {
     var nullable: Boolean = true
     var autoIncrement: Boolean = false
     var isBlob: Boolean = false
-    var unique: Boolean=false
-    var comment: String?=null
-    var defaultValue: String?=null
-    var dateFormat: String = "yyyy-MM-dd HH:mm:ss"
-    var excludeInsert: Boolean = false
-    var excludeUpdate: Boolean = false
-    var excludeResult: Boolean = false
-    var excludeTable: Boolean = false
-    var isPrimary:Boolean=false
+    var unique: Boolean = false
+    var comment: String? = null
+    var defaultValue: String? = null
+    lateinit var dateFormat: String
+    var exclude: Boolean = false
+    var isPrimary: Boolean = false
 
-    companion object{
+    companion object {
 
         @JvmStatic
-        fun init(componentInfo: ComponentInfo, field: Field, camelcaseToUnderLine: Boolean): ColumnInfo {
+        fun init(componentInfo: ComponentInfo, field: Field) {
 
             field.isAccessible = true
 
@@ -39,23 +36,22 @@ class ColumnInfo {
 
             //生成exclude信息
             field.getAnnotation(Exclude::class.java)?.run {
-                columnInfo.excludeInsert = this.excludeInsert
-                columnInfo.excludeUpdate = this.excludeUpdate
-                columnInfo.excludeResult = this.excludeResult
-                columnInfo.excludeTable = this.excludeTable
+                columnInfo.exclude = true
             }
-            field.getAnnotation(ExcludeResult::class.java)?.run {
-                columnInfo.excludeResult = this.value
+
+            //生成日期格式化信息
+            val jsonFormat = field.getAnnotation(JsonFormat::class.java)
+            if(jsonFormat==null){
+                if(TypeAdapter.DATE_TYPE.contains(field.type.name)){
+                    columnInfo.dateFormat =TypeAdapter.getDefaultFormat(field.type)
+                }
+            }else{
+                columnInfo.dateFormat = jsonFormat.pattern
             }
 
             //生成日期格式化信息
             field.getAnnotation(JsonFormat::class.java)?.run {
-                columnInfo.dateFormat = this.pattern
-            }
-
-            //生成日期格式化信息
-            field.getAnnotation(JsonFormat::class.java)?.run {
-                columnInfo.isBlob =true
+                columnInfo.isBlob = true
             }
 
             //生成column info
@@ -76,17 +72,15 @@ class ColumnInfo {
             }
             componentInfo.excelHeaderFieldMap[columnInfo.excelHeader] = field
 
-            if (camelcaseToUnderLine) {
-                columnInfo.columnName = TypeAdapter.convertHumpToUnderLine(columnInfo.columnName)!!
-            }
+            columnInfo.columnName = TypeAdapter.convertHumpToUnderLine(columnInfo.columnName)!!
 
             //generate primary key column info
             val primaryAnnotation = field.getAnnotation(Primary::class.java)
             if (primaryAnnotation != null || (field.name == "id" && StringUtils.isEmpty(componentInfo.primaryKey))) {
                 componentInfo.primaryKey = columnInfo.columnName
                 componentInfo.primaryField = field
-                columnInfo.isPrimary=true
-                columnInfo.nullable=false
+                columnInfo.isPrimary = true
+                columnInfo.nullable = false
                 primaryAnnotation?.run {
                     columnInfo.autoIncrement = this.autoIncrement
                     componentInfo.autoIncrement = this.autoIncrement
@@ -98,21 +92,26 @@ class ColumnInfo {
             }
 
             //generate foreign key column info
-            field.getAnnotation(ForeignKey::class.java)?.run {
-                var joinColumnName = joinColumn
-                if (true) {
-                    joinColumnName = TypeAdapter.convertHumpToUnderLine(joinColumn)!!
-                }
-                if (autoJoin) {
-                    componentInfo.autoJoinComponentList.add(value.java)
-                }
+            field.getAnnotation(OneToOne::class.java)?.run {
+                val joinColumnName = TypeAdapter.convertHumpToUnderLine(joinColumn)!!
+                componentInfo.joinComponentList.add(value.java)
                 val foreignKeyInfo = ForeignKeyInfo(columnInfo.columnName, joinColumnName)
-                componentInfo.foreignKeyMap.put(value.java, foreignKeyInfo)
+                componentInfo.foreignKeyMap[value.java] = foreignKeyInfo
+                columnInfo.exclude = true
+            }
+            field.getAnnotation(OneToMany::class.java)?.run {
+                if(!Collection::class.java.isAssignableFrom(field.type)){
+                    throw RuntimeException("OneToMany annotation only annotate Collection!")
+                }
+
+                val joinColumnName = TypeAdapter.convertHumpToUnderLine(relationColumn)!!
+                componentInfo.oneToManyList.add(OneToManyInfo(field,joinColumnName,relationClass))
+                columnInfo.exclude = true
             }
             componentInfo.fieldColumnInfoMap[field.name] = columnInfo
             componentInfo.columnInfoMap[columnInfo.columnName] = columnInfo
 
-            return columnInfo
+//            return columnInfo
         }
 
     }

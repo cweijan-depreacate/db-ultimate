@@ -6,12 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- 外键注解
+ * @author cweijan
+ * @version 2019/8/7 14:46
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ForeignKey{
-
+public @interface OneToOne {
     /**
      要关联的表实体Class,默认关联主键
      */
@@ -21,10 +21,5 @@ public @interface ForeignKey{
      外键名称
      */
     String joinColumn() default "";
-
-    /**
-     是否自动关联查询
-     */
-    boolean autoJoin() default false;
 
 }

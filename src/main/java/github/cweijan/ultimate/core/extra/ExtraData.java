@@ -3,7 +3,6 @@ package github.cweijan.ultimate.core.extra;
 import github.cweijan.ultimate.annotation.Column;
 import github.cweijan.ultimate.annotation.Primary;
 import github.cweijan.ultimate.annotation.Table;
-import org.springframework.context.annotation.ComponentScan;
 
 import java.time.LocalDateTime;
 
@@ -18,15 +17,6 @@ public class ExtraData {
     private String typeName;
     private LocalDateTime createDate;
     private LocalDateTime updateDate;
-    private Integer exprieMinute;
-
-    public Integer getExprieMinute() {
-        return exprieMinute;
-    }
-
-    public void setExprieMinute(Integer exprieMinute) {
-        this.exprieMinute = exprieMinute;
-    }
 
     public LocalDateTime getCreateDate() {
         return createDate;

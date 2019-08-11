@@ -13,9 +13,16 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class SelectTest extends BaseTest{
+
+    @Test
+    public void testGetById(){
+
+        Lib id = Query.of(Lib.class).eq("id", 8).get();
+        Log.info(id);
+
+    }
 
     @Test
     public void testGetByEquals(){
@@ -50,17 +57,6 @@ public class SelectTest extends BaseTest{
         List<Lib> msd = Query.of(Lib.class).isNotNull("message").list();
         System.out.println(msd);
 
-
-    }
-
-
-    @Test
-    public void testGetMap(){
-
-        String sql = "select * from rh_admin";
-        Map<String, Object> result =Query.db.executeSqlOfMap(sql);
-
-        Log.info(result + "");
 
     }
 
@@ -108,14 +104,6 @@ public class SelectTest extends BaseTest{
     }
 
     @Test
-    public void testChildenClass(){
-
-        //        AdminC admin = Query.of(AdminC.class).eq("id", 1).get();
-        //        Log.info(admin);
-
-    }
-
-    @Test
     public void testQuery(){
 
         Admin admin = new Admin();
@@ -134,7 +122,7 @@ public class SelectTest extends BaseTest{
     @Test
     public void testJoin(){
 
-        List<Admin> adminList = Query.of(Admin.class).join(Lib.class).eq("ad.id", "1").list();
+        List<Admin> adminList = Query.of(Admin.class).eq("ad.id", "1").list();
 
         Log.info(adminList);
 

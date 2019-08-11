@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.core.lucene
 
+import github.cweijan.ultimate.convert.JavaType
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.lucene.type.LuceneDocument
 import github.cweijan.ultimate.core.lucene.type.LuceneField
@@ -14,25 +15,15 @@ import org.apache.lucene.search.SortField
  */
 object LuceneHelper {
 
-    private val cacheMap = HashMap<Class<*>, List<java.lang.reflect.Field>>()
-    private fun getSearchFields(componentClass: Class<*>): List<java.lang.reflect.Field> {
-
-        if (cacheMap.containsKey(componentClass)) return cacheMap[componentClass]!!
-
-        val luceneSearch = componentClass.getAnnotation(LuceneDocument::class.java)
-        cacheMap[componentClass] = componentClass.declaredFields.filter { it.getAnnotation(LuceneField::class.java) != null || luceneSearch.value.contains(it.name) }
-        return cacheMap[componentClass]!!
-    }
-
     fun objectToDocument(documentObject: Any?): Document? {
 
         documentObject ?: return null
 
         val luceneDocument = documentObject.javaClass.getAnnotation(LuceneDocument::class.java)
-                ?: throw RuntimeException("索引类必须配置LuceneSearch注解!")
+                ?: throw RuntimeException("索引类必须配置LuceneDocument注解!")
 
         val document = Document()
-        for (field in getSearchFields(documentObject::class.java)) {
+        for (field in documentObject.javaClass.declaredFields) {
 
             field.isAccessible = true
 
@@ -46,16 +37,26 @@ object LuceneHelper {
                 val tokenize = luceneField?.tokenize ?: luceneDocument.tokenize
                 val noTokenize = if (luceneField != null && !luceneField.tokenize) true else !luceneDocument.tokenize
                 when {
-                    //TODO 浮点数现在会有问题
-                    TypeAdapter.NUMBER_TYPE.contains(field.type.name) || TypeAdapter.LUCENE_DATE_TYPE.contains(field.type.name) -> {
-                        document.add(NumericDocValuesField(fieldName, fieldValue.toLong()))
-                        document.add(StoredField(fieldName, fieldValue.toLong()))
+                    mutableListOf("float", JavaType.Float).contains(field.type.name) -> {
+                        document.add(FloatDocValuesField(fieldName, fieldValue as Float))
+                        document.add(StoredField(fieldName, fieldValue))
                     }
-                    tokenize -> document.add(TextField(fieldName, fieldValue, store))
-                    noTokenize -> document.add(StringField(fieldName, fieldValue, store))
+                    mutableListOf("double", JavaType.Double).contains(field.type.name) -> {
+                        document.add(DoubleDocValuesField(fieldName, fieldValue as Double))
+                        document.add(StoredField(fieldName, fieldValue))
+                    }
+                    TypeAdapter.NUMBER_TYPE.contains(field.type.name) || JavaType.DATE_TYPE.contains(field.type.name) -> {
+                        document.add(NumericDocValuesField(fieldName, fieldValue.toString().toLong()))
+                        document.add(StoredField(fieldName, fieldValue.toString().toLong()))
+                    }
+                    JavaType.BYTE_ARRAY_TYPE.contains(field.type.name)  -> {
+                        document.add(StoredField(fieldName, fieldValue as ByteArray))
+                    }
+                    tokenize -> document.add(TextField(fieldName, fieldValue.toString(), store))
+                    noTokenize -> document.add(StringField(fieldName, fieldValue.toString(), store))
                 }
             } else {
-                document.add(StoredField(fieldName, fieldValue))
+                document.add(StoredField(fieldName, fieldValue.toString()))
             }
 
         }
@@ -64,11 +65,11 @@ object LuceneHelper {
     }
 
     fun getClassKey(clazz: Class<*>, key: String): String {
-        return clazz.name + "_" + key
+        return clazz.simpleName + "_" + key
     }
 
     fun getFieldName(clazz: Class<*>, fieldKey: String): String {
-        return getClassKey(clazz, fieldKey).replace(clazz.name + "_", "")
+        return getClassKey(clazz, fieldKey).replace(clazz.simpleName + "_", "")
     }
 
     fun <T> documentToObject(document: Document?, objectClass: Class<T>): T? {
@@ -77,12 +78,16 @@ object LuceneHelper {
 
         val data = HashMap<String, Any?>()
         for (field in document.fields) {
-            val fieldName = field.name().replace(objectClass.name + "_", "")
+            val fieldName = getFieldName(objectClass, field.name())
             val objectField = objectClass.getDeclaredField(fieldName)
-            if (TypeAdapter.LUCENE_DATE_TYPE.contains(objectField.type.name)) {
-                data[fieldName] = DateUtils.convertLongToDate(field.numericValue().toLong(), objectField.type)
-            } else {
-                data[fieldName] = field.stringValue()
+            when (objectField.type.name) {
+                "java.time.LocalDateTime", "java.util.Date" -> {
+                    data[fieldName] = DateUtils.convertLongToDate(field.numericValue().toLong(), objectField.type)
+                }
+                JavaType.byteArray, JavaType.ByteArray ->{
+                    data[fieldName] = field.binaryValue().bytes
+                }
+                else -> data[fieldName] = field.stringValue()
             }
         }
 
@@ -95,7 +100,7 @@ object LuceneHelper {
         columnField.isAccessible = true
         return when {
             TypeAdapter.NUMBER_TYPE.contains(columnField.type.name) ||
-                    TypeAdapter.LUCENE_DATE_TYPE.contains(columnField.type.name) -> SortField.Type.LONG
+                    JavaType.DATE_TYPE.contains(columnField.type.name) -> SortField.Type.LONG
             else -> throw java.lang.RuntimeException("该Field:$fieldName 不支持排序！")
         }
     }

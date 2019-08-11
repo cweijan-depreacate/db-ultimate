@@ -1,11 +1,18 @@
 package github.cweijan.ultimate.core.dialect
 
 import github.cweijan.ultimate.annotation.Blob
+import github.cweijan.ultimate.annotation.CreateDate
+import github.cweijan.ultimate.annotation.UpdateDate
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.core.component.TableInfo
+import github.cweijan.ultimate.exception.PrimaryKeyNotExistsException
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
+import github.cweijan.ultimate.util.DateUtils
 import github.cweijan.ultimate.util.Json
+import github.cweijan.ultimate.util.StringUtils
+import java.util.*
+import kotlin.collections.ArrayList
 
 abstract class BaseSqlDialect : SqlDialect {
 
@@ -14,15 +21,23 @@ abstract class BaseSqlDialect : SqlDialect {
         val componentInfo = TableInfo.getComponent(component.javaClass)
         var columns = ""
         var values = ""
-        val params = ArrayList<Any>();
+        val params = ArrayList<Any>()
         for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
             field.isAccessible = true
-            if (componentInfo.isInsertExcludeField(field)) continue
-            field.get(component)?.run {
+            if (componentInfo.isExcludeField(field)) continue
+            val fieldValue = field.get(component)
+            fieldValue?.run {
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
                 values += "?,"
                 field.getAnnotation(Blob::class.java)?.let { params.add(Json.toJson(this).toByteArray()); return@run }
                 params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, this))
+            }
+            if (fieldValue == null) {
+                field.getAnnotation(CreateDate::class.java)?.run {
+                    columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
+                    values += "?,"
+                    params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, DateUtils.toDateString(Date(), this.value)))
+                }
             }
         }
         if (columns.lastIndexOf(",") != -1) {
@@ -36,23 +51,32 @@ abstract class BaseSqlDialect : SqlDialect {
     }
 
     @Throws(IllegalAccessException::class)
-    override fun generateUpdateSqlByObject(component: Any): SqlObject {
+    override fun generateUpdateSqlByObject(component: Any, byColumn: String?): SqlObject {
 
         val componentInfo = TableInfo.getComponent(component.javaClass)
-        val primaryValue = componentInfo.getPrimaryValue(component)
-        primaryValue ?: throw PrimaryValueNotSetException("primary value must set!")
+        val fieldName = byColumn ?: componentInfo.primaryField?.name
+        ?: throw PrimaryKeyNotExistsException("invoke update must annotation table primary key!")
+        val conditionFieldValue = componentInfo.getValueByFieldName(component, fieldName)
+                ?: throw PrimaryValueNotSetException("update value must set!")
         var sql = "UPDATE ${componentInfo.tableName} a set "
         val params = ArrayList<Any>();
 
         for (field in TypeAdapter.getAllField(component.javaClass)) {
             field.isAccessible = true
-            if (componentInfo.isUpdateExcludeField(field)) {
+            if (componentInfo.isExcludeField(field) || field.name.equals(fieldName)) {
                 continue
             }
-            field.get(component)?.run {
+            val fieldValue = field.get(component)
+            fieldValue?.run {
                 sql += "${componentInfo.getColumnNameByFieldName(field.name)}=?,"
                 field.getAnnotation(Blob::class.java)?.let { params.add(Json.toJson(this).toByteArray()); return@run }
                 params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, this))
+            }
+            if (fieldValue == null) {
+                field.getAnnotation(UpdateDate::class.java)?.run {
+                    sql += "${componentInfo.getColumnNameByFieldName(field.name)}=?,"
+                    params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, DateUtils.toDateString(Date(), this.value)))
+                }
             }
         }
 
@@ -61,8 +85,8 @@ abstract class BaseSqlDialect : SqlDialect {
         } else {
             sql = sql.substring(0, sql.lastIndexOf(","))
         }
-        sql += " WHERE ${componentInfo.primaryKey}=?"
-        params.add(primaryValue)
+        sql += " WHERE ${componentInfo.getColumnNameByFieldName(fieldName)}=?"
+        params.add(conditionFieldValue)
 
         return SqlObject(sql, params)
     }
@@ -75,7 +99,7 @@ abstract class BaseSqlDialect : SqlDialect {
         return "select COUNT(*) count from ${query.component.tableName} ${generateOperationSql(query, true)}"
     }
 
-    override fun <T> generateUpdateSqlByObject(query: Query<T>): String {
+    override fun <T> generateUpdateSqlByQuery(query: Query<T>): String {
         var sql = "UPDATE ${query.component.tableName} a set "
 
         if (!query.updateLazy.isInitialized()) throw RuntimeException("Not update column!")
@@ -107,8 +131,7 @@ abstract class BaseSqlDialect : SqlDialect {
 
         query.forceIndex?.let { if (it) joinSql += " FORCE INDEX (PRIMARY) " }
 
-        if (query.component.autoJoinLazy.isInitialized()) query.component.autoJoinComponentList.let { it.forEach { autoJoinComponent -> query.join(autoJoinComponent) } }
-        if (query.joinLazy.isInitialized()) joinSql = generateJoinTablesSql(query.joinTables)
+        if (query.component.joinLazy.isInitialized()) joinSql = generateJoinTablesSql(query)
 
         if (query.eqLazy.isInitialized()) sql += generateOperationSql0(query.equalsOperation, "=", and, query)
         if (query.orEqLazy.isInitialized()) sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
@@ -147,7 +170,7 @@ abstract class BaseSqlDialect : SqlDialect {
             sql = " WHERE$sql"
         }
 
-        sql = joinSql+sql
+        sql = joinSql + sql
 
         if (query.groupLazy.isInitialized()) query.groupByList.forEachIndexed { index, groupBy ->
             sql += if (index == 0) " GROUP BY $groupBy" else ",$groupBy"
@@ -164,12 +187,22 @@ abstract class BaseSqlDialect : SqlDialect {
         return if (useAlias) query.alias + sql else sql
     }
 
-    private fun generateJoinTablesSql(joinTableSqls: MutableList<String>?): String {
+    private fun generateJoinTablesSql(query: Query<*>): String {
 
         val sql = StringBuilder()
+        query.component.joinComponentList.let {
+            it.forEach { clazz ->
 
-        joinTableSqls?.forEach { joinTableSql ->
-            sql.append(joinTableSql)
+                val foreignComponent = TableInfo.getComponent(clazz)
+                val foreignTableName = foreignComponent.tableName
+                val foreignKeyInfo = query.component.getForeignKey(clazz)
+
+                val tableAlias = if (StringUtils.isBlank(query.component.tableAlias)) query.component.tableName else query.component.tableAlias
+                val foreignTableAlias = if (StringUtils.isBlank(foreignComponent.tableAlias)) foreignTableName else foreignComponent.tableAlias
+
+                val segment = " left join $foreignTableName $foreignTableAlias on $tableAlias.${foreignKeyInfo.foreignKey}=$foreignTableAlias.${foreignKeyInfo.joinKey} "
+                sql.append(segment)
+            }
         }
 
         return sql.toString()

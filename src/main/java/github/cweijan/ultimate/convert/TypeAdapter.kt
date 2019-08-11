@@ -13,17 +13,16 @@ object TypeAdapter {
 
     val NUMBER_TYPE = mutableListOf("byte", "short", "int", "float", "double", "long", JavaType.Byte, JavaType.Integer, JavaType.Short, JavaType.Float, JavaType.Double, JavaType.Long)
     private val BOOLEAN_TYPE = mutableListOf(JavaType.Boolean, "boolean")
-    private val BLOB_TYPE = mutableListOf(JavaType.byteArray)
     val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
     val DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
-    val LUCENE_DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalDateTime", "java.util.Date")
+    private val BIG_TYPE: MutableList<String> = mutableListOf("java.math.BigInteger","java.math.BigDecimal")
 
     @JvmStatic
     fun isAdapterType(type: Class<*>): Boolean {
         val typeName = type.name
         return NUMBER_TYPE.contains(typeName) || CHARACTER_TYPE.contains(typeName) || DATE_TYPE.contains(typeName)
-                || BOOLEAN_TYPE.contains(typeName) || BLOB_TYPE.contains(typeName) || type.isEnum
-                || type.name == "java.math.BigInteger"
+                || BOOLEAN_TYPE.contains(typeName) || JavaType.BYTE_ARRAY_TYPE.contains(typeName) || type.isEnum
+                || BIG_TYPE.contains(typeName)
     }
 
     fun getAllField(componentClass: Class<*>?): List<Field> {
@@ -75,17 +74,13 @@ object TypeAdapter {
             return null
         }
 
+        if(Collection::class.java.isAssignableFrom(fieldType)){
+            val valueType = getGenericType(field)
+            return Json.parseCollection(javaObject.toString(),fieldType as Class<Collection<*>>,valueType)
+        }
+
         field.getAnnotation(Blob::class.java)?.run {
-            val valueType = try {
-                val listActualTypeArguments = (field.genericType as ParameterizedType).actualTypeArguments
-                if (listActualTypeArguments != null && listActualTypeArguments.isNotEmpty()) {
-                    listActualTypeArguments[0] as Class<*>
-                } else {
-                    Any::class.java
-                }
-            } catch (e: Exception) {
-                Any::class.java
-            }
+            val valueType = getGenericType(field)
             javaObject as ByteArray
             return if (field.type.isAssignableFrom(List::class.java)) {
                 Json.parseList(String(javaObject), valueType)
@@ -106,6 +101,19 @@ object TypeAdapter {
         return javaObject
     }
 
+    private fun getGenericType(field: Field): Class<out Any> {
+        return try {
+            val listActualTypeArguments = (field.genericType as ParameterizedType).actualTypeArguments
+            if (listActualTypeArguments != null && listActualTypeArguments.isNotEmpty()) {
+                listActualTypeArguments[0] as Class<*>
+            } else {
+                Any::class.java
+            }
+        } catch (e: Exception) {
+            Any::class.java
+        }
+    }
+
     /**
      * convertAdapter
      */
@@ -117,31 +125,47 @@ object TypeAdapter {
             return (fieldValue as Enum<*>).name
         }
 
+        if(fieldValue is Collection<*>){
+            return Json.toJson(fieldValue)
+        }
+
         if (DATE_TYPE.contains(fieldValue::class.java.name)) {
-            val dateFormat: String = TableInfo.getComponent(componentClass, true)?.getColumnInfoByFieldName(fieldName)?.dateFormat
-                    ?: DateUtils.DEFAULT_PATTERN
+            val columnInfo = TableInfo.getComponent(componentClass, true)?.getColumnInfoByFieldName(fieldName)
+            val dateFormat=if(columnInfo?.fieldType==fieldValue::class.java){
+                columnInfo.dateFormat
+            }else{
+                getDefaultFormat(fieldValue::class.java)
+            }
             return DateUtils.toDateString(fieldValue, dateFormat) ?: fieldValue
         }
 
         return fieldValue
     }
 
+    fun getDefaultFormat(type: Class<*>): String {
+        return when(type.name){
+            "java.time.LocalDate"-> "yyyy-MM-dd"
+            "java.time.LocalTime"-> "HH:mm:ss"
+            else -> "yyyy-MM-dd HH:mm:ss"
+        }
+    }
+
     /**
      * convertAdapter
      */
     @JvmStatic
-    fun convertLuceneAdapter(fieldValue: Any?): String? {
+    fun convertLuceneAdapter(fieldValue: Any?): Any? {
         if (fieldValue == null) return null
 
         if (fieldValue::class.java.isEnum) {
             return (fieldValue as Enum<*>).name
         }
 
-        if (LUCENE_DATE_TYPE.contains(fieldValue::class.java.name)) {
+        if (JavaType.DATE_TYPE.contains(fieldValue::class.java.name)) {
             return DateUtils.convertDateToLong(fieldValue)?.toString()
         }
 
-        return fieldValue.toString()
+        return fieldValue
     }
 
     fun contentWrapper(contentObject: Any?): String {

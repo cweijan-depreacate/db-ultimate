@@ -4,7 +4,6 @@ import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.core.extra.ExtraDataService;
 import github.cweijan.ultimate.core.lucene.LuceneQuery;
 import github.cweijan.ultimate.core.page.Pagination;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,32 +34,94 @@ public abstract class ServiceInject<T> implements InitializingBean {
         return LuceneQuery.of(componentClass);
     }
 
-    public List<T> findByExample(Object... examples) {
+    public List<T> findByOBject(Object... objects) {
         Query<T> query = getQuery();
-        for (Object example : examples) {
+        for (Object example : objects) {
             query.read(example);
         }
         return query.list();
     }
 
+    /**
+     * 对指定列进行条件查询
+     */
     @Transactional(readOnly = true)
     public List<T> findBy(String column, Object value) {
         return getQuery().eq(column, value).list();
     }
 
+    /**
+     * 对指定列进行查询,并可进行分页
+     */
     @Transactional(readOnly = true)
     public List<T> findBy(String column, Object value, Integer page, Integer pageSize) {
         return getQuery().eq(column, value).page(page).pageSize(pageSize).list();
     }
 
+    /**
+     * 获取所有数据
+     */
     @Transactional(readOnly = true)
     public List<T> findAll() {
         return getQuery().list();
     }
 
+    /**
+     * 分页查询
+     *
+     * @param page     页码
+     * @param pageSize 每页数量
+     */
     @Transactional(readOnly = true)
-    public Pagination<T> findByPage(Integer page, Integer pageSize) {
+    public Pagination<T> findAllByPage(Integer page, Integer pageSize) {
         return Query.of(componentClass).page(page).pageSize(pageSize).pageList();
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param page   页码
+     * @param pageSize 每页数量
+     * @param objects  查询参数,自动使用readObject读取
+     */
+    @Transactional(readOnly = true)
+    public Pagination<T> findByPage(Integer page, Integer pageSize, Object... objects) {
+        Query<T> query = Query.of(componentClass);
+        if (objects != null) {
+            for (Object object : objects) {
+                query.read(object);
+            }
+        }
+        return query.page(page).pageSize(pageSize).pageList();
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param offset   需要跳过的数据量
+     * @param pageSize 每页数量
+     */
+    @Transactional(readOnly = true)
+    public Pagination<T> findAllByOffset(Integer offset, Integer pageSize) {
+        return Query.of(componentClass).offset(offset).pageSize(pageSize).pageList();
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param offset   需要跳过的数据量
+     * @param pageSize 每页数量
+     * @param objects  查询参数,自动使用readObject读取
+     */
+    @Transactional(readOnly = true)
+    public Pagination<T> findByOffset(Integer offset, Integer pageSize, Object... objects) {
+        Query<T> query = Query.of(componentClass);
+        if (objects != null) {
+            for (Object object : objects) {
+                query.read(object);
+            }
+        }
+        return query.offset(offset).pageSize(pageSize).pageList();
     }
 
     @Transactional(readOnly = true)
@@ -69,9 +130,9 @@ public abstract class ServiceInject<T> implements InitializingBean {
     }
 
     @Transactional(readOnly = true)
-    public T getByExample(Object example) {
+    public T getByOBject(Object object) {
 
-        List<T> list = getQuery().read(example).list();
+        List<T> list = getQuery().read(object).list();
         return list.size() > 0 ? list.get(0) : null;
     }
 
@@ -87,7 +148,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
     }
 
     @Transactional
-    public void ignoreSave(T component) {
+    public void saveIgnore(T component) {
 
         Query.db.ignoreInsert(component);
     }
@@ -100,6 +161,11 @@ public abstract class ServiceInject<T> implements InitializingBean {
     @Transactional
     public void update(T component) {
         Query.db.update(component);
+    }
+
+    @Transactional
+    public void updateBy(String columnName,T component) {
+        Query.db.updateBy(columnName,component);
     }
 
     @Transactional
@@ -132,13 +198,25 @@ public abstract class ServiceInject<T> implements InitializingBean {
         return getQuery().count();
     }
 
+    public List<T> findBySql(String sql){
+        return findBySql(sql,null);
+    }
+
+    public List<T> findBySql(String sql,Object[] params){
+        return Query.db.findBySql(sql,params,componentClass);
+    }
+
+    public T getBySql(String sql){
+        return getBySql(sql,null);
+    }
+
+    public T getBySql(String sql,Object[] params){
+        return Query.db.getBySql(sql,params,componentClass);
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
         ServiceMap.mapService(componentClass.getName(), this);
-    }
-
-    public static void copyProperties(Object target, Object source) {
-        BeanUtils.copyProperties(target, source);
     }
 
 }

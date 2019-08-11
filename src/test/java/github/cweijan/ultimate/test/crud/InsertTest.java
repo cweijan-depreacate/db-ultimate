@@ -36,6 +36,8 @@ public class InsertTest extends BaseTest{
     public void testInsertLib(){
 
         Lib lib = new Lib();
+
+//        lib.setList(Collections.singletonList("hello"));
         //        lib.setId(12);
         lib.setMessage("cweijan");
         Query.db.insert(lib);

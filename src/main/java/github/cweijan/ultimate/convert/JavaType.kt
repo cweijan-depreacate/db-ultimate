@@ -8,7 +8,10 @@ object JavaType {
     const val Long = "java.lang.Long"
     const val Byte = "java.lang.Byte"
     const val byteArray = "[B"
+    const val ByteArray = "[Ljava.lang.Byte;"
     const val Character = "java.lang.Character"
     const val String = "java.lang.String"
-    const val Boolean="java.lang.Boolean"
+    const val Boolean = "java.lang.Boolean"
+    val DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalDateTime", "java.util.Date")
+    val BYTE_ARRAY_TYPE: MutableList<String> = mutableListOf(byteArray, ByteArray)
 }

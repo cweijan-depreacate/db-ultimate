@@ -58,6 +58,7 @@ class OracleInit : TableInitSqlGenerator {
             JavaType.Character, "char" -> "CHAR(${length ?: 1})"
             JavaType.Boolean, "boolean", JavaType.Float, "float", JavaType.Long, "long", JavaType.Double, "double", JavaType.Integer, "int" -> "NUMBER"
             JavaType.byteArray -> "RAW"
+            JavaType.ByteArray -> "RAW"
             Date::class.java.name, LocalDateTime::class.java.name, LocalDate::class.java.name, LocalTime::class.java.name -> "DATE"
             else -> "VARCHAR2(${length ?: 100})"
         }

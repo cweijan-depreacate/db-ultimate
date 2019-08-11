@@ -14,18 +14,18 @@ import java.lang.annotation.Target;
 public @interface LuceneDocument {
 
     /**
-     * 需要搜索的field,也可以通过单独通过{@link LuceneField}进行配置
+     * 默认搜索的field
      */
-    String[] value();
+    String[] value() default {};
 
 
     /**
      * 主键fieldName
      */
-    String primaryKeyField() default "";
+    String primaryKeyField();
 
     /**
-     * field默认是否分词
+     * 所有field默认是否分词
      */
     boolean tokenize() default false;
 

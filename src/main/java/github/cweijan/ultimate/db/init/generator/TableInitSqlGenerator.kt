@@ -19,7 +19,7 @@ interface TableInitSqlGenerator {
 
         TypeAdapter.getAllField(componentInfo.componentClass).let { fields ->
             fields.forEach { field ->
-                if (componentInfo.isTableExcludeField(field) || !TypeAdapter.isAdapterType(field.type) ) {
+                if (componentInfo.isExcludeField(field) || !TypeAdapter.isAdapterType(field.type) ) {
                     if(field.getAnnotation(Blob::class.java)==null) return@forEach
                 }
                 val columnDefination = getColumnDefination(field, componentInfo)
