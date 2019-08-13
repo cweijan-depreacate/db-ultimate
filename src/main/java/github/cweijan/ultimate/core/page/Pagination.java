@@ -34,7 +34,7 @@ public class Pagination<T> implements Serializable {
         if (currentPage == null) return null;
         this.startPage = currentPage - offset < 0 ? 1 : currentPage - offset;
 
-        if (this.totalPage != null && pageNum != null ) {
+        if (this.getTotalPage() != null && pageNum != null) {
             int maxPage = pageNum - 1;
             this.endPage = this.startPage + maxPage;
             if (this.endPage > totalPage) {
@@ -50,7 +50,7 @@ public class Pagination<T> implements Serializable {
     }
 
     public Integer getNextPage() {
-        if ((currentPage != null && totalPage!=null) && currentPage < totalPage) return currentPage + 1;
+        if ((currentPage != null && totalPage != null) && currentPage < totalPage) return currentPage + 1;
         return null;
     }
 
@@ -79,7 +79,14 @@ public class Pagination<T> implements Serializable {
     }
 
     public Integer getTotalPage() {
-        return totalPage;
+        if (this.pageSize != null) {
+            this.totalPage = this.count / this.pageSize;
+            if (this.count % this.pageSize != 0) {
+                this.totalPage++;
+            }
+        } else this.totalPage = 1;
+
+        return this.totalPage;
     }
 
     public void setTotalPage(Integer totalPage) {

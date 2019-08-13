@@ -3,8 +3,6 @@ package github.cweijan.ultimate.core.component.info
 import github.cweijan.ultimate.annotation.Table
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.TableInfo
-import github.cweijan.ultimate.exception.ForeignKeyNotSetException
-import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.Log
 import java.lang.reflect.Field
 
@@ -41,13 +39,6 @@ class ComponentInfo(var componentClass: Class<*>) {
      */
     val excelHeaderFieldMap = HashMap<String, Field>()
 
-    /**
-     * 外键映射
-     */
-    internal val foreignKeyMap by lazy {
-        return@lazy HashMap<Class<*>, ForeignKeyInfo>()
-    }
-
     val joinLazy = lazy { return@lazy ArrayList<Class<*>>(); }
     /**
      * 关联的外键列表
@@ -58,6 +49,11 @@ class ComponentInfo(var componentClass: Class<*>) {
      * 关联的外键列表
      */
     val oneToManyList by oneToManyLazy
+    val oneToOneLazy = lazy { return@lazy ArrayList<OneToOneInfo>(); }
+    /**
+     * 关联的外键列表
+     */
+    val oneToOneList by oneToOneLazy
 
     /**
      * 根据属性名找列名
@@ -120,25 +116,6 @@ class ComponentInfo(var componentClass: Class<*>) {
 
     }
 
-    fun getForeignKey(foreignClass: Class<*>): ForeignKeyInfo {
-        if (!foreignKeyMap.contains(foreignClass))
-            throw ForeignKeyNotSetException("${foreignClass.name} is not a valid foreign class")
-
-        val foreignKeyInfo = foreignKeyMap[foreignClass]
-
-        val joinKey = foreignKeyInfo!!.joinKey
-        if (joinKey == "") {
-            val component = TableInfo.getComponent(foreignClass)
-            if (component.primaryKey == null || component.primaryKey == "") {
-                throw PrimaryValueNotSetException("join component ${foreignClass.name} is not primary key found! ")
-            } else {
-                foreignKeyInfo.joinKey = component.primaryKey!!
-            }
-        }
-
-        return foreignKeyInfo
-    }
-
     fun isExcludeField(field: Field?): Boolean {
         val columnInfo = fieldColumnInfoMap[field?.name]
         return null != columnInfo && columnInfo.exclude
@@ -164,18 +141,12 @@ class ComponentInfo(var componentClass: Class<*>) {
 
             val componentInfo = ComponentInfo(componentClass)
             componentInfo.tableName = tableName
+            componentInfo.selectColumns ="*"
             componentInfo.tableAlias = table?.alias
             //生成列信息
             for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
                 ColumnInfo.init(componentInfo, field)
             }
-            var selectColumns = ""
-            componentInfo.columnInfoMap.forEach { (columnName, columnInfo) ->
-                if (!columnInfo.exclude)
-                    selectColumns += ",$columnName"
-            }
-
-            componentInfo.selectColumns = selectColumns.replaceFirst(",", "")
             TableInfo.putComponent(componentClass, componentInfo)
             if (scanMode)
                 Log.debug("load component ${componentClass.name}, table is $tableName")

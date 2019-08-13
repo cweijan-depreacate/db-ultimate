@@ -2,9 +2,9 @@ package github.cweijan.ultimate.convert
 
 import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.core.component.TableInfo
+import github.cweijan.ultimate.springboot.util.ServiceMap
 import github.cweijan.ultimate.util.Log
 import org.springframework.beans.BeanUtils
-import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import java.util.*
@@ -35,7 +35,6 @@ object TypeConvert {
      * @param beanClass 要转换的类型
      * @return 转换完成的实体列表
      */
-    @JvmStatic
     fun <T> resultSetToBeanList(resultSet: ResultSet, beanClass: Class<T>): List<T> {
 
         val beanList = ArrayList<T>()
@@ -43,6 +42,23 @@ object TypeConvert {
             beanList.add(resultSetToBean(resultSet, beanClass, true)!!)
         }
         val component = TableInfo.getComponent(beanClass)
+        beanList.forEach { bean ->
+            //一对多赋值
+            if (component.oneToManyLazy.isInitialized()) {
+                component.oneToManyList.forEach { oneToManyInfo ->
+                    oneToManyInfo.oneTomanyField.set(bean, ServiceMap.get(oneToManyInfo.relationClass.javaObjectType)
+                            .findBy(oneToManyInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
+                }
+            }
+            // 一对一赋值
+            if (component.oneToOneLazy.isInitialized()) {
+                component.oneToOneList.forEach { oneToOneInfo ->
+                    oneToOneInfo.oneToOneField.set(bean, ServiceMap.get(oneToOneInfo.relationClass.javaObjectType)
+                            .getBy(oneToOneInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
+                }
+            }
+        }
+
         return beanList
     }
 
@@ -73,7 +89,7 @@ object TypeConvert {
                 beanInstance = if (clazz.isInterface) BeanUtils.instantiateClass(HashMap::class.java) as T
                 else BeanUtils.instantiateClass(clazz)
                 resultSetToMap(resultSet)?.run {
-                    (beanInstance as MutableMap<Any,Any?>).putAll(this)
+                    (beanInstance as MutableMap<Any, Any?>).putAll(this)
                 }
                 return beanInstance
             } else {
@@ -85,14 +101,12 @@ object TypeConvert {
         }
         if (columns.keys.isEmpty()) return beanInstance
         val component = TableInfo.getComponent(clazz)
-        val objectMap = HashMap<Field, Class<*>>();
 
         // 为对象进行赋值
         for (field in TypeAdapter.getAllField(clazz)) {
 
             field.isAccessible = true
             val fieldName = field.name
-            val fieldType = field.type.name
             val key = component.getColumnNameByFieldName(fieldName)?.toLowerCase()
             if (component.isExcludeField(field) ||
                     (!columns.containsKey(key) && TypeAdapter.isAdapterType(field.type))) {
@@ -101,23 +115,18 @@ object TypeConvert {
             val columnName = columns[key]
 
             try {
-                when {
-                    TypeAdapter.isAdapterType(field.type) || Collection::class.java.isAssignableFrom(field.type) || field.getAnnotation(Blob::class.java) != null
-                    -> field.set(beanInstance, TypeAdapter.convertJavaObject(component.componentClass, field, try {
+                if (TypeAdapter.isAdapterType(field.type) || Collection::class.java.isAssignableFrom(field.type) || field.getAnnotation(Blob::class.java) != null) {
+                    field.set(beanInstance, TypeAdapter.convertJavaObject(component.componentClass, field, try {
                         resultSet.getObject(columnName)
                     } catch (e: Exception) {
                         Log.error(e.message);null
                     }))
-                    else -> objectMap[field] = Class.forName(fieldType)
                 }
-                columns.remove(key)
             } catch (e: Exception) {
                 Log.error(e.message, e)
             }
 
         }
-//        objectMap.forEach { field, fieldClass -> field.set(beanInstance, toJavaBean(resultSet, fieldClass, columns)) }
-
         return beanInstance
     }
 

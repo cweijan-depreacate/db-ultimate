@@ -75,6 +75,7 @@ class IndexService(indexDirPath: String) {
         pagination.list = ArrayList<T?>()
         pagination.pageSize = luceneQuery.pageSize ?: 100
         pagination.currentPage = luceneQuery.page ?: 1
+        pagination.startPage = luceneQuery.page ?: 1
 
         //fields是当未指定field时的默认搜索field
         val queryParser = MultiFieldQueryParser(fields, StandardAnalyzer())

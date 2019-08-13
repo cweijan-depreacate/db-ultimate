@@ -15,11 +15,11 @@ public @interface OneToOne {
     /**
      要关联的表实体Class,默认关联主键
      */
-    Class<?> value();
+    Class<?> relationClass();
 
     /**
      外键名称
      */
-    String joinColumn() default "";
+    String relationColumn() default "";
 
 }
