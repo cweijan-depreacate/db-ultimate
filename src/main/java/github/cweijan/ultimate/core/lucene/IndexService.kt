@@ -116,7 +116,7 @@ class IndexService(private val indexDirPath: String) {
         queryParser.allowLeadingWildcard = true
 
         val luceneSearch = luceneQuery.getLuceneSearch()
-        Log.getLogger().info("lucene query is $luceneSearch")
+        Log.getLogger().debug("lucene query : $luceneSearch")
         val query = queryParser.parse(luceneSearch)
 
         val sort = Sort()

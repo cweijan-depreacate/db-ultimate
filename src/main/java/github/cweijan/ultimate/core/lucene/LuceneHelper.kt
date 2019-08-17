@@ -1,7 +1,6 @@
 package github.cweijan.ultimate.core.lucene
 
 import github.cweijan.ultimate.annotation.Blob
-import github.cweijan.ultimate.annotation.Column
 import github.cweijan.ultimate.annotation.Exclude
 import github.cweijan.ultimate.convert.JavaType
 import github.cweijan.ultimate.convert.TypeAdapter
@@ -32,8 +31,7 @@ object LuceneHelper {
             field.isAccessible = true
 
             val fieldName = field.name
-            if (field.getAnnotation(Column::class.java)?.length ?: 0 > 1000
-                    || field.getAnnotation(Exclude::class.java) != null
+            if (field.getAnnotation(Exclude::class.java) != null
                     || field.getAnnotation(Blob::class.java) != null
                     || Collection::class.java.isAssignableFrom(field.type)) {
                 continue

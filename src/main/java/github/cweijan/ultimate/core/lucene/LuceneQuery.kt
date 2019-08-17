@@ -14,16 +14,27 @@ import github.cweijan.ultimate.util.StringUtils
 import org.apache.lucene.index.Term
 import org.apache.lucene.search.SortField
 import org.apache.lucene.search.TermQuery
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.set
 
 /**
+ * Lucene查询类
  * @author cweijan
  * @version 2019/7/16/016 22:39
  */
 class LuceneQuery<T>
 private constructor(val componentClass: Class<out T>, private val searchFields: Array<String>) {
 
-    val searhLazy = lazy { LinkedHashMap<String, MutableList<String>>() }
-    val searchOperation: MutableMap<String, MutableList<String>>by searhLazy
+    val searchLazy = lazy { LinkedHashMap<String, MutableList<String>>() }
+    val searchOperation: MutableMap<String, MutableList<String>>by searchLazy
+
+    val notEqualsLazy = lazy { LinkedHashMap<String, MutableList<String>>() }
+    val notEqualsOperation: MutableMap<String, MutableList<String>>by notEqualsLazy
+
+    val orEqLazy = lazy { HashMap<String, MutableList<String>>() }
+    val orEqualsOperation: MutableMap<String, MutableList<String>>by orEqLazy
 
     val sortLazy = lazy { return@lazy ArrayList<SortField>() }
     val sortFieldList: MutableList<SortField> by sortLazy
@@ -68,7 +79,17 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         return this
     }
 
-    fun list(): Pagination<T> {
+    fun get(): T? {
+        val list = list()
+        if (list.isNotEmpty()) return list[0]
+        return null
+    }
+
+    fun list(): List<T> {
+        return pageList().list
+    }
+
+    fun pageList(): Pagination<T> {
         return indexService.search(searchFields, this)
     }
 
@@ -84,10 +105,10 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         value ?: return
 
         val name = TableInfo.getComponent(componentClass).primaryField!!.name
-        val primaryValue=TableInfo.getComponent(componentClass).getPrimaryValue(value).toString()
+        val primaryValue = TableInfo.getComponent(componentClass).getPrimaryValue(value).toString()
 
         LuceneHelper.objectToDocument(value)?.run {
-            indexService.updateDocument(Term(name, primaryValue),this, componentClass)
+            indexService.updateDocument(Term(name, primaryValue), this, componentClass)
         }
 
     }
@@ -116,8 +137,57 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         return this
     }
 
+    /**
+     * 搜索指定列，该方法同等与search
+     */
     fun eq(column: String?, content: Any?): LuceneQuery<T> {
-        return search(column, content)
+        column ?: return this
+
+        put(searchOperation, column, content)
+
+        return this
+    }
+
+    /**
+     * lucene not 查询
+     */
+    fun notEq(column: String?, content: Any?): LuceneQuery<T> {
+        column ?: return this
+
+        put(notEqualsOperation, column, content)
+
+        return this
+    }
+
+    /**
+     * 搜索指定列
+     */
+    fun search(column: String?, content: Any?): LuceneQuery<T> {
+
+        column ?: return this
+
+        put(searchOperation, column, content)
+
+        return this
+    }
+
+    /**
+     * lucene not 查询
+     */
+    fun orEq(column: String?, content: Any?): LuceneQuery<T> {
+        column ?: return this
+
+        put(orEqualsOperation, column, content)
+
+        return this
+    }
+
+    private fun put(map: MutableMap<String, MutableList<String>>, column: String, content: Any?) {
+        content?.let {
+            if (content.javaClass == String::class.java && StringUtils.isEmpty(content as String)) return
+            map[column] = map[column] ?: ArrayList()
+            map[column]!!.add("*${TypeAdapter.convertLuceneAdapter(it)}*")
+        }
     }
 
     /**
@@ -127,19 +197,6 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
     fun searchFull(content: Any?): LuceneQuery<T> {
         content ?: return this
         searchFullContent = if (content.toString().contains("*")) content.toString() else "*$content*"
-
-        return this
-    }
-
-    fun search(column: String?, content: Any?): LuceneQuery<T> {
-
-        column ?: return this
-
-        content?.let {
-            if (content.javaClass == String::class.java && StringUtils.isEmpty(content as String)) return this
-            searchOperation[column] = searchOperation[column] ?: ArrayList()
-            searchOperation[column]!!.add("*${TypeAdapter.convertLuceneAdapter(it)}*")
-        }
 
         return this
     }
@@ -189,6 +246,9 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
             return LuceneQuery(componentClass, luceneSearch.value)
         }
 
+        /**
+         * 对对象进行Lucene索引，集合、配置了Blob和Exclude注解的Field不会被索引
+         */
         @JvmStatic
         fun index(component: Any?) {
             component ?: return

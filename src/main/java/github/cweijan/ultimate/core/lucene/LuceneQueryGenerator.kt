@@ -13,10 +13,17 @@ object LuceneQueryGenerator {
 
         val and = "AND"
         val or = "OR"
+        val not = "NOT"
         var queryString = ""
 
         if (StringUtils.isNotBlank(query.searchFullContent)) queryString = "$and ${query.searchFullContent} "
-        if (query.searhLazy.isInitialized()) queryString += generateOperationSql0(query.searchOperation, "", and)
+        if (query.searchLazy.isInitialized()) queryString += generateOperationSql0(query.searchOperation, "", and)
+        if (query.orEqLazy.isInitialized()) queryString += generateOperationSql0(query.orEqualsOperation, "", or)
+        if (query.notEqualsLazy.isInitialized()) queryString += generateOperationSql0(query.notEqualsOperation, "", not)
+
+        if (queryString.startsWith(not)) {
+            queryString = queryString.replaceFirst(not.toRegex(), "*:* $and $not")
+        }
 
         if (queryString.startsWith(and)) {
             queryString = queryString.replaceFirst(and.toRegex(), "")
