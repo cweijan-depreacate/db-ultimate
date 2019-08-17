@@ -22,7 +22,7 @@ public class TestLuceneService extends BaseTest {
 
     @Test
     public void testAdd() {
-        LuceneQuery.indexService.deleteAllIndex();
+        LuceneQuery.indexService.deleteAllIndex(LuceneObject.class);
         LuceneObject luceneObject = new LuceneObject();
         luceneObject.setCreateTime(LocalDateTime.now());
         luceneObject.setUpdateTime(new Date());
@@ -61,7 +61,7 @@ public class TestLuceneService extends BaseTest {
 
     @Test
     public void testDeleteAll() {
-        LuceneQuery.indexService.deleteAllIndex();
+        LuceneQuery.indexService.deleteAllIndex(LuceneObject.class);
     }
 
     @Test

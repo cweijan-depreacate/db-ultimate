@@ -17,49 +17,80 @@ import org.apache.lucene.search.TopFieldCollector
 import org.apache.lucene.store.Directory
 import org.apache.lucene.store.FSDirectory
 import java.io.File
+import kotlin.collections.forEach as forEach1
 
 
 /**
  * @author cweijan
  * @version 2019/7/16/016 15:33
  */
-class IndexService(indexDirPath: String) {
+class IndexService(private val indexDirPath: String) {
 
-    private val directory: Directory by lazy {
-        return@lazy FSDirectory.open(File(indexDirPath).toPath())
+    val directoryLazy = lazy {
+        return@lazy HashMap<Class<*>, Directory>()
+    }
+    private val directoryMap: MutableMap<Class<*>, Directory> by directoryLazy
+
+    val writerLazy = lazy {
+        return@lazy HashMap<Class<*>, IndexWriter>()
+    }
+    private val writerMap: MutableMap<Class<*>, IndexWriter> by writerLazy
+
+    val readerLazy = lazy {
+        return@lazy HashMap<Class<*>, DirectoryReader>()
+    }
+    private val readerMap: MutableMap<Class<*>, DirectoryReader> by readerLazy
+
+    private val searchMap: MutableMap<Class<*>, IndexSearcher> by lazy {
+        return@lazy HashMap<Class<*>, IndexSearcher>()
     }
 
-    private val writerLazy = lazy {
-        return@lazy IndexWriter(directory, IndexWriterConfig(StandardAnalyzer()))
+    fun getDiretory(clazz: Class<*>): Directory {
+        if (!directoryMap.containsKey(clazz))
+            directoryMap[clazz] = FSDirectory.open(File(indexDirPath+File.separator + clazz.name).toPath())
+        return directoryMap[clazz]!!
     }
-    private val indexWriter: IndexWriter by writerLazy
 
-    private var indexReader: DirectoryReader? = null
-        get() {
-            if (field == null) indexReader = DirectoryReader.open(directory)
-            return field
-        }
-    private var indexSearcher: IndexSearcher? = null
-        get() {
-            if (field == null) indexSearcher = IndexSearcher(indexReader)
+    fun getIndexWriter(clazz: Class<*>): IndexWriter {
+        if (!writerMap.containsKey(clazz))
+            writerMap[clazz] = IndexWriter(getDiretory(clazz), IndexWriterConfig(StandardAnalyzer()))
+        return writerMap[clazz]!!
+    }
 
-            return field
-        }
+    fun getIndexReader(clazz: Class<*>): DirectoryReader {
+        if (!readerMap.containsKey(clazz))
+            readerMap[clazz] = DirectoryReader.open(getDiretory(clazz))
+        return readerMap[clazz]!!
+    }
+
+    fun getIndexSearcher(clazz: Class<*>): IndexSearcher {
+        if (!searchMap.containsKey(clazz))
+            searchMap[clazz] = IndexSearcher(getIndexReader(clazz))
+        DirectoryReader.open(getDiretory(clazz))
+        return searchMap[clazz]!!
+    }
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
-            if (writerLazy.isInitialized()) indexWriter.close()
-            indexReader?.run { this.close() }
+            if (readerLazy.isInitialized()) {
+                readerMap.forEach1 { (_, reader) -> reader.close() }
+            }
+            if (writerLazy.isInitialized()) {
+                writerMap.forEach { _, writer -> writer.close() }
+            }
+            if (directoryLazy.isInitialized()) {
+                directoryMap.forEach1 { (_, directory) -> directory.close() }
+            }
         })
     }
 
-    fun searchByQuery(query: Query, n: Int): ArrayList<Document>? {
+    fun searchByQuery(query: Query, n: Int,clazz: Class<*>): ArrayList<Document>? {
 
-        val scoreDocs = indexSearcher!!.search(query, n).scoreDocs
+        val scoreDocs = getIndexSearcher(clazz).search(query, n).scoreDocs
         if (scoreDocs != null && scoreDocs.isNotEmpty()) {
             val docs = ArrayList<Document>();
             for (scoreDoc in scoreDocs) {
-                docs.add(indexSearcher!!.doc(scoreDoc.doc))
+                docs.add(getIndexSearcher(clazz).doc(scoreDoc.doc))
             }
             return docs
         }
@@ -71,6 +102,7 @@ class IndexService(indexDirPath: String) {
      */
     fun <T> search(fields: Array<String>, luceneQuery: LuceneQuery<T>): Pagination<T> {
 
+        val indexSearcher = getIndexSearcher(luceneQuery.componentClass)
         val pagination = Pagination<T>()
         pagination.list = ArrayList<T?>()
         pagination.pageSize = luceneQuery.pageSize ?: 100
@@ -96,7 +128,7 @@ class IndexService(indexDirPath: String) {
         indexSearcher!!.search(query, collector)
         val scoreDocs = collector.topDocs((pagination.currentPage - 1) * pagination.pageSize, pagination.pageSize).scoreDocs
         for (scoreDoc in scoreDocs) {
-            val doc = indexSearcher!!.doc(scoreDoc.doc)
+            val doc = indexSearcher.doc(scoreDoc.doc)
             pagination.list.add(LuceneHelper.documentToObject(doc, luceneQuery.componentClass))
         }
         pagination.count = collector.totalHits
@@ -104,38 +136,37 @@ class IndexService(indexDirPath: String) {
         return pagination
     }
 
-    fun addDocument(document: Document) {
-        indexWriter.addDocument(document)
-
+    fun addDocument(document: Document, javaClass: Class<*>) {
+        getIndexWriter(javaClass).addDocument(document)
     }
 
-    fun commit() {
-        indexWriter.commit()
-        val reader = DirectoryReader.openIfChanged(indexReader)
-        if (indexReader != reader) {
-            indexReader = reader
-            indexSearcher = IndexSearcher(indexReader)
+    fun commit(clazz: Class<*>) {
+        getIndexWriter(clazz).commit()
+        val reader = DirectoryReader.openIfChanged(getIndexReader(clazz))
+        if (reader!=null) {
+            readerMap[clazz]=reader
+            searchMap[clazz]=IndexSearcher(reader)
         }
     }
 
-    fun updateDocument(id: Int?, document: Document) {
+    fun updateDocument(id: Int?, document: Document,clazz: Class<*>) {
         val term = Term("id", id!!.toString() + "")
-        indexWriter.updateDocument(term, document)
-        indexWriter.commit()
+        getIndexWriter(clazz).updateDocument(term, document)
+        getIndexWriter(clazz).commit()
     }
 
-    fun deleteDocument(primaryKeyName: String, id: Any) {
+    fun deleteDocument(primaryKeyName: String, id: Any,clazz: Class<*>) {
         val term = Term(primaryKeyName, id.toString() + "")
-        indexWriter.deleteDocuments(term)
-        indexWriter.commit()
+        getIndexWriter(clazz).deleteDocuments(term)
+        getIndexWriter(clazz).commit()
     }
 
     /**
      * 删除索引
      */
-    fun deleteAllIndex() {
-        indexWriter.deleteAll()
-        commit()
+    fun deleteAllIndex(clazz: Class<*>) {
+        getIndexWriter(clazz).deleteAll()
+        commit(clazz)
     }
 
 }

@@ -27,6 +27,7 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
 
     val sortLazy = lazy { return@lazy ArrayList<SortField>() }
     val sortFieldList: MutableList<SortField> by sortLazy
+    var searchFullContent:String?=null
 
     var offset: Int? = null
         private set
@@ -77,8 +78,8 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
 
         val primaryKeyField = componentClass.getAnnotation(LuceneDocument::class.java).primaryKeyField
 
-        val query = TermQuery(Term(LuceneHelper.getClassKey(componentClass, primaryKeyField), value.toString()))
-        val searchByQuery = indexService.searchByQuery(query, 1)
+        val query = TermQuery(Term(primaryKeyField, value.toString()))
+        val searchByQuery = indexService.searchByQuery(query, 1,componentClass)
         if (searchByQuery != null) {
             return LuceneHelper.documentToObject(searchByQuery[0], componentClass)
         }
@@ -94,16 +95,29 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         searchOperation["*"] = mutableListOf("*")
         return this
     }
+    fun eq(column: String?, content: Any?): LuceneQuery<T> {
+        return search(column,content)
+    }
+
+    /**
+     * 搜索配置在LuceneDocument注解的field
+     * @see LuceneDocument
+     */
+    fun searchFull(content: Any?): LuceneQuery<T>{
+        content ?: return this
+        searchFullContent=if(content.toString().contains("*")) content.toString() else "*$content*"
+
+        return this
+    }
 
     fun search(column: String?, content: Any?): LuceneQuery<T> {
 
         column ?: return this
-        val realColumn = LuceneHelper.getClassKey(componentClass, column)
 
         content?.let {
             if (content.javaClass == String::class.java && StringUtils.isEmpty(content as String)) return this
-            searchOperation[realColumn] = searchOperation[realColumn] ?: ArrayList()
-            searchOperation[realColumn]!!.add("*${TypeAdapter.convertLuceneAdapter(it)}*")
+            searchOperation[column] = searchOperation[column] ?: ArrayList()
+            searchOperation[column]!!.add("*${TypeAdapter.convertLuceneAdapter(it)}*")
         }
 
         return this
@@ -112,7 +126,7 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
     fun orderBy(column: String?): LuceneQuery<T> {
 
         column ?: return this
-        sortFieldList.add(SortField(LuceneHelper.getClassKey(componentClass, column), LuceneHelper.getSortFieldType(componentClass, column)))
+        sortFieldList.add(SortField(column, LuceneHelper.getSortFieldType(componentClass, column)))
 
         return this
     }
@@ -120,7 +134,7 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
     fun orderDescBy(column: String?): LuceneQuery<T> {
 
         column ?: return this
-        sortFieldList.add(SortField(LuceneHelper.getClassKey(componentClass, column), LuceneHelper.getSortFieldType(componentClass, column), true))
+        sortFieldList.add(SortField(column, LuceneHelper.getSortFieldType(componentClass, column), true))
 
         return this
     }
@@ -155,8 +169,9 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         }
 
         @JvmStatic
-        fun index(component: Any) {
-            LuceneHelper.objectToDocument(component)?.run { indexService.addDocument(this) }
+        fun index(component: Any?) {
+            component?:return
+            LuceneHelper.objectToDocument(component)?.run { indexService.addDocument(this,component.javaClass) }
         }
 
         @JvmStatic

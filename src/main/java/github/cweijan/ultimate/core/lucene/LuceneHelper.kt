@@ -1,5 +1,8 @@
 package github.cweijan.ultimate.core.lucene
 
+import github.cweijan.ultimate.annotation.Blob
+import github.cweijan.ultimate.annotation.Column
+import github.cweijan.ultimate.annotation.Exclude
 import github.cweijan.ultimate.convert.JavaType
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.lucene.type.LuceneDocument
@@ -7,6 +10,7 @@ import github.cweijan.ultimate.core.lucene.type.LuceneField
 import github.cweijan.ultimate.util.DateUtils
 import github.cweijan.ultimate.util.Json
 import org.apache.lucene.document.*
+import org.apache.lucene.index.IndexOptions
 import org.apache.lucene.search.SortField
 
 /**
@@ -27,7 +31,13 @@ object LuceneHelper {
 
             field.isAccessible = true
 
-            val fieldName = getClassKey(documentObject::class.java, field.name)
+            val fieldName = field.name
+            if (field.getAnnotation(Column::class.java)?.length ?: 0 > 1000
+                    || field.getAnnotation(Exclude::class.java) != null
+                    || field.getAnnotation(Blob::class.java) != null
+                    || Collection::class.java.isAssignableFrom(field.type)) {
+                continue
+            }
             val fieldValue = (if (TypeAdapter.isAdapterType(field.type)) TypeAdapter.convertLuceneAdapter(field.get(documentObject)) else Json.toJson(field.get(documentObject)))
                     ?: continue
 
@@ -36,20 +46,23 @@ object LuceneHelper {
                 val store = if (luceneField == null || luceneField.store) Field.Store.YES else Field.Store.NO
                 val tokenize = luceneField?.tokenize ?: luceneDocument.tokenize
                 val noTokenize = if (luceneField != null && !luceneField.tokenize) true else !luceneDocument.tokenize
+                val numberFieldType = FieldType()
+                numberFieldType.setStored(true)
+                numberFieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS)
                 when {
                     mutableListOf("float", JavaType.Float).contains(field.type.name) -> {
                         document.add(FloatDocValuesField(fieldName, fieldValue as Float))
-                        document.add(StoredField(fieldName, fieldValue))
+                        document.add(Field(fieldName,fieldValue.toString(),numberFieldType))
                     }
                     mutableListOf("double", JavaType.Double).contains(field.type.name) -> {
                         document.add(DoubleDocValuesField(fieldName, fieldValue as Double))
-                        document.add(StoredField(fieldName, fieldValue))
+                        document.add(Field(fieldName,fieldValue.toString(),numberFieldType))
                     }
                     TypeAdapter.NUMBER_TYPE.contains(field.type.name) || JavaType.DATE_TYPE.contains(field.type.name) -> {
                         document.add(NumericDocValuesField(fieldName, fieldValue.toString().toLong()))
-                        document.add(StoredField(fieldName, fieldValue.toString().toLong()))
+                        document.add(Field(fieldName,fieldValue.toString(),numberFieldType))
                     }
-                    JavaType.BYTE_ARRAY_TYPE.contains(field.type.name)  -> {
+                    JavaType.BYTE_ARRAY_TYPE.contains(field.type.name) -> {
                         document.add(StoredField(fieldName, fieldValue as ByteArray))
                     }
                     tokenize -> document.add(TextField(fieldName, fieldValue.toString(), store))
@@ -64,28 +77,20 @@ object LuceneHelper {
         return document
     }
 
-    fun getClassKey(clazz: Class<*>, key: String): String {
-        return clazz.simpleName + "_" + key
-    }
-
-    fun getFieldName(clazz: Class<*>, fieldKey: String): String {
-        return getClassKey(clazz, fieldKey).replace(clazz.simpleName + "_", "")
-    }
-
     fun <T> documentToObject(document: Document?, objectClass: Class<T>): T? {
 
         if (document == null) return null
 
         val data = HashMap<String, Any?>()
         for (field in document.fields) {
-            val fieldName = getFieldName(objectClass, field.name())
+            val fieldName = field.name()
             val objectField = objectClass.getDeclaredField(fieldName)
             when (objectField.type.name) {
                 "java.time.LocalDateTime", "java.util.Date" -> {
-                    data[fieldName] = DateUtils.convertLongToDate(field.numericValue().toLong(), objectField.type)
+                    data[fieldName] = DateUtils.convertLongToDate(field.numericValue()?.toLong(), objectField.type)
                 }
-                JavaType.byteArray, JavaType.ByteArray ->{
-                    data[fieldName] = field.binaryValue().bytes
+                JavaType.byteArray, JavaType.ByteArray -> {
+                    data[fieldName] = field.binaryValue()?.bytes
                 }
                 else -> data[fieldName] = field.stringValue()
             }

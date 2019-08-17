@@ -74,11 +74,6 @@ object TypeAdapter {
             return null
         }
 
-        if(Collection::class.java.isAssignableFrom(fieldType)){
-            val valueType = getGenericType(field)
-            return Json.parseCollection(javaObject.toString(),fieldType as Class<Collection<*>>,valueType)
-        }
-
         field.getAnnotation(Blob::class.java)?.run {
             val valueType = getGenericType(field)
             javaObject as ByteArray
@@ -87,6 +82,11 @@ object TypeAdapter {
             } else {
                 Json.parse(String(javaObject), field.type)
             }
+        }
+
+        if(Collection::class.java.isAssignableFrom(fieldType)){
+            val valueType = getGenericType(field)
+            return Json.parseCollection(javaObject.toString(),fieldType as Class<Collection<*>>,valueType)
         }
 
         if (fieldType.isEnum && CHARACTER_TYPE.contains(javaObject::class.java.name)) {

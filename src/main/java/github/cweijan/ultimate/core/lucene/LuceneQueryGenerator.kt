@@ -15,6 +15,7 @@ object LuceneQueryGenerator {
         val or = "OR"
         var queryString = ""
 
+        if (StringUtils.isNotBlank(query.searchFullContent)) queryString = "$and ${query.searchFullContent} "
         if (query.searhLazy.isInitialized()) queryString += generateOperationSql0(query.searchOperation, "", and)
 
         if (queryString.startsWith(and)) {
@@ -24,7 +25,7 @@ object LuceneQueryGenerator {
             queryString = queryString.replaceFirst(or.toRegex(), "")
         }
 
-        if(StringUtils.isEmpty(queryString))queryString="*:*"
+        if (StringUtils.isEmpty(queryString)) queryString = "*:*"
         return queryString
     }
 
