@@ -14,15 +14,10 @@ import java.lang.annotation.Target;
 public @interface LuceneDocument {
 
     /**
-     * 默认搜索的field
+     * 调用搜索方法时默认搜索的Field
+     * @see  github.cweijan.ultimate.core.lucene.LuceneQuery#searchFull(Object)
      */
     String[] value() default {};
-
-
-    /**
-     * 主键fieldName
-     */
-    String primaryKeyField();
 
     /**
      * 所有field默认是否分词

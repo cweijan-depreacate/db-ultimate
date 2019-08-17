@@ -27,7 +27,7 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
 
     val sortLazy = lazy { return@lazy ArrayList<SortField>() }
     val sortFieldList: MutableList<SortField> by sortLazy
-    var searchFullContent:String?=null
+    var searchFullContent: String? = null
 
     var offset: Int? = null
         private set
@@ -72,14 +72,34 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         return indexService.search(searchFields, this)
     }
 
+    fun deleteByPrimaryKey(value: Any?) {
+        value ?: return
+
+        val name = TableInfo.getComponent(componentClass).primaryField!!.name
+        indexService.deleteByQuery(TermQuery(Term(name, value.toString())), componentClass)
+
+    }
+
+    fun update(value: T?) {
+        value ?: return
+
+        val name = TableInfo.getComponent(componentClass).primaryField!!.name
+        val primaryValue=TableInfo.getComponent(componentClass).getPrimaryValue(value).toString()
+
+        LuceneHelper.objectToDocument(value)?.run {
+            indexService.updateDocument(Term(name, primaryValue),this, componentClass)
+        }
+
+    }
+
     fun getByPrimaryKey(value: Any?): T? {
 
         value ?: return null
 
-        val primaryKeyField = componentClass.getAnnotation(LuceneDocument::class.java).primaryKeyField
+        val primaryName = TableInfo.getComponent(componentClass).primaryField!!.name
 
-        val query = TermQuery(Term(primaryKeyField, value.toString()))
-        val searchByQuery = indexService.searchByQuery(query, 1,componentClass)
+        val query = TermQuery(Term(primaryName, value.toString()))
+        val searchByQuery = indexService.searchByQuery(query, 1, componentClass)
         if (searchByQuery != null) {
             return LuceneHelper.documentToObject(searchByQuery[0], componentClass)
         }
@@ -95,17 +115,18 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
         searchOperation["*"] = mutableListOf("*")
         return this
     }
+
     fun eq(column: String?, content: Any?): LuceneQuery<T> {
-        return search(column,content)
+        return search(column, content)
     }
 
     /**
      * 搜索配置在LuceneDocument注解的field
      * @see LuceneDocument
      */
-    fun searchFull(content: Any?): LuceneQuery<T>{
+    fun searchFull(content: Any?): LuceneQuery<T> {
         content ?: return this
-        searchFullContent=if(content.toString().contains("*")) content.toString() else "*$content*"
+        searchFullContent = if (content.toString().contains("*")) content.toString() else "*$content*"
 
         return this
     }
@@ -151,8 +172,8 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
                 field.getAnnotation(Page::class.java)?.run { page(it.toString().toInt());return@let }
                 field.getAnnotation(PageSize::class.java)?.run { pageSize(it.toString().toInt());return@let }
                 field.getAnnotation(OrderBy::class.java)?.run { if (this.value != "") fieldName = this.value; orderBy(fieldName);return@let }
-                if (TableInfo.getComponent(componentClass,true)?.getColumnInfoByFieldName(fieldName) != null)
-                        search(fieldName, it)
+                if (TableInfo.getComponent(componentClass, true)?.getColumnInfoByFieldName(fieldName) != null)
+                    search(fieldName, it)
             }
         }
         return this
@@ -170,8 +191,8 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
 
         @JvmStatic
         fun index(component: Any?) {
-            component?:return
-            LuceneHelper.objectToDocument(component)?.run { indexService.addDocument(this,component.javaClass) }
+            component ?: return
+            LuceneHelper.objectToDocument(component)?.run { indexService.addDocument(this, component.javaClass) }
         }
 
         @JvmStatic

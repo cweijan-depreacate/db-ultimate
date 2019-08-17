@@ -125,7 +125,7 @@ class IndexService(private val indexDirPath: String) {
         }
         val collector = TopFieldCollector.create(sort, pagination.currentPage * pagination.pageSize, 0)
 
-        indexSearcher!!.search(query, collector)
+        indexSearcher.search(query, collector)
         val scoreDocs = collector.topDocs((pagination.currentPage - 1) * pagination.pageSize, pagination.pageSize).scoreDocs
         for (scoreDoc in scoreDocs) {
             val doc = indexSearcher.doc(scoreDoc.doc)
@@ -149,16 +149,13 @@ class IndexService(private val indexDirPath: String) {
         }
     }
 
-    fun updateDocument(id: Int?, document: Document,clazz: Class<*>) {
-        val term = Term("id", id!!.toString() + "")
+    fun updateDocument(term: Term, document: Document,clazz: Class<*>) {
         getIndexWriter(clazz).updateDocument(term, document)
         getIndexWriter(clazz).commit()
     }
 
-    fun deleteDocument(primaryKeyName: String, id: Any,clazz: Class<*>) {
-        val term = Term(primaryKeyName, id.toString() + "")
-        getIndexWriter(clazz).deleteDocuments(term)
-        getIndexWriter(clazz).commit()
+    fun deleteByQuery(query: Query,clazz: Class<*>){
+        getIndexWriter(clazz).deleteDocuments(query)
     }
 
     /**
