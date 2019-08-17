@@ -101,18 +101,6 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
 
     }
 
-    fun update(value: T?) {
-        value ?: return
-
-        val name = TableInfo.getComponent(componentClass).primaryField!!.name
-        val primaryValue = TableInfo.getComponent(componentClass).getPrimaryValue(value).toString()
-
-        LuceneHelper.objectToDocument(value)?.run {
-            indexService.updateDocument(Term(name, primaryValue), this, componentClass)
-        }
-
-    }
-
     fun getByPrimaryKey(value: Any?): T? {
 
         value ?: return null
@@ -244,6 +232,22 @@ private constructor(val componentClass: Class<out T>, private val searchFields: 
                     ?: throw RuntimeException("索引类必须配置LuceneConfig注解!")
 
             return LuceneQuery(componentClass, luceneSearch.value)
+        }
+
+        /**
+         * 更新对象索引
+         */
+        @JvmStatic
+        fun updateIndex(value: Any?) {
+            value ?: return
+
+            val name = TableInfo.getComponent(value::class.java).primaryField!!.name
+            val primaryValue = TableInfo.getComponent(value::class.java).getPrimaryValue(value).toString()
+
+            LuceneHelper.objectToDocument(value)?.run {
+                indexService.updateDocument(Term(name, primaryValue), this, value::class.java)
+            }
+
         }
 
         /**
