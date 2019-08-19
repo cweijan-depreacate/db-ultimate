@@ -2,7 +2,6 @@ package github.cweijan.ultimate.convert
 
 import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.core.component.TableInfo
-import github.cweijan.ultimate.springboot.util.ServiceMap
 import github.cweijan.ultimate.util.Log
 import org.springframework.beans.BeanUtils
 import java.sql.ResultSet
@@ -41,24 +40,6 @@ object TypeConvert {
         while (resultSet.next()) {
             beanList.add(resultSetToBean(resultSet, beanClass, true)!!)
         }
-        val component = TableInfo.getComponent(beanClass)
-        beanList.forEach { bean ->
-            //一对多赋值
-            if (component.oneToManyLazy.isInitialized()) {
-                component.oneToManyList.forEach { oneToManyInfo ->
-                    oneToManyInfo.oneTomanyField.set(bean, ServiceMap.get(oneToManyInfo.relationClass.javaObjectType)
-                            .findBy(oneToManyInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
-                }
-            }
-            // 一对一赋值
-            if (component.oneToOneLazy.isInitialized()) {
-                component.oneToOneList.forEach { oneToOneInfo ->
-                    oneToOneInfo.oneToOneField.set(bean, ServiceMap.get(oneToOneInfo.relationClass.javaObjectType)
-                            .getBy(oneToOneInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
-                }
-            }
-        }
-
         return beanList
     }
 

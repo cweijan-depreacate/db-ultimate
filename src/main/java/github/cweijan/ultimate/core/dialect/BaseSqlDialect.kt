@@ -129,17 +129,13 @@ abstract class BaseSqlDialect : SqlDialect {
 
         if (query.component.joinLazy.isInitialized()) joinSql += generateJoinTablesSql(query.joinTables)
 
+        query.whereSql?.let { sql+="$and $it " }
+
         if (query.eqLazy.isInitialized()) sql += generateOperationSql0(query.equalsOperation, "=", and, query)
-        if (query.orEqLazy.isInitialized()) sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
-
         if (query.notEqLazy.isInitialized()) sql += generateOperationSql0(query.notEqualsOperation, "!=", and, query)
-        if (query.orNotEqLazy.isInitialized()) sql += generateOperationSql0(query.orNotEqualsOperation, "!=", or, query)
-
         if (query.greatEqLazy.isInitialized()) sql += generateOperationSql0(query.greatEqualsOperation, ">=", and, query)
         if (query.lessEqLazy.isInitialized()) sql += generateOperationSql0(query.lessEqualsOperation, "<=", and, query)
-
         if (query.searchLazy.isInitialized()) sql += generateOperationSql0(query.searchOperation, "LIKE", and, query)
-
         if (query.isNullLazy.isInitialized()) query.isNullList.forEach { sql += "$and $it IS NULL " }
         if (query.isNotNullLazy.isInitialized()) query.isNotNullList.forEach { sql += "$and $it IS NOT NULL " }
 
@@ -155,6 +151,8 @@ abstract class BaseSqlDialect : SqlDialect {
             inSql.append(")")
         }
         sql += inSql.toString()
+        if (query.orEqLazy.isInitialized()) sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
+        if (query.orNotEqLazy.isInitialized()) sql += generateOperationSql0(query.orNotEqualsOperation, "!=", or, query)
 
         if (sql.startsWith(and)) {
             sql = sql.replaceFirst(and.toRegex(), "")

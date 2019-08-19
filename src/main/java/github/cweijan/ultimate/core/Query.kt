@@ -63,6 +63,9 @@ internal constructor(val componentClass: Class<out T>) {
     val joinLazy = lazy { return@lazy ArrayList<String>() }
     val joinTables: MutableList<String> by joinLazy
 
+    var whereSql: String? = null
+        private set
+
     val orderByLazy = lazy { return@lazy ArrayList<String>() }
     val orderByList: MutableList<String> by orderByLazy
 
@@ -153,12 +156,13 @@ internal constructor(val componentClass: Class<out T>) {
         joinTables.add(segment)
         return this
     }
+
     protected fun convert(column: String): String {
         return TypeAdapter.convertHumpToUnderLine(column)!!
     }
 
     fun statistic(): List<Map<String, Any>> {
-        return db.findBySql(db.sqlGenerator.generateSelectSql(this), this.consumeParams(),Map::class.java) as List<Map<String, Any>>
+        return db.findBySql(db.sqlGenerator.generateSelectSql(this), this.consumeParams(), Map::class.java) as List<Map<String, Any>>
     }
 
     @JvmOverloads
@@ -203,6 +207,12 @@ internal constructor(val componentClass: Class<out T>) {
             val columnName = getColumnName(column)
             maxMap[columnName] = maxColumnName ?: "${columnName}Max"
         }
+        return this
+    }
+
+    fun where(whereSql: String?): Query<T> {
+        whereSql ?: return this
+        this.whereSql = whereSql
         return this
     }
 
@@ -415,6 +425,14 @@ internal constructor(val componentClass: Class<out T>) {
 
         return ExcelOperator.outputExcel(headers, values, exportPath)
     }
+
+    fun read(paramArray: Array<Any>?): Query<T> {
+        paramArray?.let {
+            paramArray.forEach { param -> this.read(param) }
+        }
+        return this
+    }
+
 
     fun read(paramObject: Any?): Query<T> {
         paramObject ?: return this

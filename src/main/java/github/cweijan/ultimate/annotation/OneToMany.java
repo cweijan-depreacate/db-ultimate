@@ -22,4 +22,9 @@ public @interface OneToMany {
      */
     String relationColumn();
 
+    /**
+     * 其他关联Sql
+     */
+    String where() default "";
+
 }

@@ -26,6 +26,7 @@ class SqlExecutor(private val dbConfig: DbConfig) {
 
         val resultSet: ResultSet?
 
+        val startTime = System.currentTimeMillis()
         val preparedStatement: PreparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         if (params != null) {
             IntStream.range(0, params.size).forEach { index ->
@@ -44,7 +45,7 @@ class SqlExecutor(private val dbConfig: DbConfig) {
             throw e
         }
         if (dbConfig.showSql) {
-            Log.getLogger().info("Execute SQL : $sql")
+            Log.getLogger().info("Execute SQL : $sql, cost time: ${System.currentTimeMillis()-startTime}")
             if (params != null && params.isNotEmpty()) {
                 var paramContent=" param count ${params.size} : "
                 IntStream.range(0, params.size).forEach { index ->

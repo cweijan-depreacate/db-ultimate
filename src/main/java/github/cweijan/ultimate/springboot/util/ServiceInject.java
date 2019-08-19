@@ -35,11 +35,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
     }
 
     public List<T> findByOBject(Object... objects) {
-        Query<T> query = getQuery();
-        for (Object example : objects) {
-            query.read(example);
-        }
-        return query.list();
+        return getQuery().read(objects).list();
     }
 
     /**
@@ -86,13 +82,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
      */
     @Transactional(readOnly = true)
     public Pagination<T> findByPage(Integer page, Integer pageSize, Object... objects) {
-        Query<T> query = Query.of(componentClass);
-        if (objects != null) {
-            for (Object object : objects) {
-                query.read(object);
-            }
-        }
-        return query.page(page).pageSize(pageSize).pageList();
+        return getQuery().read(objects).page(page).pageSize(pageSize).pageList();
     }
 
     /**

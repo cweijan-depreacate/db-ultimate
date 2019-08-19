@@ -106,7 +106,7 @@ class ColumnInfo {
                     throw RuntimeException("OneToMany annotation only annotate Collection!")
                 }
                 val joinColumnName = TypeAdapter.convertHumpToUnderLine(relationColumn)!!
-                componentInfo.oneToManyList.add(OneToManyInfo(field,joinColumnName,relationClass))
+                componentInfo.oneToManyList.add(OneToManyInfo(field,joinColumnName,where,relationClass))
                 columnInfo.exclude = true
             }
             componentInfo.fieldColumnInfoMap[field.name] = columnInfo

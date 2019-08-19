@@ -59,10 +59,20 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
     private fun handlerRelation(bean: Any?) {
         bean ?: return
         val component = TableInfo.getComponent(bean.javaClass)
+        //一对多赋值
         if (component.oneToManyLazy.isInitialized()) {
             component.oneToManyList.forEach { oneToManyInfo ->
                 oneToManyInfo.oneTomanyField.set(bean, ServiceMap.get(oneToManyInfo.relationClass.javaObjectType)
-                        .findBy(oneToManyInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
+                        .query.eq(oneToManyInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name))
+                        .where(oneToManyInfo.where)
+                        .list())
+            }
+        }
+        // 一对一赋值
+        if (component.oneToOneLazy.isInitialized()) {
+            component.oneToOneList.forEach { oneToOneInfo ->
+                oneToOneInfo.oneToOneField.set(bean, ServiceMap.get(oneToOneInfo.relationClass.javaObjectType)
+                        .getBy(oneToOneInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
             }
         }
     }
