@@ -10,7 +10,7 @@ import java.util.Date;
  * @author cweijan
  * @version 2019/7/31/031 15:35
  */
-@LuceneDocument(primaryKeyField = "id")
+@LuceneDocument
 public class LuceneObject {
 
     private Integer id;

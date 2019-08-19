@@ -5,7 +5,7 @@ import github.cweijan.ultimate.annotation.Table
 import github.cweijan.ultimate.core.lucene.type.LuceneDocument
 
 @Table(alias = "l")
-@LuceneDocument(value=["id","message","test","msd"],primaryKeyField = "id")
+@LuceneDocument(value=["id","message","test","msd"])
 class Lib {
 
     @Primary
