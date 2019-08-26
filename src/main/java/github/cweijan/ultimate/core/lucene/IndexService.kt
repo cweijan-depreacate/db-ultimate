@@ -102,6 +102,7 @@ class IndexService(private val indexDirPath: String) {
      */
     fun <T> search(fields: Array<String>, luceneQuery: LuceneQuery<T>): Pagination<T> {
 
+        var beginTime = System.currentTimeMillis()
         val indexSearcher = getIndexSearcher(luceneQuery.componentClass)
         val pagination = Pagination<T>()
         pagination.list = ArrayList<T?>()
@@ -116,7 +117,7 @@ class IndexService(private val indexDirPath: String) {
         queryParser.allowLeadingWildcard = true
 
         val luceneSearch = luceneQuery.getLuceneSearch()
-        Log.getLogger().debug("lucene query : $luceneSearch")
+
         val query = queryParser.parse(luceneSearch)
 
         val sort = Sort()
@@ -131,6 +132,7 @@ class IndexService(private val indexDirPath: String) {
             val doc = indexSearcher.doc(scoreDoc.doc)
             pagination.list.add(LuceneHelper.documentToObject(doc, luceneQuery.componentClass))
         }
+        Log.getLogger().debug("lucene query : $luceneSearch, cost time:${System.currentTimeMillis()-beginTime}")
         pagination.count = collector.totalHits
 
         return pagination
