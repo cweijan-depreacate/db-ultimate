@@ -33,24 +33,10 @@ import kotlin.collections.LinkedHashMap
 open class Query<T>
 internal constructor(val componentClass: Class<out T>) {
 
-    private var methodName: String? = null
+    internal val queryCondition = QueryCondition()
     var component: ComponentInfo = TableInfo.getComponent(componentClass)
 
-    private var params: MutableList<Any> = ArrayList()
-
-    var offset: Int? = null
-        private set
-        get() {
-            if (field != null) return field
-            if (this.page != null && this.pageSize != 0) {
-                return if (page!! <= 0) 0 else (page!! - 1) * (pageSize ?: 100)
-            }
-            return null
-        }
-
-    private var page: Int? = null
-    var pageSize: Int? = null
-        private set
+    private var methodName: String? = null
     var alias: String? = null
         get() {
             return when {
@@ -60,116 +46,26 @@ internal constructor(val componentClass: Class<out T>) {
             }
         }
 
-    val joinLazy = lazy { return@lazy ArrayList<String>() }
-    val joinTables: MutableList<String> by joinLazy
-
-    var whereSql: String? = null
-        private set
-
-    val orderByLazy = lazy { return@lazy ArrayList<String>() }
-    val orderByList: MutableList<String> by orderByLazy
-
-    val updateLazy = lazy { return@lazy HashMap<String, Any>() }
-    val updateMap: MutableMap<String, Any>by updateLazy
-
-    val isNullLazy = lazy { return@lazy ArrayList<String>() }
-    val isNullList: MutableList<String> by isNullLazy
-
-    val isNotNullLazy = lazy { return@lazy ArrayList<String>() }
-    val isNotNullList: MutableList<String> by isNotNullLazy
-
-    val greatEqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
-    val greatEqualsOperation: MutableMap<String, MutableList<Any>>by greatEqLazy
-
-    val lessEqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
-    val lessEqualsOperation: MutableMap<String, MutableList<Any>>by lessEqLazy
-
-    val eqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
-    val equalsOperation: MutableMap<String, MutableList<Any>>by eqLazy
-
-    val inLazy = lazy { HashMap<String, MutableList<*>>() }
-    val inOperation: MutableMap<String, MutableList<*>>by inLazy
-
-    val orEqLazy = lazy { HashMap<String, MutableList<Any>>() }
-    val orEqualsOperation: MutableMap<String, MutableList<Any>>by orEqLazy
-
-    val notEqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
-    val notEqualsOperation: MutableMap<String, MutableList<Any>>by notEqLazy
-
-    val orNotEqLazy = lazy { HashMap<String, MutableList<Any>>() }
-    val orNotEqualsOperation: MutableMap<String, MutableList<Any>>by orNotEqLazy
-
-    val searchLazy = lazy { HashMap<String, MutableList<Any>>() }
-    val searchOperation: MutableMap<String, MutableList<Any>>by searchLazy
-
-    private val sumLazy = lazy { return@lazy HashMap<String, String>() }
-    private val sumMap: MutableMap<String, String>by sumLazy
-
-    private val countLazy = lazy { return@lazy HashMap<String, String>() }
-    private val countMap: MutableMap<String, String>by countLazy
-
-    private val avgLazy = lazy { return@lazy HashMap<String, String>() }
-    private val avgMap: MutableMap<String, String>by avgLazy
-
-    private val maxLazy = lazy { return@lazy HashMap<String, String>() }
-    private val maxMap: MutableMap<String, String>by maxLazy
-
-    private val minLazy = lazy { return@lazy HashMap<String, String>() }
-    private val minMap: MutableMap<String, String>by minLazy
-
-    private val showColumnLazy = lazy { return@lazy ArrayList<String>() }
-    private val showColumnList: MutableList<String> by showColumnLazy
-
-    val groupLazy = lazy { return@lazy ArrayList<String>() }
-    val groupByList: MutableList<String> by groupLazy
-
-    val havingLazy = lazy { return@lazy ArrayList<String>() }
-    val havingSqlList: MutableList<String> by havingLazy
-
-    fun addParam(param: Any?): Query<T> {
-
-        param?.let { params.add(it) }
-
-        return this
-    }
-
-    fun getParams(): Array<Any>? {
-        return params.toTypedArray()
-    }
-
-    fun consumeParams(): Array<Any>? {
-        val array = params.toTypedArray()
-        params = ArrayList()
-        return array
-    }
-
-    private fun getOperationList(map: MutableMap<String, MutableList<Any>>, key: String): MutableList<Any>? {
-
-        map[key] = map[key] ?: ArrayList()
-
-        return map[key]
-    }
-
     fun join(sql: String): Query<T> {
 
         val segment = " join $sql "
-        joinTables.add(segment)
+        queryCondition.joinTables.add(segment)
         return this
     }
 
-    protected fun convert(column: String): String {
-        return TypeAdapter.convertHumpToUnderLine(column)!!
-    }
 
+    /**
+     * 执行统计
+     */
     fun statistic(): List<Map<String, Any>> {
-        return db.findBySql(db.sqlGenerator.generateSelectSql(this), this.consumeParams(), Map::class.java) as List<Map<String, Any>>
+        return db.findBySql(db.sqlGenerator.generateSelectSql(this), this.queryCondition.consumeParams(), Map::class.java) as List<Map<String, Any>>
     }
 
     @JvmOverloads
     fun sum(column: String?, sumColumnName: String? = null): Query<T> {
         column?.let {
             val columnName = getColumnName(column)
-            sumMap[columnName] = sumColumnName ?: "${columnName}Sum"
+            queryCondition.sumMap[columnName] = sumColumnName ?: "${columnName}Sum"
         }
         return this
     }
@@ -178,7 +74,7 @@ internal constructor(val componentClass: Class<out T>) {
     fun countDistinct(column: String?, countColumnName: String? = null): Query<T> {
         column?.let {
             val columnName = getColumnName(column)
-            countMap[columnName] = countColumnName ?: "${columnName}CountDistinct"
+            queryCondition.countMap[columnName] = countColumnName ?: "${columnName}CountDistinct"
         }
         return this
     }
@@ -187,7 +83,7 @@ internal constructor(val componentClass: Class<out T>) {
     fun avg(column: String?, avgColumnName: String? = null): Query<T> {
         column?.let {
             val columnName = getColumnName(column)
-            avgMap[columnName] = avgColumnName ?: "${columnName}Avg"
+            queryCondition.avgMap[columnName] = avgColumnName ?: "${columnName}Avg"
         }
         return this
     }
@@ -196,7 +92,7 @@ internal constructor(val componentClass: Class<out T>) {
     fun min(column: String?, minColumnName: String? = null): Query<T> {
         column?.let {
             val columnName = getColumnName(column)
-            minMap[columnName] = minColumnName ?: "${columnName}Min"
+            queryCondition.minMap[columnName] = minColumnName ?: "${columnName}Min"
         }
         return this
     }
@@ -205,19 +101,27 @@ internal constructor(val componentClass: Class<out T>) {
     fun max(column: String?, maxColumnName: String? = null): Query<T> {
         column?.let {
             val columnName = getColumnName(column)
-            maxMap[columnName] = maxColumnName ?: "${columnName}Max"
+            queryCondition.maxMap[columnName] = maxColumnName ?: "${columnName}Max"
         }
         return this
     }
 
+    /**
+     * 直接拼接where语句
+     * @param whereSql 条件语句
+     */
     fun where(whereSql: String?): Query<T> {
         whereSql ?: return this
-        this.whereSql = whereSql
+        queryCondition.whereSql = whereSql
         return this
     }
 
+    /**
+     * 根据指定列进行分组
+     * @param column 指定列
+     */
     fun groupBy(column: String): Query<T> {
-        groupByList.add(getColumnName(column))
+        queryCondition.groupByList.add(getColumnName(column))
         return this
     }
 
@@ -225,24 +129,30 @@ internal constructor(val componentClass: Class<out T>) {
      * 统计接口增加显示Column
      */
     fun addShowColumn(column: String): Query<T> {
-        showColumnList.add(getColumnName(column))
+        queryCondition.showColumnList.add(getColumnName(column))
         return this
     }
 
+    /**
+     * having语句片段
+     */
     fun having(havingSql: String): Query<T> {
-        havingSqlList.add(havingSql)
+        queryCondition.havingSqlList.add(havingSql)
         return this
     }
 
+    /**
+     * 对指定列进行更新
+     */
     fun update(column: String, value: Any?): Query<T> {
 
         value?.let {
-            val convertColumnName = convert(column)
+            val convertColumnName = TypeAdapter.convertHumpToUnderLine(column)!!
             component.getColumnInfoByColumnName(convertColumnName)?.field?.getAnnotation(Blob::class.java)?.run {
-                updateMap[convertColumnName] = Json.toJson(value).toByteArray()
+                queryCondition.updateMap[convertColumnName] = Json.toJson(value).toByteArray()
                 return@let
             }
-            updateMap[convertColumnName] = TypeAdapter.convertAdapter(componentClass, column, it)
+            queryCondition.updateMap[convertColumnName] = TypeAdapter.convertAdapter(componentClass, column, it)
         }
         return this
     }
@@ -250,19 +160,26 @@ internal constructor(val componentClass: Class<out T>) {
     private fun put(map: MutableMap<String, MutableList<Any>>, column: String, value: Any?) {
 
         val tableColumn = getColumnName(column)
-        val operationList = getOperationList(map, tableColumn)
+        val operationList = queryCondition.getOperationList(map, tableColumn)
         operationList!!.add(TypeAdapter.convertAdapter(componentClass, column, value))
     }
 
-    protected fun getColumnName(column: String) = component.getColumnNameByFieldName(column) ?: convert(column)
+    protected fun getColumnName(column: String) = component.getColumnNameByFieldName(column)
+            ?: TypeAdapter.convertHumpToUnderLine(column)!!
 
+    /**
+     * !=查询
+     */
     fun notEq(column: String, value: Any?): Query<T> {
-        value?.let { put(notEqualsOperation, column, it) }
+        value?.let { put(queryCondition.notEqualsOperation, column, it) }
         return this
     }
 
+    /**
+     * or !=查询
+     */
     fun orNotEq(column: String, value: Any?): Query<T> {
-        value?.let { put(orNotEqualsOperation, column, it) }
+        value?.let { put(queryCondition.orNotEqualsOperation, column, it) }
         return this
     }
 
@@ -271,7 +188,7 @@ internal constructor(val componentClass: Class<out T>) {
      */
     fun like(column: String, content: Any?): Query<T> {
 
-        content?.let { put(searchOperation, column, "%$it%") }
+        content?.let { put(queryCondition.searchOperation, column, "%$it%") }
         return this
     }
 
@@ -282,7 +199,7 @@ internal constructor(val componentClass: Class<out T>) {
 
         content?.let {
             if (content.javaClass == String::class.java && StringUtils.isEmpty(content as String)) return this
-            put(searchOperation, column, "%$it%")
+            put(queryCondition.searchOperation, column, "%$it%")
         }
         return this
     }
@@ -292,7 +209,7 @@ internal constructor(val componentClass: Class<out T>) {
      */
     fun ge(column: String, value: Any?): Query<T> {
 
-        value?.let { put(greatEqualsOperation, column, it) }
+        value?.let { put(queryCondition.greatEqualsOperation, column, it) }
         return this
     }
 
@@ -301,28 +218,34 @@ internal constructor(val componentClass: Class<out T>) {
      */
     fun le(column: String, value: Any?): Query<T> {
 
-        value?.let { put(lessEqualsOperation, column, it) }
+        value?.let { put(queryCondition.lessEqualsOperation, column, it) }
         return this
     }
 
+    /**
+     * =查询
+     */
     fun eq(column: String, value: Any?): Query<T> {
 
-        value?.let { put(equalsOperation, column, it) }
+        value?.let { put(queryCondition.equalsOperation, column, it) }
         return this
     }
 
+    /**
+     * in查询
+     */
     fun in0(column: String, value: MutableList<*>?): Query<T> {
 
         value?.let {
             val tableColumn = getColumnName(column)
-            inOperation[tableColumn] = value
+            queryCondition.inOperation[tableColumn] = value
         }
         return this
     }
 
     fun orEq(column: String, value: Any?): Query<T> {
 
-        value?.let { put(orEqualsOperation, column, it) }
+        value?.let { put(queryCondition.orEqualsOperation, column, it) }
         return this
     }
 
@@ -332,19 +255,22 @@ internal constructor(val componentClass: Class<out T>) {
 
     fun pageSize(limit: Int?): Query<T> {
 
-        this.pageSize = limit
+        this.queryCondition.pageSize = limit
         return this
     }
 
     fun limit(limit: Int?): Query<T> {
 
-        this.pageSize = limit
+        this.queryCondition.pageSize = limit
         return this
     }
 
+    /**
+     * 设置页码
+     */
     fun page(page: Int?): Query<T> {
 
-        this.page = page
+        this.queryCondition.page = page
         return this
     }
 
@@ -353,7 +279,7 @@ internal constructor(val componentClass: Class<out T>) {
      */
     fun isNull(column: String?): Query<T> {
         column ?: return this
-        isNullList.add(getColumnName(column))
+        queryCondition.isNullList.add(getColumnName(column))
         return this
     }
 
@@ -362,14 +288,14 @@ internal constructor(val componentClass: Class<out T>) {
      */
     fun isNotNull(column: String?): Query<T> {
         column ?: return this
-        isNotNullList.add(getColumnName(column))
+        queryCondition.isNotNullList.add(getColumnName(column))
         return this
     }
 
     fun orderBy(column: String?): Query<T> {
 
         column ?: return this
-        orderByList.add(getColumnName(column))
+        queryCondition.orderByList.add(getColumnName(column))
 
         return this
     }
@@ -377,7 +303,7 @@ internal constructor(val componentClass: Class<out T>) {
     fun orderDescBy(column: String?): Query<T> {
 
         column ?: return this
-        orderByList.add("${getColumnName(column)} desc")
+        queryCondition.orderByList.add("${getColumnName(column)} desc")
 
         return this
     }
@@ -472,31 +398,47 @@ internal constructor(val componentClass: Class<out T>) {
         return this
     }
 
+    /**
+     * 执行查询,返回list
+     */
     fun list(): List<T> {
 
         methodName?.run { Log.debug("Execute method $methodName ") }
         return db.find(this)
     }
 
+    /**
+     * 分页查询, 返回{@link Pagination}对象
+     * @param page 页码
+     * @param pageSize 每页数量
+     */
     fun pageList(page: Int?, pageSize: Int?): Pagination<T> {
-        page?.let { this.page = page }
-        pageSize?.let { this.pageSize = pageSize }
+        page?.let { this.queryCondition.page = page }
+        pageSize?.let { this.queryCondition.pageSize = pageSize }
         return pageList()
     }
 
-    fun offsetList(offset: Int?, pageSize: Int?): Pagination<T> {
-        offset?.let { this.offset = offset }
-        pageSize?.let { this.pageSize = pageSize }
+    /**
+     * 偏移查询,返回{@link Pagination}对象
+     * @offset 偏移量
+     * @limit 最大数量
+     */
+    fun offsetList(offset: Int?, limit: Int?): Pagination<T> {
+        offset?.let { this.queryCondition.offset = offset }
+        limit?.let { this.queryCondition.pageSize = limit }
         return pageList()
     }
 
 
+    /**
+     * 查询,返回{@link Pagination}对象
+     */
     fun pageList(): Pagination<T> {
 
         methodName?.run { Log.debug("Execute method $methodName ") }
         val pagination = Pagination<T>()
         pagination.count = db.getCount(this)
-        pagination.pageSize = this.pageSize
+        pagination.pageSize = this.queryCondition.pageSize
 
         //计算总页数
         if (pagination.pageSize != null) {
@@ -506,7 +448,7 @@ internal constructor(val componentClass: Class<out T>) {
             }
         } else pagination.totalPage = 1
         //计算当前页
-        pagination.currentPage = this.page ?: this.offset?.run {
+        pagination.currentPage = this.queryCondition.page ?: this.queryCondition.offset?.run {
             when {
                 this == 0 -> 1
                 pagination.count % this == 0 -> pagination.count / this
@@ -519,16 +461,25 @@ internal constructor(val componentClass: Class<out T>) {
         return pagination
     }
 
+    /**
+     * 查询一条记录
+     */
     fun get(): T? {
         methodName?.run { Log.debug("Execute method $methodName ") }
         return db.getByQuery(this)
     }
 
+    /**
+     * 根据条件执行更新
+     */
     fun executeUpdate() {
         methodName?.run { Log.debug("Execute method $methodName ") }
         db.update(this)
     }
 
+    /**
+     * 根据条件执行删除操作
+     */
     fun executeDelete() {
         methodName?.run { Log.debug("Execute method $methodName ") }
         db.delete(this)
@@ -541,37 +492,34 @@ internal constructor(val componentClass: Class<out T>) {
         this.methodName = methodName
     }
 
-    fun generateColumns(): String? {
-
-        var columnSql = ""
-        if (countLazy.isInitialized()) countMap.forEach { (columnName, showColumnName) -> columnSql += "COUNT(DISTINCT $columnName) $showColumnName," }
-        if (sumLazy.isInitialized()) sumMap.forEach { (columnName, showColumnName) -> columnSql += "SUM($columnName) $showColumnName," }
-        if (avgLazy.isInitialized()) avgMap.forEach { (columnName, showColumnName) -> columnSql += "AVG($columnName) $showColumnName," }
-        if (minLazy.isInitialized()) minMap.forEach { (columnName, showColumnName) -> columnSql += "MIN($columnName) $showColumnName," }
-        if (maxLazy.isInitialized()) maxMap.forEach { (columnName, showColumnName) -> columnSql += "MAX($columnName) $showColumnName," }
-        if (showColumnLazy.isInitialized()) showColumnList.forEach { columnName -> columnSql += "$columnName," }
-        if (columnSql.lastIndexOf(",") != -1) {
-            columnSql = columnSql.substring(0, columnSql.lastIndexOf(","))
-        }
-
-        return if (columnSql == "") null else columnSql
-    }
-
+    /**
+     * 设置偏移量
+     */
     fun offset(offset: Int?): Query<T> {
-        this.offset = offset
+        this.queryCondition.offset = offset
         return this
     }
 
     companion object {
+
+        /**
+         * 根据class创建Query对象
+         */
         @JvmStatic
         fun <T> of(componentClass: Class<T>): Query<T> {
 
             return Query(componentClass)
         }
 
+        /**
+         * 底层Api对象
+         */
         @JvmStatic
         lateinit var db: DbUltimate
 
+        /**
+         * 初始化Db-Ultimate
+         */
         @JvmStatic
         fun init(dbConfig: DbConfig) {
             db = DbUltimate(dbConfig)

@@ -7,9 +7,9 @@ class MysqlDialect : BaseSqlDialect() {
 
     override fun <T> generatePaginationSql(sql: String, query: Query<T>): String {
 
-        if (null == query.offset && null == query.pageSize) return sql
+        if (null == query.queryCondition.offset && null == query.queryCondition.pageSize) return sql
 
-        return "$sql limit ${query.offset ?: 0},${query.pageSize}"
+        return "$sql limit ${query.queryCondition.offset ?: 0},${query.queryCondition.pageSize}"
 
     }
 }

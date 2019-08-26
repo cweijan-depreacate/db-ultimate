@@ -101,11 +101,11 @@ abstract class BaseSqlDialect : SqlDialect {
     override fun <T> generateUpdateSqlByQuery(query: Query<T>): String {
         var sql = "UPDATE ${query.component.tableName} a set "
 
-        if (!query.updateLazy.isInitialized()) throw RuntimeException("Not update column!")
-        query.updateMap.keys.forEachIndexed { index, key ->
+        if (!query.queryCondition.updateLazy.isInitialized()) throw RuntimeException("Not update column!")
+        query.queryCondition.updateMap.keys.forEachIndexed { index, key ->
             sql += if (index == 0) "$key=?"
             else ",$key=?"
-            query.addParam(query.updateMap[key])
+            query.queryCondition.addParam(query.queryCondition.updateMap[key])
         }
         return "$sql ${generateOperationSql(query)}"
     }
@@ -114,7 +114,7 @@ abstract class BaseSqlDialect : SqlDialect {
 
         val componentInfo = query.component
 
-        val column = query.generateColumns() ?: componentInfo.selectColumns
+        val column = query.queryCondition.generateColumns() ?: componentInfo.selectColumns
 
         val sql = "select $column from ${componentInfo.tableName + generateOperationSql(query, true)}"
         return generatePaginationSql(sql, query)
@@ -127,32 +127,32 @@ abstract class BaseSqlDialect : SqlDialect {
         var joinSql = ""
         var sql = ""
 
-        if (query.component.joinLazy.isInitialized()) joinSql += generateJoinTablesSql(query.joinTables)
+        if (query.component.joinLazy.isInitialized()) joinSql += generateJoinTablesSql(query.queryCondition.joinTables)
 
-        query.whereSql?.let { sql+="$and $it " }
+        query.queryCondition.whereSql?.let { sql+="$and $it " }
 
-        if (query.eqLazy.isInitialized()) sql += generateOperationSql0(query.equalsOperation, "=", and, query)
-        if (query.notEqLazy.isInitialized()) sql += generateOperationSql0(query.notEqualsOperation, "!=", and, query)
-        if (query.greatEqLazy.isInitialized()) sql += generateOperationSql0(query.greatEqualsOperation, ">=", and, query)
-        if (query.lessEqLazy.isInitialized()) sql += generateOperationSql0(query.lessEqualsOperation, "<=", and, query)
-        if (query.searchLazy.isInitialized()) sql += generateOperationSql0(query.searchOperation, "LIKE", and, query)
-        if (query.isNullLazy.isInitialized()) query.isNullList.forEach { sql += "$and $it IS NULL " }
-        if (query.isNotNullLazy.isInitialized()) query.isNotNullList.forEach { sql += "$and $it IS NOT NULL " }
+        if (query.queryCondition.eqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.equalsOperation, "=", and, query)
+        if (query.queryCondition.notEqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.notEqualsOperation, "!=", and, query)
+        if (query.queryCondition.greatEqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.greatEqualsOperation, ">=", and, query)
+        if (query.queryCondition.lessEqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.lessEqualsOperation, "<=", and, query)
+        if (query.queryCondition.searchLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.searchOperation, "LIKE", and, query)
+        if (query.queryCondition.isNullLazy.isInitialized()) query.queryCondition.isNullList.forEach { sql += "$and $it IS NULL " }
+        if (query.queryCondition.isNotNullLazy.isInitialized()) query.queryCondition.isNotNullList.forEach { sql += "$and $it IS NOT NULL " }
 
         //生成in查询语句
         var inSql = StringBuilder()
-        if (query.inLazy.isInitialized()) query.inOperation.forEach { (key, operations) ->
+        if (query.queryCondition.inLazy.isInitialized()) query.queryCondition.inOperation.forEach { (key, operations) ->
             inSql.append("$and $key in (")
             operations.forEach { value ->
                 inSql.append(",?")
-                query.addParam(value)
+                query.queryCondition.addParam(value)
             }
             inSql = StringBuilder(inSql.replaceFirst(",".toRegex(), ""))
             inSql.append(")")
         }
         sql += inSql.toString()
-        if (query.orEqLazy.isInitialized()) sql += generateOperationSql0(query.orEqualsOperation, "=", or, query)
-        if (query.orNotEqLazy.isInitialized()) sql += generateOperationSql0(query.orNotEqualsOperation, "!=", or, query)
+        if (query.queryCondition.orEqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.orEqualsOperation, "=", or, query)
+        if (query.queryCondition.orNotEqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.orNotEqualsOperation, "!=", or, query)
 
         if (sql.startsWith(and)) {
             sql = sql.replaceFirst(and.toRegex(), "")
@@ -165,15 +165,15 @@ abstract class BaseSqlDialect : SqlDialect {
 
         sql = joinSql + sql
 
-        if (query.groupLazy.isInitialized()) query.groupByList.forEachIndexed { index, groupBy ->
+        if (query.queryCondition.groupLazy.isInitialized()) query.queryCondition.groupByList.forEachIndexed { index, groupBy ->
             sql += if (index == 0) " GROUP BY $groupBy" else ",$groupBy"
         }
-        if (query.havingLazy.isInitialized()) query.havingSqlList.forEachIndexed { index, havingSql ->
+        if (query.queryCondition.havingLazy.isInitialized()) query.queryCondition.havingSqlList.forEachIndexed { index, havingSql ->
             if (index == 0) sql += " HAVING "
             sql += havingSql
         }
 
-        if (query.orderByLazy.isInitialized()) query.orderByList.forEachIndexed { index, orderBy ->
+        if (query.queryCondition.orderByLazy.isInitialized()) query.queryCondition.orderByList.forEachIndexed { index, orderBy ->
             sql += if (index == 0) " ORDER BY $orderBy" else ",$orderBy"
         }
 
@@ -198,7 +198,7 @@ abstract class BaseSqlDialect : SqlDialect {
         operationMap?.forEach { key, operations ->
             operations.forEach { value ->
                 sql.append("$separator $key $condition ? ")
-                query.addParam(value)
+                query.queryCondition.addParam(value)
             }
         }
 

@@ -7,12 +7,12 @@ class OracleDialect : BaseSqlDialect() {
 
     override fun <T> generatePaginationSql(sql: String, query: Query<T>): String {
 
-        if (null == query.offset && null == query.pageSize) return sql
+        if (null == query.queryCondition.offset && null == query.queryCondition.pageSize) return sql
 
-        return if (query.offset != null) {
-            "select * from ( select row_.*, rownum rn from ( $sql ) row_ where rownum < ${query.offset}) where rn >= ${query.pageSize!! + query.offset!!}"
+        return if (query.queryCondition.offset != null) {
+            "select * from ( select row_.*, rownum rn from ( $sql ) row_ where rownum < ${query.queryCondition.offset}) where rn >= ${query.queryCondition.pageSize!! + query.queryCondition.offset!!}"
         } else {
-            "select * from ( $sql ) where rownum < ${query.pageSize}"
+            "select * from ( $sql ) where rownum < ${query.queryCondition.pageSize}"
         }
     }
 

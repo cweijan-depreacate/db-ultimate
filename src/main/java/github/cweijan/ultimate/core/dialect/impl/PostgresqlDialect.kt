@@ -7,9 +7,9 @@ class PostgresqlDialect : BaseSqlDialect() {
 
     override fun <T> generatePaginationSql(sql: String, query: Query<T>): String {
 
-        if (null == query.offset && null == query.pageSize) return sql
+        if (null == query.queryCondition.offset && null == query.queryCondition.pageSize) return sql
 
-        return "$sql limit ${query.pageSize} offset ${query.offset ?: 0}"
+        return "$sql limit ${query.queryCondition.pageSize} offset ${query.queryCondition.offset ?: 0}"
     }
 
 }

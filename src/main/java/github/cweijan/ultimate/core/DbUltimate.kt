@@ -81,7 +81,7 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
 
         val sql = sqlGenerator.generateCountSql(query)
 
-        val toInt = getBySql(sql, query.consumeParams(), GroupFunction::class.java)!!.count.toInt()
+        val toInt = getBySql(sql, query.queryCondition.consumeParams(), GroupFunction::class.java)!!.count.toInt()
         dbConfig.tryCloseConnection()
         return toInt
     }
@@ -90,7 +90,7 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
 
         val sql = sqlGenerator.generateSelectSql(query)
 
-        val bySql = getBySql(sql, query.consumeParams(), query.componentClass)
+        val bySql = getBySql(sql, query.queryCondition.consumeParams(), query.componentClass)
         dbConfig.tryCloseConnection()
         return bySql
     }
@@ -108,7 +108,7 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
     fun <T> find(query: Query<T>): List<T> {
 
         val sql = sqlGenerator.generateSelectSql(query)
-        return findBySql(sql, query.consumeParams(), query.componentClass)
+        return findBySql(sql, query.queryCondition.consumeParams(), query.componentClass)
 
 
     }
@@ -189,7 +189,7 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
     fun <T> delete(query: Query<T>) {
 
         val sql = sqlGenerator.generateDeleteSql(query)
-        executeSql(sql, query.consumeParams())
+        executeSql(sql, query.queryCondition.consumeParams())
         dbConfig.tryCloseConnection()
     }
 
@@ -214,7 +214,7 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
     fun <T> update(query: Query<T>) {
 
         val sql = sqlGenerator.generateUpdateSqlByQuery(query)
-        executeSql(sql, query.consumeParams())
+        executeSql(sql, query.queryCondition.consumeParams())
         dbConfig.tryCloseConnection()
     }
 
