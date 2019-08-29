@@ -23,9 +23,6 @@ import github.cweijan.ultimate.util.StringUtils
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
 
 /**
  * Ultimate封装查询对象
@@ -362,37 +359,44 @@ internal constructor(val componentClass: Class<out T>) {
 
     fun read(paramObject: Any?): Query<T> {
         paramObject ?: return this
-        if (paramObject is Map<*, *>) {
-            paramObject.forEach { key, value ->
-                value?.let {
-                    this.eq(key!!.toString(), it)
+        when {
+            TypeAdapter.isAdapterType(paramObject::class.java)->{
+                throw RuntimeException("必须对对象类型!")
+            }
+            paramObject is Map<*, *> -> {
+                paramObject.forEach { key, value ->
+                    value?.let {
+                        this.eq(key!!.toString(), it)
+                    }
                 }
             }
-        } else {
-            for (field in TypeAdapter.getAllField(paramObject::class.java)) {
-                field.isAccessible = true
-                var fieldName = field.name
-                field.get(paramObject)?.let {
-                    var haveCondition = false
-                    field.getAnnotation(Exclude::class.java)?.run { return@let }
-                    field.getAnnotation(OneToOne::class.java)?.run { return@let }
-                    field.getAnnotation(OneToMany::class.java)?.run { return@let }
-                    if (field.type == String::class.java) {
-                        if (it as String == "") return@let
+            else -> {
+                for (field in TypeAdapter.getAllField(paramObject::class.java)) {
+                    field.isAccessible = true
+                    var fieldName = field.name
+                    field.get(paramObject)?.let {
+                        var haveCondition = false
+                        field.getAnnotation(Exclude::class.java)?.run { return@let }
+                        field.getAnnotation(OneToOne::class.java)?.run { return@let }
+                        field.getAnnotation(OneToMany::class.java)?.run { return@let }
+                        if (field.type == String::class.java) {
+                            if (it as String == "") return@let
+                        }
+                        field.getAnnotation(Page::class.java)?.run { haveCondition = true; page(it.toString().toInt()) }
+                        field.getAnnotation(PageSize::class.java)?.run { haveCondition = true; pageSize(it.toString().toInt()) }
+                        field.getAnnotation(Equals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; eq(fieldName, it) }
+                        field.getAnnotation(OrEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orEq(fieldName, it) }
+                        field.getAnnotation(NotEquals::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; notEq(fieldName, it) }
+                        field.getAnnotation(OrNotEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orNotEq(fieldName, it) }
+                        field.getAnnotation(GreatEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; ge(fieldName, it) }
+                        field.getAnnotation(LessEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; le(fieldName, it) }
+                        field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; search(fieldName, it) }
+                        field.getAnnotation(OrderBy::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orderBy(fieldName) }
+                        if (!haveCondition && component.getColumnInfoByFieldName(fieldName) != null)
+                            eq(fieldName, it)
                     }
-                    field.getAnnotation(Page::class.java)?.run { haveCondition = true; page(it.toString().toInt()) }
-                    field.getAnnotation(PageSize::class.java)?.run { haveCondition = true; pageSize(it.toString().toInt()) }
-                    field.getAnnotation(Equals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; eq(fieldName, it) }
-                    field.getAnnotation(OrEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orEq(fieldName, it) }
-                    field.getAnnotation(NotEquals::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; notEq(fieldName, it) }
-                    field.getAnnotation(OrNotEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orNotEq(fieldName, it) }
-                    field.getAnnotation(GreatEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; ge(fieldName, it) }
-                    field.getAnnotation(LessEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; le(fieldName, it) }
-                    field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; search(fieldName, it) }
-                    field.getAnnotation(OrderBy::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orderBy(fieldName) }
-                    if (!haveCondition && component.getColumnInfoByFieldName(fieldName) != null)
-                        eq(fieldName, it)
                 }
+
             }
         }
         return this
@@ -437,25 +441,25 @@ internal constructor(val componentClass: Class<out T>) {
 
         methodName?.run { Log.debug("Execute method $methodName ") }
         val pagination = Pagination<T>()
-        pagination.count = db.getCount(this)
+        pagination.total = db.getCount(this)
         pagination.pageSize = this.queryCondition.pageSize
 
         //计算总页数
         if (pagination.pageSize != null) {
-            pagination.totalPage = pagination.count / pagination.pageSize
-            if (pagination.count % pagination.pageSize != 0) {
+            pagination.totalPage = pagination.total / pagination.pageSize
+            if (pagination.total % pagination.pageSize != 0) {
                 pagination.totalPage++
             }
         } else pagination.totalPage = 1
         //计算当前页
-        pagination.currentPage = this.queryCondition.page ?: this.queryCondition.offset?.run {
+        pagination.current = this.queryCondition.page ?: this.queryCondition.offset?.run {
             when {
                 this == 0 -> 1
-                pagination.count % this == 0 -> pagination.count / this
-                else -> (pagination.count / this) + 1
+                pagination.total % this == 0 -> pagination.total / this
+                else -> (pagination.total / this) + 1
             }
         } ?: 1
-        pagination.startPage = pagination.currentPage
+        pagination.startPage = pagination.current
 
         pagination.list = db.find(this)
         return pagination

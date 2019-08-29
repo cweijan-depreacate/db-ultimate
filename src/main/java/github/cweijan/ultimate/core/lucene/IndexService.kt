@@ -107,7 +107,7 @@ class IndexService(private val indexDirPath: String) {
         val pagination = Pagination<T>()
         pagination.list = ArrayList<T?>()
         pagination.pageSize = luceneQuery.pageSize ?: 100
-        pagination.currentPage = luceneQuery.page ?: 1
+        pagination.current = luceneQuery.page ?: 1
         pagination.startPage = luceneQuery.page ?: 1
 
         //fields是当未指定field时的默认搜索field
@@ -124,16 +124,16 @@ class IndexService(private val indexDirPath: String) {
         if (luceneQuery.sortLazy.isInitialized()) {
             sort.setSort(*luceneQuery.sortFieldList.toTypedArray())
         }
-        val collector = TopFieldCollector.create(sort, pagination.currentPage * pagination.pageSize, 0)
+        val collector = TopFieldCollector.create(sort, pagination.current * pagination.pageSize, 0)
 
         indexSearcher.search(query, collector)
-        val scoreDocs = collector.topDocs((pagination.currentPage - 1) * pagination.pageSize, pagination.pageSize).scoreDocs
+        val scoreDocs = collector.topDocs((pagination.current - 1) * pagination.pageSize, pagination.pageSize).scoreDocs
         for (scoreDoc in scoreDocs) {
             val doc = indexSearcher.doc(scoreDoc.doc)
             pagination.list.add(LuceneHelper.documentToObject(doc, luceneQuery.componentClass))
         }
         Log.getLogger().debug("lucene query : $luceneSearch, cost time:${System.currentTimeMillis()-beginTime}")
-        pagination.count = collector.totalHits
+        pagination.total = collector.totalHits
 
         return pagination
     }
