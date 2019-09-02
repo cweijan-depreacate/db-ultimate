@@ -43,7 +43,7 @@ public class Query<T> {
     /**
      * 执行统计
      *
-     * @return
+     * @return 统计列表, 每一个列表是一个分组, 每个分组包含各种调用的统计api
      */
     public List<Map> statistic() {
         if (db == null) Intrinsics.throwUninitializedPropertyAccessException("db");
@@ -56,6 +56,7 @@ public class Query<T> {
      *
      * @param column          指定列
      * @param countColumnName 统计列的别名
+     * @return this query
      * @see Query#statistic()
      */
     public Query<T> countDistinct(String column, String countColumnName) {
@@ -67,6 +68,7 @@ public class Query<T> {
      * 统计指定列的总数
      *
      * @param column 指定列
+     * @return this query
      * @see Query#statistic()
      */
     public Query<T> countDistinct(String column) {
@@ -79,6 +81,7 @@ public class Query<T> {
      *
      * @param column        指定列
      * @param sumColumnName 求和列的别名
+     * @return this query
      * @see Query#statistic()
      */
     public Query<T> sum(String column, String sumColumnName) {
@@ -91,6 +94,7 @@ public class Query<T> {
      * 统计,对指定进行求和
      *
      * @param column 指定列
+     * @return this query
      * @see Query#statistic()
      */
     public Query<T> sum(String column) {
@@ -103,6 +107,7 @@ public class Query<T> {
      *
      * @param column        指定列
      * @param avgColumnName 平均列的别名
+     * @return this query
      * @see Query#statistic()
      */
     public Query<T> avg(String column, String avgColumnName) {
@@ -115,6 +120,7 @@ public class Query<T> {
      * 统计指定列的平均值
      *
      * @param column 指定列
+     * @return this query
      * @see Query#statistic()
      */
     public Query<T> avg(String column) {
@@ -127,6 +133,7 @@ public class Query<T> {
      *
      * @param column        指定列
      * @param minColumnName 最小列的别名
+     * @return this query
      * @see Query#statistic()
      */
     public Query<T> min(String column, String minColumnName) {
@@ -139,6 +146,7 @@ public class Query<T> {
      * 统计指定列的最小值
      *
      * @param column 指定列
+     * @return this query
      * @see Query#statistic()
      */
     public Query<T> min(String column) {
@@ -151,6 +159,7 @@ public class Query<T> {
      *
      * @param column        指定列
      * @param maxColumnName 最大值列的别名
+     * @return this query
      * @see Query#statistic()
      */
     public Query<T> max(String column, String maxColumnName) {
@@ -163,6 +172,7 @@ public class Query<T> {
      * 统计,查询指定列的最大值
      *
      * @param column 指定列
+     * @return this query
      * @see Query#statistic()
      */
     public Query<T> max(String column) {
@@ -175,6 +185,7 @@ public class Query<T> {
      *
      * @param tableName 要连接的表
      * @param on        连接条件
+     * @return this query
      */
     public Query<T> join(String tableName, String on) {
         Intrinsics.checkParameterIsNotNull(tableName, "tableName");
@@ -191,6 +202,7 @@ public class Query<T> {
      * 直接拼接where语句
      *
      * @param whereSql 条件语句
+     * @return this query
      */
     public Query<T> where(String whereSql) {
         this.queryCondition.setWhereSql(whereSql);
@@ -202,6 +214,7 @@ public class Query<T> {
      * 根据指定列进行分组
      *
      * @param column 指定列
+     * @return this query
      */
     public Query<T> groupBy(String column) {
         this.queryCondition.groupBy(column);
@@ -211,6 +224,8 @@ public class Query<T> {
 
     /**
      * 统计接口增加显示Column
+     * @param column 要增加显示的column
+     * @return this query
      */
     public Query<T> addShowColumn(String column) {
         this.queryCondition.addShowColumn(column);
@@ -219,7 +234,9 @@ public class Query<T> {
 
 
     /**
-     * having语句片段
+     * 增加having查询
+     * @param havingSql having语句片段
+     * @return this query
      */
     public Query<T> having(String havingSql) {
         this.queryCondition.having(havingSql);
@@ -228,7 +245,11 @@ public class Query<T> {
 
 
     /**
-     * 对指定列进行更新
+     * 对指定列进行更新,需要调用{@link Query#executeUpdate()}执行更新
+     *
+     * @param column 要更新的列
+     * @param value 更新后的值
+     * @return this query
      */
     public Query<T> update(String column, Object value) {
         this.queryCondition.update(column, value);
@@ -238,6 +259,8 @@ public class Query<T> {
 
     /**
      * !=查询
+     *
+     * @return this query
      */
     public Query<T> notEq(String column, Object value) {
         this.queryCondition.notEq(column, value);
@@ -247,6 +270,8 @@ public class Query<T> {
 
     /**
      * or !=查询
+     *
+     * @return this query
      */
     public Query<T> orNotEq(String column, Object value) {
         this.queryCondition.orNotEq(column, value);
@@ -256,6 +281,8 @@ public class Query<T> {
 
     /**
      * like查询
+     *
+     * @return this query
      */
     public Query<T> like(String column, Object content) {
         this.queryCondition.like(column, content);
@@ -265,6 +292,8 @@ public class Query<T> {
 
     /**
      * like查询
+     *
+     * @return this query
      */
     public Query<T> search(String column, Object content) {
         this.queryCondition.like(column, content);
@@ -274,6 +303,8 @@ public class Query<T> {
 
     /**
      * great equals then
+     *
+     * @return this query
      */
     public Query<T> ge(String column, Object value) {
         this.queryCondition.ge(column, value);
@@ -282,7 +313,9 @@ public class Query<T> {
 
 
     /**
-     * less equals then, sql column<=relationClass
+     * less equals then, sql column &lt; = relationClass
+     *
+     * @return this query
      */
     public Query<T> le(String column, Object value) {
         this.queryCondition.le(column, value);
@@ -295,6 +328,7 @@ public class Query<T> {
      *
      * @param column 指定列,驼峰命名会自动转为下划线
      * @param value  列值
+     * @return this query
      */
     public Query<T> eq(String column, Object value) {
         this.queryCondition.eq(column, value);
@@ -304,6 +338,8 @@ public class Query<T> {
 
     /**
      * in查询
+     *
+     * @return this query
      */
     public Query<T> in(String column, List value) {
         this.queryCondition.in0(column, value);
@@ -313,8 +349,10 @@ public class Query<T> {
 
     /**
      * 生成查询: or colum=value
+     *
      * @param column 指定列
-     * @param value 列值
+     * @param value  列值
+     * @return this query
      */
     public Query<T> orEq(String column, Object value) {
         this.queryCondition.orEq(column, value);
@@ -323,6 +361,7 @@ public class Query<T> {
 
     /**
      * 根据当前query对象去获取数据总量
+     *
      * @return 数据总量
      */
     public int count() {
@@ -333,6 +372,8 @@ public class Query<T> {
 
     /**
      * 设置分页每页大小
+     *
+     * @return this query
      */
     public Query<T> pageSize(Integer pageSize) {
         this.queryCondition.setPageSize(pageSize);
@@ -341,6 +382,8 @@ public class Query<T> {
 
     /**
      * 设置分页每页大小
+     *
+     * @return this query
      */
     public Query<T> limit(Integer limit) {
         this.queryCondition.setPageSize(limit);
@@ -350,6 +393,8 @@ public class Query<T> {
 
     /**
      * 设置页码
+     *
+     * @return this query
      */
     public Query<T> page(Integer page) {
         this.queryCondition.setPage(page);
@@ -359,6 +404,8 @@ public class Query<T> {
 
     /**
      * 列为空查询，该查询直接拼接sql，需要防止sql注入
+     *
+     * @return this query
      */
     public Query<T> isNull(String column) {
         this.queryCondition.isNull(column);
@@ -368,6 +415,8 @@ public class Query<T> {
 
     /**
      * 列不为空查询，该查询直接拼接sql，需要防止sql注入
+     *
+     * @return this query
      */
     public Query<T> isNotNull(String column) {
         this.queryCondition.isNotNull(column);
@@ -377,7 +426,9 @@ public class Query<T> {
 
     /**
      * 根据指定列进行排序
+     *
      * @param column 指定列
+     * @return this query
      */
     public Query<T> orderBy(String column) {
         this.queryCondition.orderBy(column);
@@ -387,7 +438,9 @@ public class Query<T> {
 
     /**
      * 根据指定列进行倒序排序
+     *
      * @param column 指定列
+     * @return this query
      */
     public Query<T> orderDescBy(String column) {
         this.queryCondition.orderDescBy(column);
@@ -397,6 +450,7 @@ public class Query<T> {
 
     /**
      * 进行list查询,并转为json字符串
+     *
      * @return json字符串
      */
     public String listJson() {
@@ -406,6 +460,7 @@ public class Query<T> {
 
     /**
      * 进行get查询,并将结果转为json字符串
+     *
      * @return json字符串
      */
     public String getJson() {
@@ -415,6 +470,7 @@ public class Query<T> {
 
     /**
      * 读取excel并将其转为java列表
+     *
      * @param inputPath excel文件绝对路径
      * @return 实体列表
      */
@@ -426,6 +482,7 @@ public class Query<T> {
 
     /**
      * 读取excel并将其转为java列表
+     *
      * @param inputStream excel输入流
      * @return 实体列表
      */
@@ -436,6 +493,7 @@ public class Query<T> {
 
     /**
      * 执行list查询并将其导出为Excel
+     *
      * @param exportPath 导出路径
      * @return
      */
@@ -448,6 +506,7 @@ public class Query<T> {
 
     /**
      * 读取参数对象数组,作为条件查询
+     *
      * @param paramArray 参数对象数组
      */
     public Query<T> read(Object[] paramArray) {
@@ -458,6 +517,7 @@ public class Query<T> {
 
     /**
      * 读取参数对象,作为条件查询
+     *
      * @param paramObject 参数对象
      */
     public Query<T> read(Object paramObject) {
@@ -498,8 +558,8 @@ public class Query<T> {
     /**
      * 偏移查询,返回{@link Pagination}对象
      *
-     * @offset 偏移量
-     * @limit 最大数量
+     * @param offset 偏移量
+     * @param limit 最大数量
      */
     public Pagination<T> offsetList(Integer offset, Integer limit) {
         return this.offset(offset).limit(limit).pageList();
@@ -533,6 +593,7 @@ public class Query<T> {
 
     /**
      * 标注方法名称,无实际作用
+     *
      * @param mark 标注名
      */
     public Query<T> mark(String mark) {

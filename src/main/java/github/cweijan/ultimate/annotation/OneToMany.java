@@ -13,17 +13,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OneToMany {
     /**
-     要关联的表实体Class,默认关联主键
+     *
+     * @return 要关联的表实体Class,默认关联实体的主键
      */
     Class<?> relationClass();
 
     /**
-     关联表的外键名称
+     *
+     * @return 关联表的外键名称
      */
     String relationColumn();
 
     /**
-     * 其他关联Sql
+     * @return 其他条件Sql
      */
     String where() default "";
 
