@@ -177,7 +177,7 @@ abstract class BaseSqlDialect : SqlDialect {
             sql += if (index == 0) " ORDER BY $orderBy" else ",$orderBy"
         }
 
-        return if (useAlias) query.alias + sql else sql
+        return if (useAlias) query.queryCondition.alias + sql else sql
     }
 
     private fun generateJoinTablesSql(joinTables: MutableList<String>?): String {

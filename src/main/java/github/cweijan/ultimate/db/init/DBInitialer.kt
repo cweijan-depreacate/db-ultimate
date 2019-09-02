@@ -34,7 +34,7 @@ class DBInitialer(private val dbConfig: DbConfig) {
     /**
      * 创建Bean所对应的表
      */
-    fun initalerTable() {
+    fun initializeTable() {
 
         val extraData = ComponentInfo.init(ExtraData::class.java)
         createTable(extraData)

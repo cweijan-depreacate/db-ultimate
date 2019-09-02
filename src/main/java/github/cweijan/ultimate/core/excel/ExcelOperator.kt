@@ -30,7 +30,8 @@ object ExcelOperator {
      * @param exportPath excel导出路径
      * @return
      */
-    fun outputExcel(headers: Array<String>, values: Array<ArrayList<Any?>>, exportPath: String): Boolean {
+    @JvmStatic
+    fun outputExcel(headers: List<String>, values: Array<ArrayList<Any?>>, exportPath: String): Boolean {
 
         val wb = HSSFWorkbook()
         val sheet = wb.createSheet("sheet1")
@@ -88,6 +89,7 @@ object ExcelOperator {
      * @throws IOException
      */
     @Throws(IOException::class)
+    @JvmStatic
     fun <T> inputExcel(inputStream: InputStream, componentClass: Class<T>): List<T> {
 
         val workbook = HSSFWorkbook(inputStream)

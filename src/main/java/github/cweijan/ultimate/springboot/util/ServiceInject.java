@@ -96,7 +96,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
      */
     @Transactional(readOnly = true)
     public Pagination<T> findByPage(Integer page, Integer pageSize, Object... objects) {
-        return getQuery().read(objects).page(page).pageSize(pageSize).pageList();
+        return getQuery().read(objects).pageList(page,pageSize);
     }
 
     /**
@@ -115,7 +115,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
                 query.read(object);
             }
         }
-        return query.offset(offset).pageSize(pageSize).pageList();
+        return query.offset(offset).limit(pageSize).pageList();
     }
 
     /**
@@ -248,16 +248,6 @@ public abstract class ServiceInject<T> implements InitializingBean {
     }
 
     /**
-     * 使用sql进行查询
-     *
-     * @param sql
-     * @return
-     */
-    public List<T> findBySql(String sql) {
-        return findBySql(sql, null);
-    }
-
-    /**
      * 使用sql进行查询,支持参数,可防止sql注入
      *
      * @param sql    sql
@@ -266,16 +256,6 @@ public abstract class ServiceInject<T> implements InitializingBean {
      */
     public List<T> findBySql(String sql, Object... params) {
         return Query.db.findBySql(sql, params, componentClass);
-    }
-
-    /**
-     * 使用sql进行get查询
-     *
-     * @param sql
-     * @return
-     */
-    public T getBySql(String sql) {
-        return getBySql(sql, null);
     }
 
     /**

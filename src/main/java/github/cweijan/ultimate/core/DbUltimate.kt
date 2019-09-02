@@ -1,13 +1,16 @@
 package github.cweijan.ultimate.core
 
 import github.cweijan.ultimate.convert.TypeConvert
+import github.cweijan.ultimate.core.component.ComponentScan
 import github.cweijan.ultimate.core.component.TableInfo
+import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.core.dialect.DialectAdapter
 import github.cweijan.ultimate.core.dialect.SqlDialect
 import github.cweijan.ultimate.core.extra.ExtraDataService
 import github.cweijan.ultimate.core.extra.GroupFunction
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
+import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.springboot.util.ServiceMap
 import github.cweijan.ultimate.util.Log
 import java.sql.ResultSet
@@ -15,7 +18,7 @@ import java.sql.ResultSet
 /**
  * 核心Api,用于Crud操作
  */
-class DbUltimate internal constructor(var dbConfig: DbConfig) {
+class DbUltimate private constructor(var dbConfig: DbConfig) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
     var sqlGenerator: SqlDialect = DialectAdapter.getSqlGenerator(dbConfig.getDatabaseType())
@@ -90,9 +93,9 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
 
         val sql = sqlGenerator.generateSelectSql(query)
 
-        val bySql = getBySql(sql, query.queryCondition.consumeParams(), query.componentClass)
+        val instance = getBySql(sql, query.queryCondition.consumeParams(), query.componentClass)
         dbConfig.tryCloseConnection()
-        return bySql
+        return instance
     }
 
     fun <T> getByPrimaryKey(clazz: Class<T>, value: Any?): T? {
@@ -217,5 +220,20 @@ class DbUltimate internal constructor(var dbConfig: DbConfig) {
         executeSql(sql, query.queryCondition.consumeParams())
         dbConfig.tryCloseConnection()
     }
+
+    companion object{
+        /**
+         * 初始化Db-Ultimate
+         */
+        @JvmStatic
+        fun init(dbConfig: DbConfig){
+            Query.db=DbUltimate(dbConfig)
+            TableInfo.enableDevelopMode(dbConfig.develop)
+            ComponentInfo.init(GroupFunction::class.java)
+            dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
+            DBInitialer(dbConfig).initializeTable()
+        }
+    }
+
 
 }

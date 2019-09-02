@@ -7,7 +7,7 @@ object TableInfo {
 
     private var developMode = false;
 
-    fun enableDevelopMode() {
+    fun enableDevelopMode(develop:Boolean) {
         developMode = true
     }
 
