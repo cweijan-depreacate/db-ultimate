@@ -4,7 +4,6 @@ import github.cweijan.ultimate.core.component.TableInfo;
 import github.cweijan.ultimate.core.component.info.ComponentInfo;
 import github.cweijan.ultimate.core.excel.ExcelOperator;
 import github.cweijan.ultimate.core.page.Pagination;
-import github.cweijan.ultimate.db.config.DbConfig;
 import github.cweijan.ultimate.util.Json;
 import github.cweijan.ultimate.util.Log;
 import github.cweijan.ultimate.util.StringUtils;
@@ -630,13 +629,6 @@ public class Query<T> {
     public static <T> Query<T> of(Class<T> componentClass) {
         Intrinsics.checkParameterIsNotNull(componentClass, "componentClass");
         return new Query<>(componentClass);
-    }
-
-    /**
-     * 初始化Db-Ultimate
-     */
-    public static void init(DbConfig dbConfig) {
-        DbUltimate.init(dbConfig);
     }
 
 }

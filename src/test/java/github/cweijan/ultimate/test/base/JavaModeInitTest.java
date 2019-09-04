@@ -9,10 +9,10 @@ import org.junit.Test;
 
 import java.util.List;
 
-public class JavaModeInitTest{
+public class JavaModeInitTest {
 
     @Test
-    public void init(){
+    public void init() {
 
         DbConfig dbConfig = new DbConfig();
         dbConfig.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8");
@@ -21,13 +21,12 @@ public class JavaModeInitTest{
         dbConfig.setPassword("665420");
         dbConfig.setScanPackage("github.cweijan");
         dbConfig.setTableMode(TableAutoMode.init);
-        DbUltimate dbUltimate = new DbUltimate(dbConfig);
+        DbUltimate.init(dbConfig);
+        DbUltimate dbUltimate = Query.db;
         List<Admin> admins = dbUltimate.find(Query.of(Admin.class));
         System.out.println(admins);
 
     }
-
-
 
 
 }

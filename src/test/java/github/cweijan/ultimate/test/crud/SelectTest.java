@@ -10,6 +10,7 @@ import github.cweijan.ultimate.util.Json;
 import github.cweijan.ultimate.util.Log;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,14 +67,14 @@ public class SelectTest extends BaseTest{
         ArrayList<Integer> idList = new ArrayList<>();
         idList.add(2);
         idList.add(3);
-        List<Admin> admins = Query.of(Admin.class).in0("id", idList).list();
+        List<Admin> admins = Query.of(Admin.class).in("id", idList).list();
         Log.info(admins);
 
 
     }
 
     @Test
-    public void testInputExcel(){
+    public void testInputExcel() throws IOException {
 
         List<Admin> admins = Query.of(Admin.class).inputExcel("D://test.xls");
         Log.info(admins);

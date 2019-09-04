@@ -4,7 +4,6 @@ import github.cweijan.ultimate.core.lucene.IndexService;
 import github.cweijan.ultimate.core.lucene.LuceneQuery;
 import github.cweijan.ultimate.core.lucene.config.LuceneConfig;
 import github.cweijan.ultimate.util.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,15 +16,17 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(LuceneConfig.class)
 public class LuceneAutoConfiguration {
 
-    @Autowired(required = false)
-    private LuceneConfig luceneConfig;
+    private final LuceneConfig luceneConfig;
+
+    public LuceneAutoConfiguration(LuceneConfig luceneConfig) {
+        this.luceneConfig = luceneConfig;
+    }
 
     @Bean
     public IndexService indexService(){
         if(luceneConfig==null || StringUtils.isEmpty(luceneConfig.getIndexDirPath()))return null;
 
         LuceneQuery.init(luceneConfig.getIndexDirPath());
-
 
         return LuceneQuery.indexService;
     }

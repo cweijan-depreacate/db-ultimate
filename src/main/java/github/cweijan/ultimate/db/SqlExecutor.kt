@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.db
 
+import github.cweijan.ultimate.core.tx.TransactionHelper
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.util.Log
 import java.sql.Connection
@@ -11,15 +12,14 @@ import java.util.stream.IntStream
 /**
  * 用来执行Sql
  */
-class SqlExecutor(private val dbConfig: DbConfig) {
-
+class SqlExecutor(private val dbConfig: DbConfig,private val transactionHelper:TransactionHelper) {
     /**
      * @param sql    sql
      * @param params 查询参数
      */
     fun executeSql(sql: String, params: Array<Any>? = null): ResultSet? {
 
-        return executeSql(sql, params, dbConfig.getConnection())
+        return executeSql(sql, params, transactionHelper.getConnection())
     }
 
     private fun executeSql(sql: String, params: Array<Any>?, connection: Connection): ResultSet? {

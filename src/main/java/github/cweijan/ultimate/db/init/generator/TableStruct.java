@@ -16,11 +16,11 @@ public interface TableStruct {
     static List<? extends TableStruct> getTableStruct(DatabaseType databaseType,String schemaName, String tableName) {
 
         switch (databaseType) {
-            case mysql:
+            case Mysql:
                 return Query.of(MysqlTableStruct.class).eq("tableSchema", schemaName).eq("tableName", tableName).list();
-            case oracle:
-            case sqllite:
-            case postgresql:
+            case Oracle:
+            case Sqllite:
+            case Postgresql:
         }
 
         return null;

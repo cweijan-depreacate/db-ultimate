@@ -8,26 +8,29 @@ import github.cweijan.ultimate.core.dialect.DialectAdapter
 import github.cweijan.ultimate.core.dialect.SqlDialect
 import github.cweijan.ultimate.core.extra.ExtraDataService
 import github.cweijan.ultimate.core.extra.GroupFunction
+import github.cweijan.ultimate.core.tx.TransactionHelper
+import github.cweijan.ultimate.db.HikariDataSourceAdapter
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.springboot.util.ServiceMap
 import github.cweijan.ultimate.util.Log
 import java.sql.ResultSet
+import javax.sql.DataSource
 
 /**
  * 核心Api,用于Crud操作
  */
-class DbUltimate private constructor(var dbConfig: DbConfig) {
+class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: TransactionHelper) {
 
-    private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
+    private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig, transactionHelper)
     var sqlGenerator: SqlDialect = DialectAdapter.getSqlGenerator(dbConfig.getDatabaseType())
 
     @JvmOverloads
     fun <T> findBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): List<T> {
 
         val beanList = TypeConvert.resultSetToBeanList(sqlExecutor.executeSql(sql, params)!!, clazz)
-        dbConfig.tryCloseConnection()
+        transactionHelper.tryCloseConnection()
         beanList.forEach { bean ->
             handlerRelation(bean)
         }
@@ -51,7 +54,7 @@ class DbUltimate private constructor(var dbConfig: DbConfig) {
             Log.getLogger().warn("TooManyResultWarn: Get expect 1 result,but fond $rowCount")
         }
         val bean = TypeConvert.resultSetToBean(resultSet, clazz)
-        dbConfig.tryCloseConnection()
+        transactionHelper.tryCloseConnection()
         handlerRelation(bean)
         return bean
     }
@@ -85,7 +88,7 @@ class DbUltimate private constructor(var dbConfig: DbConfig) {
         val sql = sqlGenerator.generateCountSql(query)
 
         val toInt = getBySql(sql, query.queryCondition.consumeParams(), GroupFunction::class.java)!!.count.toInt()
-        dbConfig.tryCloseConnection()
+        transactionHelper.tryCloseConnection()
         return toInt
     }
 
@@ -94,7 +97,7 @@ class DbUltimate private constructor(var dbConfig: DbConfig) {
         val sql = sqlGenerator.generateSelectSql(query)
 
         val instance = getBySql(sql, query.queryCondition.consumeParams(), query.componentClass)
-        dbConfig.tryCloseConnection()
+        transactionHelper.tryCloseConnection()
         return instance
     }
 
@@ -105,7 +108,7 @@ class DbUltimate private constructor(var dbConfig: DbConfig) {
 
     fun deleteByPrimaryKey(clazz: Class<*>, value: Any) {
         Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value).executeDelete();
-        dbConfig.tryCloseConnection()
+        transactionHelper.tryCloseConnection()
     }
 
     fun <T> find(query: Query<T>): List<T> {
@@ -143,7 +146,7 @@ class DbUltimate private constructor(var dbConfig: DbConfig) {
         if (executeSql?.next() == true) {
             TableInfo.getComponent(component.javaClass).setPrimaryValue(component, executeSql.getInt(1))
         }
-        dbConfig.tryCloseConnection()
+        transactionHelper.tryCloseConnection()
 
     }
 
@@ -181,19 +184,19 @@ class DbUltimate private constructor(var dbConfig: DbConfig) {
 
     fun <T> batchDelete(query: Query<T>, privateKeyList: List<Any>) {
         privateKeyList.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey).executeDelete() }
-        dbConfig.tryCloseConnection()
+        transactionHelper.tryCloseConnection()
     }
 
     fun <T> batchDelete(query: Query<T>, privateKeys: Array<Any>) {
         privateKeys.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey).executeDelete() }
-        dbConfig.tryCloseConnection()
+        transactionHelper.tryCloseConnection()
     }
 
     fun <T> delete(query: Query<T>) {
 
         val sql = sqlGenerator.generateDeleteSql(query)
         executeSql(sql, query.queryCondition.consumeParams())
-        dbConfig.tryCloseConnection()
+        transactionHelper.tryCloseConnection()
     }
 
     fun update(component: Any) {
@@ -207,7 +210,7 @@ class DbUltimate private constructor(var dbConfig: DbConfig) {
         try {
             val sqlObject = sqlGenerator.generateUpdateSqlByObject(component, columnName)
             executeSql(sqlObject.sql, sqlObject.params.toTypedArray())
-            dbConfig.tryCloseConnection()
+            transactionHelper.tryCloseConnection()
         } catch (e: IllegalAccessException) {
             Log.error(e.message, e)
         }
@@ -218,20 +221,30 @@ class DbUltimate private constructor(var dbConfig: DbConfig) {
 
         val sql = sqlGenerator.generateUpdateSqlByQuery(query)
         executeSql(sql, query.queryCondition.consumeParams())
-        dbConfig.tryCloseConnection()
+        transactionHelper.tryCloseConnection()
     }
 
-    companion object{
+    companion object {
         /**
          * 初始化Db-Ultimate
          */
         @JvmStatic
-        fun init(dbConfig: DbConfig){
-            Query.db=DbUltimate(dbConfig)
+        fun init(dbConfig: DbConfig, dataSource: DataSource): DbUltimate {
+            val dbUltimate = DbUltimate(dbConfig, TransactionHelper(dataSource))
+            Query.db = dbUltimate
             TableInfo.enableDevelopMode(dbConfig.develop)
             ComponentInfo.init(GroupFunction::class.java)
             dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
-            DBInitialer(dbConfig).initializeTable()
+            DBInitialer(dbConfig, dbUltimate.transactionHelper).initializeTable()
+            return dbUltimate
+        }
+
+        /**
+         * 初始化Db-Ultimate
+         */
+        @JvmStatic
+        fun init(dbConfig: DbConfig): DbUltimate {
+            return init(dbConfig, HikariDataSourceAdapter(dbConfig).dataSource)
         }
     }
 

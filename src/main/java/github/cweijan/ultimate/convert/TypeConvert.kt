@@ -34,6 +34,7 @@ object TypeConvert {
      * @param beanClass 要转换的类型
      * @return 转换完成的实体列表
      */
+    @JvmStatic
     fun <T> resultSetToBeanList(resultSet: ResultSet, beanClass: Class<T>): List<T> {
 
         val beanList = ArrayList<T>()

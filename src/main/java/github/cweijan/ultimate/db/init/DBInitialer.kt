@@ -6,6 +6,7 @@ import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.core.extra.ExtraData
+import github.cweijan.ultimate.core.tx.TransactionHelper
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.generator.TableAutoMode
@@ -20,14 +21,14 @@ import java.util.*
 /**
  * 用于创建实体对应的不存在的数据表
  */
-class DBInitialer(private val dbConfig: DbConfig) {
+class DBInitialer(private val dbConfig: DbConfig,private val transactionHelper:TransactionHelper) {
 
-    private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig)
-    private var connection: Connection = dbConfig.getConnection()
-    private var initSqlGenetator: TableInitSqlGenerator = GeneratorAdapter.getInitGenerator(dbConfig.getDatabaseType())
+    private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig,transactionHelper)
+    private var connection: Connection = transactionHelper.getConnection()
+    private var initSqlGenetator: TableInitSqlGenerator = GeneratorAdapter.getInitGenerator(dbConfig.databaseType)
 
     private fun getConnection(): Connection {
-        if (connection.isClosed) connection = dbConfig.getConnection()
+        if (connection.isClosed) connection = transactionHelper.getConnection()
         return connection
     }
 
@@ -42,16 +43,16 @@ class DBInitialer(private val dbConfig: DbConfig) {
 
         val excludeList = listOf(MysqlTableStruct::class.java, ExtraData::class.java)
         val component = TableInfo.componentList.stream().filter { componentInfo ->
-           !excludeList.contains(componentInfo.componentClass) && componentInfo.componentClass.getAnnotation(Table::class.java) != null
+            !excludeList.contains(componentInfo.componentClass) && componentInfo.componentClass.getAnnotation(Table::class.java) != null
         }
         when (dbConfig.tableMode) {
-            TableAutoMode.none -> return
             TableAutoMode.init -> {
                 component.forEach { componentInfo -> recreateTable(componentInfo) }
             }
             TableAutoMode.update -> {
                 component.forEach { componentInfo -> updateTable(componentInfo) }
             }
+            else -> return
         }
 
     }

@@ -9,6 +9,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "ultimate.lucene")
 public class LuceneConfig {
 
+    /**
+     * lucene service index path.
+     */
     private String indexDirPath;
 
     public String getIndexDirPath() {

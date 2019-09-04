@@ -8,7 +8,7 @@ object TableInfo {
     private var developMode = false;
 
     fun enableDevelopMode(develop:Boolean) {
-        developMode = true
+        developMode = develop
     }
 
     private val TypeMap: MutableMap<String?, ComponentInfo> by lazy {

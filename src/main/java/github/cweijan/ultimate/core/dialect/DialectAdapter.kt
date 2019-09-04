@@ -13,10 +13,10 @@ object DialectAdapter{
 
     fun getSqlGenerator(databaseType: DatabaseType): SqlDialect {
         return when (databaseType) {
-            DatabaseType.mysql -> MysqlDialect()
-            DatabaseType.oracle -> OracleDialect()
-            DatabaseType.postgresql -> PostgresqlDialect()
-            DatabaseType.sqllite -> PostgresqlDialect()
+            DatabaseType.Mysql -> MysqlDialect()
+            DatabaseType.Oracle -> OracleDialect()
+            DatabaseType.Postgresql -> PostgresqlDialect()
+            DatabaseType.Sqllite -> PostgresqlDialect()
             else -> MysqlDialect()
         }
     }

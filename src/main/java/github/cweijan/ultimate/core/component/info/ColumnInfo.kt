@@ -93,8 +93,8 @@ class ColumnInfo {
 
             //generate foreign key column info
             field.getAnnotation(OneToOne::class.java)?.run {
-                if(!Collection::class.java.isAssignableFrom(field.type)){
-                    throw RuntimeException("OneToMany annotation only annotate Collection!")
+                if(Collection::class.java.isAssignableFrom(field.type)){
+                    throw RuntimeException("OneToOne annotation only annotate Object!")
                 }
 
                 val joinColumnName = TypeAdapter.convertHumpToUnderLine(relationColumn)!!

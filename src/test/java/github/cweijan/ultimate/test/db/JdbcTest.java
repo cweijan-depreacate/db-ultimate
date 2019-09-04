@@ -17,7 +17,7 @@ public class JdbcTest extends BaseTest{
     @Test
     public void TestGetJdbc() throws SQLException{
 
-        Connection connection = dbConfig.getConnection();
+        Connection connection = transactionHelper.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement("select * from rh_admin where message=? ");
         preparedStatement.setString(1,"'msg' or 1=1");
         ResultSet resultSet = preparedStatement.executeQuery();

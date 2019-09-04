@@ -45,7 +45,7 @@ public class TestSpringBoot {
     }
     @Test
     public void testServiceInject(){
-        Pagination<Admin> list = adminService.findAllByPage(0, 10);
+        Pagination<Admin> list = adminService.findByPage(0, 10);
         Log.info(Json.toJson(list));
     }
 

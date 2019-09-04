@@ -21,7 +21,7 @@ public class StatisticQueryTest extends BaseTest{
     public void testStatistic(){
 
         Query<Admin> query = Query.of(Admin.class).min("id").max("id").sum("id").avg("id").countDistinct("id").addShowColumn("test").groupBy("test").having("test!='test3'").ge("id", 10);
-        List<Map<String, Object>> statisticList = query.statistic();
+        List<Map> statisticList = query.statistic();
         statisticList.forEach(statistic->{
             statistic.forEach((key, value)->{
                 Log.info(key + "=" + value);
