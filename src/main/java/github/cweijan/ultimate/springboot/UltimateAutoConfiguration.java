@@ -35,7 +35,7 @@ public class UltimateAutoConfiguration {
 
     @Bean
     public PlatformTransactionManager transactionManager() {
-        return this.dbConfig.configCheck() ? new DataSourceTransactionManager(this.dataSource) : null;
+        return this.dbConfig.configCheck(dataSource) ? new DataSourceTransactionManager(this.dataSource) : null;
     }
 
     @Bean
@@ -44,7 +44,7 @@ public class UltimateAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean({TransactionTemplate.class})
+    @ConditionalOnMissingBean({TransactionTemplate.class,DataSourceTransactionManager.class})
     public TransactionTemplate transactionTemplate() {
         return new TransactionTemplate() {
             public void afterPropertiesSet() {

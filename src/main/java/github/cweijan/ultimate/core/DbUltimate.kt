@@ -68,7 +68,7 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
         //一对多赋值
         if (component.oneToManyLazy.isInitialized()) {
             component.oneToManyList.forEach { oneToManyInfo ->
-                oneToManyInfo.oneTomanyField.set(bean, ServiceMap.get(oneToManyInfo.relationClass.javaObjectType)
+                oneToManyInfo.oneTomanyField.set(bean, ServiceMap.get(oneToManyInfo.relationClass)
                         .query.eq(oneToManyInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name))
                         .where(oneToManyInfo.where)
                         .list())
@@ -77,7 +77,7 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
         // 一对一赋值
         if (component.oneToOneLazy.isInitialized()) {
             component.oneToOneList.forEach { oneToOneInfo ->
-                oneToOneInfo.oneToOneField.set(bean, ServiceMap.get(oneToOneInfo.relationClass.javaObjectType)
+                oneToOneInfo.oneToOneField.set(bean, ServiceMap.get(oneToOneInfo.relationClass)
                         .getBy(oneToOneInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
             }
         }

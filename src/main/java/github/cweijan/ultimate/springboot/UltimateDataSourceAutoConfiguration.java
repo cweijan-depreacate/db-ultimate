@@ -28,7 +28,7 @@ public class UltimateDataSourceAutoConfiguration {
     @ConditionalOnMissingBean({DataSource.class})
     public DataSource createDataSource() {
 
-        if (this.dbConfig.configCheck()) {
+        if (this.dbConfig.configCheck(null)) {
             Log.info("Not dataSource found! init hikariDataSource");
             return new HikariDataSourceAdapter(dbConfig).getDataSource();
         }

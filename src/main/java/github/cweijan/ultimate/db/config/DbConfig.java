@@ -7,6 +7,8 @@ import github.cweijan.ultimate.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import javax.sql.DataSource;
+
 @ConfigurationProperties(prefix = "ultimate.jdbc")
 public class DbConfig {
 
@@ -56,11 +58,14 @@ public class DbConfig {
         this.url = url;
     }
 
-    public boolean configCheck() {
+    public boolean configCheck(DataSource dataSource) {
         boolean enable = true;
         if (!this.enable) {
             Log.info("db-ultimate is disabled, skip..");
             enable = false;
+        } else if (dataSource != null) {
+            Log.info("using project datasource to db-ultimate");
+            return true;
         } else if (this.url == null) {
             Log.error("jdbc url property not found! skip..");
             enable = false;
