@@ -111,6 +111,11 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
         transactionHelper.tryCloseConnection()
     }
 
+    fun deleteByPrimaryKeyList(clazz: Class<*>, value: Array<Any>) {
+        Query.of(clazz).`in`(TableInfo.getComponent(clazz).primaryKey!!, value.toMutableList()).executeDelete();
+        transactionHelper.tryCloseConnection()
+    }
+
     fun <T> find(query: Query<T>): List<T> {
 
         val sql = sqlGenerator.generateSelectSql(query)

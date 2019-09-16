@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -340,11 +341,20 @@ public class Query<T> {
      *
      * @return this query
      */
-    public Query<T> in(String column, List value) {
-        this.queryCondition.in0(column, value);
+    public Query<T> in(String column, List<?> value) {
+        this.queryCondition.in(column, value);
         return this;
     }
 
+    /**
+     * in查询
+     *
+     * @return this query
+     */
+    public Query<T> in(String column, Object[] value) {
+        this.queryCondition.in(column, Arrays.asList(value));
+        return this;
+    }
 
     /**
      * 生成查询: or colum=value

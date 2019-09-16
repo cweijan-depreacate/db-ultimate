@@ -231,7 +231,7 @@ internal class QueryCondition(var component: ComponentInfo) {
     /**
      * in查询
      */
-    fun in0(column: String, value: MutableList<*>?) {
+    fun `in`(column: String, value: MutableList<*>?) {
 
         value?.let {
             inOperation[getColumnName(column)] = value

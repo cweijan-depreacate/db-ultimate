@@ -10,6 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
+/**
+ * Service工具类,对Query操作进行封装,提供单表的常用操作
+ * @param <T> 表实体类,不可为空
+ */
 public abstract class ServiceInject<T> implements InitializingBean {
 
     private Class<T> componentClass;
@@ -227,9 +231,23 @@ public abstract class ServiceInject<T> implements InitializingBean {
         Query.db.deleteByPrimaryKey(componentClass, primaryKey);
     }
 
+    /**
+     * 根据主键列表进行删除
+     *
+     * @param primaryKeyList 主键值
+     */
     @Transactional
-    public void batchDeleteByExample(Object example) {
-        getQuery().read(example).executeDelete();
+    public void batchDelete(Object[] primaryKeyList) {
+        Query.db.deleteByPrimaryKeyList(componentClass, primaryKeyList);
+    }
+
+    /**
+     * 使用查询查询进行批量删除
+     * @param param 实体查询对象为任意JavaBean,以FieldName作为column,FieldValue作为Value
+     */
+    @Transactional
+    public void batchDeleteByParam(Object param) {
+        getQuery().read(param).executeDelete();
     }
 
     @Transactional
