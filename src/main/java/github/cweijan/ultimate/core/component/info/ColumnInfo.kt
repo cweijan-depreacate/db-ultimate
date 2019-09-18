@@ -83,8 +83,6 @@ class ColumnInfo {
                 columnInfo.nullable = false
                 primaryAnnotation?.run {
                     columnInfo.autoIncrement = this.autoIncrement
-                    componentInfo.autoIncrement = this.autoIncrement
-                    columnInfo.columnName = if (StringUtils.isNotEmpty(this.value)) this.value else field.name
                     columnInfo.comment = if (StringUtils.isNotEmpty(this.comment)) this.comment else null
                     columnInfo.length = if (primaryAnnotation.length != 0) this.length else null
                 }

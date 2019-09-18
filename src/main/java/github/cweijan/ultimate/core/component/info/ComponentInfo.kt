@@ -17,8 +17,6 @@ class ComponentInfo(var componentClass: Class<*>) {
 
     lateinit var tableName: String
 
-    internal var autoIncrement: Boolean = false
-
     var tableAlias: String? = null
 
     /**
@@ -111,7 +109,7 @@ class ComponentInfo(var componentClass: Class<*>) {
     @Throws(IllegalAccessException::class)
     fun setPrimaryValue(component: Any, primaryValue: Any) {
 
-        if (autoIncrement && getPrimaryValue(component) == null) {
+        if (getPrimaryValue(component) == null) {
             primaryField?.set(component, primaryValue)
         }
 
