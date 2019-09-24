@@ -56,7 +56,7 @@ abstract class BaseSqlDialect : SqlDialect {
         val fieldName = byColumn ?: componentInfo.primaryField?.name
         ?: throw PrimaryKeyNotExistsException("invoke update must annotation table primary key!")
         val conditionFieldValue = componentInfo.getValueByFieldName(component, fieldName)
-                ?: throw PrimaryValueNotSetException("update relationClass must set!")
+                ?: throw PrimaryValueNotSetException("update componnet must set primary value!")
         var sql = "UPDATE ${componentInfo.tableName} a set "
         val params = ArrayList<Any>();
 
