@@ -37,7 +37,7 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
         return beanList
     }
 
-    fun executeSql(sql: String, params: Array<Any>? = null): ResultSet? {
+    fun executeSql(sql: String, vararg params: Any?): ResultSet? {
 
         return sqlExecutor.executeSql(sql, params)
 
