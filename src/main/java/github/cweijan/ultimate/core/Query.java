@@ -5,6 +5,7 @@ import github.cweijan.ultimate.core.component.info.ComponentInfo;
 import github.cweijan.ultimate.core.excel.ExcelOperator;
 import github.cweijan.ultimate.core.page.Pagination;
 import github.cweijan.ultimate.util.Json;
+import github.cweijan.ultimate.util.LambdaUtils;
 import github.cweijan.ultimate.util.Log;
 import github.cweijan.ultimate.util.StringUtils;
 import kotlin.Pair;
@@ -322,6 +323,18 @@ public class Query<T> {
         return this;
     }
 
+
+    /**
+     * =查询
+     *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @param value  列值
+     * @return this query
+     */
+    public Query<T> eq(FieldQuery<T> fieldQuery, Object value) {
+        this.queryCondition.eq(LambdaUtils.getFieldName(fieldQuery), value);
+        return this;
+    }
 
     /**
      * =查询

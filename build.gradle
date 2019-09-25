@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'io.github.cweijan'
-version '1.4.5'
+version '1.4.6'
 def springBootVersion="2.1.4.RELEASE"
 
 sourceCompatibility = 1.8
