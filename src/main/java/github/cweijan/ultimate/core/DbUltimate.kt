@@ -47,13 +47,13 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
     fun <T> getBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): T? {
 
         val resultSet = sqlExecutor.executeSql(sql, params)!!
-        resultSet.last()
-        val rowCount = resultSet.row
-        resultSet.beforeFirst()
-        if (rowCount > 1) {
-            Log.getLogger().warn("TooManyResultWarn: Get expect 1 result,but fond $rowCount")
+        val resultSetToBeanList = TypeConvert.resultSetToBeanList(resultSet, clazz)
+        if (resultSetToBeanList.isEmpty()) return null;
+        if (resultSetToBeanList.size > 1) {
+            Log.getLogger().warn("TooManyResultWarn: Get expect 1 result,but fond ${resultSetToBeanList.size}")
         }
-        val bean = TypeConvert.resultSetToBean(resultSet, clazz)
+        val bean = resultSetToBeanList[0]
+
         transactionHelper.tryCloseConnection()
         handlerRelation(bean)
         return bean
@@ -147,7 +147,7 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
     fun insert(component: Any) {
 
         val sqlObject = sqlGenerator.generateInsertSql(component)
-        val executeSql = executeSql(sqlObject.sql, sqlObject.params.toTypedArray())
+        val executeSql = executeSql(sqlObject.sql, *sqlObject.params.toTypedArray())
         if (executeSql?.next() == true) {
             TableInfo.getComponent(component.javaClass).setPrimaryValue(component, executeSql.getInt(1))
         }

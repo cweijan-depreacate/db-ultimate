@@ -33,8 +33,8 @@ public class UltimateAutoConfiguration {
         this.dataSource = dataSource;
     }
 
-    @Bean
-    public PlatformTransactionManager transactionManager() {
+    @Bean(name = "ultimateTransactionManager")
+    public PlatformTransactionManager ultimateTransactionManager() {
         return this.dbConfig.configCheck(dataSource) ? new DataSourceTransactionManager(this.dataSource) : null;
     }
 
