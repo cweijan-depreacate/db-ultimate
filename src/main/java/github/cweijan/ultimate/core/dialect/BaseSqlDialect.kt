@@ -10,6 +10,7 @@ import github.cweijan.ultimate.exception.PrimaryKeyNotExistsException
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.DateUtils
 import github.cweijan.ultimate.util.Json
+import github.cweijan.ultimate.util.ReflectUtils
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -24,7 +25,7 @@ abstract class BaseSqlDialect : SqlDialect {
         for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {
             field.isAccessible = true
             if (componentInfo.isExcludeField(field)) continue
-            val fieldValue = field.get(component)
+            val fieldValue =ReflectUtils.getFieldValue(component,field)
             fieldValue?.run {
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
                 values += "?,"
@@ -65,7 +66,7 @@ abstract class BaseSqlDialect : SqlDialect {
             if (componentInfo.isExcludeField(field) || field.name.equals(fieldName)) {
                 continue
             }
-            val fieldValue = field.get(component)
+            val fieldValue =ReflectUtils.getFieldValue(component,field)
             fieldValue?.run {
                 sql += "${componentInfo.getColumnNameByFieldName(field.name)}=?,"
                 field.getAnnotation(Blob::class.java)?.let { params.add(Json.toJson(this).toByteArray()); return@run }

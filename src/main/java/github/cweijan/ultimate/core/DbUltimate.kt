@@ -106,22 +106,36 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
         return getByQuery(Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
 
+    /**
+     * 根据主键进行删除
+     */
     fun deleteByPrimaryKey(clazz: Class<*>, value: Any) {
         Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value).executeDelete();
         transactionHelper.tryCloseConnection()
     }
 
+    /**
+     * 根据主键数组进行批量删除
+     */
     fun deleteByPrimaryKeyList(clazz: Class<*>, value: Array<Any>) {
         Query.of(clazz).`in`(TableInfo.getComponent(clazz).primaryKey!!, value.toMutableList()).executeDelete();
         transactionHelper.tryCloseConnection()
     }
 
-    fun <T> find(query: Query<T>): List<T> {
+    /**
+     * 根据主键list进行批量删除
+     */
+    fun deleteByPrimaryKeyList(clazz: Class<*>, value: List<Any>) {
+        Query.of(clazz).`in`(TableInfo.getComponent(clazz).primaryKey!!, value).executeDelete();
+        transactionHelper.tryCloseConnection()
+    }
 
+    /**
+     *  使用query对象进行查询
+     */
+    fun <T> find(query: Query<T>): List<T> {
         val sql = sqlGenerator.generateSelectSql(query)
         return findBySql(sql, query.queryCondition.consumeParams(), query.componentClass)
-
-
     }
 
     /**
@@ -171,6 +185,9 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
     }
 
 
+    /**
+     * 批量插入
+     */
     fun insertList(componentList: List<Any>) {
 
         for (t in componentList) {
@@ -178,6 +195,9 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
         }
     }
 
+    /**
+     * 如果主键为空,则进行insert, 不为空进行update
+     */
     fun insertOfUpdate(component: Any) {
         val componentInfo = TableInfo.getComponent(component.javaClass)
         if (componentInfo.getPrimaryValue(component) == null) {
@@ -187,16 +207,9 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
         }
     }
 
-    fun <T> batchDelete(query: Query<T>, privateKeyList: List<Any>) {
-        privateKeyList.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey).executeDelete() }
-        transactionHelper.tryCloseConnection()
-    }
-
-    fun <T> batchDelete(query: Query<T>, privateKeys: Array<Any>) {
-        privateKeys.forEach { privateKey -> query.eq(query.component.primaryKey!!, privateKey).executeDelete() }
-        transactionHelper.tryCloseConnection()
-    }
-
+    /**
+     * 使用query对象进行删除
+     */
     fun <T> delete(query: Query<T>) {
 
         val sql = sqlGenerator.generateDeleteSql(query)

@@ -3,6 +3,7 @@ package github.cweijan.ultimate.convert
 import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.util.Log
+import github.cweijan.ultimate.util.ReflectUtils
 import org.springframework.beans.BeanUtils
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
@@ -98,7 +99,7 @@ object TypeConvert {
 
             try {
                 if (TypeAdapter.isAdapterType(field.type) || Collection::class.java.isAssignableFrom(field.type) || field.getAnnotation(Blob::class.java) != null) {
-                    field.set(beanInstance, TypeAdapter.convertJavaObject(component.componentClass, field, try {
+                    ReflectUtils.setFieldValue(beanInstance,field,TypeAdapter.convertJavaObject(component.componentClass, field, try {
                         resultSet.getObject(columnName)
                     } catch (e: Exception) {
                         Log.error(e.message);null
