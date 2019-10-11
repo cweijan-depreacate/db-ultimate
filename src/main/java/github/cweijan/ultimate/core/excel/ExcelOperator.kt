@@ -33,6 +33,8 @@ object ExcelOperator {
     @JvmStatic
     fun outputExcel(headers: List<String>, values: Array<ArrayList<Any?>>, exportPath: String): Boolean {
 
+        checkPoiEnable()
+
         val wb = HSSFWorkbook()
         val sheet = wb.createSheet("sheet1")
         var row: HSSFRow
@@ -85,13 +87,26 @@ object ExcelOperator {
     }
 
     /**
+     * apache poi没有打包进依赖,需要手动添加
+     */
+    private fun checkPoiEnable() {
+        try {
+            Class.forName("org.apache.poi.hssf.usermodel.HSSFWorkbook")
+        } catch (e: ClassNotFoundException) {
+            Log.error("You must manually add apache poi to dependency\n" +
+                    "compile group: 'org.apache.poi', name: 'poi', version: '3.17'")
+            throw e;
+        }
+    }
+
+    /**
      * 读入excel文件，解析后返回解析对象
      * @throws IOException
      */
     @Throws(IOException::class)
     @JvmStatic
     fun <T> inputExcel(inputStream: InputStream, componentClass: Class<T>): List<T> {
-
+        checkPoiEnable()
         val workbook = HSSFWorkbook(inputStream)
         val list = ArrayList<T>()
 
@@ -120,7 +135,7 @@ object ExcelOperator {
 
     private fun getCellValue(cell: Cell?): String {
 
-        cell?:return ""
+        cell ?: return ""
 
         //判断数据的类型
         return when (cell.cellTypeEnum) {
