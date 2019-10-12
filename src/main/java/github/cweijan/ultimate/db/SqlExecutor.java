@@ -1,42 +1,46 @@
 package github.cweijan.ultimate.db;
 
-import github.cweijan.ultimate.core.tx.TransactionHelper;
+import github.cweijan.ultimate.core.result.PreparedStatementCallback;
+import github.cweijan.ultimate.core.result.ResultInfo;
 import github.cweijan.ultimate.db.config.DbConfig;
 import github.cweijan.ultimate.util.Log;
 import kotlin.jvm.internal.Intrinsics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.stream.IntStream;
 
 /**
  * sql executor
+ *
  * @author cweijan
  * @version 2019/9/5 11:45
  */
 public class SqlExecutor {
     private final DbConfig dbConfig;
-    private final TransactionHelper transactionHelper;
+    private final DataSource dataSource;
 
-    public SqlExecutor(DbConfig dbConfig, TransactionHelper transactionHelper) {
+    public SqlExecutor(DbConfig dbConfig, DataSource dataSource) {
         this.dbConfig = dbConfig;
-        this.transactionHelper = transactionHelper;
+        this.dataSource = dataSource;
     }
 
     @Nullable
-    public final ResultSet executeSql(@NotNull String sql) throws SQLException {
+    public final <T> T executeSql(@NotNull String sql, PreparedStatementCallback<T> preparedStatementCallback) throws SQLException {
         Intrinsics.checkParameterIsNotNull(sql, "sql");
-        return this.executeSql(sql, null, this.transactionHelper.getConnection());
+        return this.executeSql(sql, null, preparedStatementCallback);
     }
 
     @Nullable
-    public final ResultSet executeSql(@NotNull String sql, @Nullable Object[] params) throws SQLException {
+    public final <T> T executeSql(@NotNull String sql, @Nullable Object[] params, PreparedStatementCallback<T> preparedStatementCallback) throws SQLException {
         Intrinsics.checkParameterIsNotNull(sql, "sql");
-        return this.executeSql(sql, params, this.transactionHelper.getConnection());
+        return this.executeSql(sql, params, preparedStatementCallback, dataSource.getConnection());
     }
 
-    private ResultSet executeSql(@NotNull String sql, final Object[] params, Connection connection) throws SQLException {
+    private <T> T executeSql(@NotNull String sql, final Object[] params, PreparedStatementCallback<T> preparedStatementCallback, Connection connection) throws SQLException {
         ResultSet resultSet;
         long startTime = System.currentTimeMillis();
         final PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -45,13 +49,16 @@ public class SqlExecutor {
                 preparedStatement.setObject(index + 1, params[index]);
             }
         }
-
+        ResultInfo resultInfo = new ResultInfo();
         try {
             if (sql.trim().toLowerCase().startsWith("select")) {
                 resultSet = preparedStatement.executeQuery();
             } else {
-                preparedStatement.executeUpdate();
+                resultInfo.setUpdateLine(preparedStatement.executeUpdate());
                 resultSet = preparedStatement.getGeneratedKeys();
+                if(resultSet.next()){
+                    resultInfo.setGenerateKey(resultSet.getInt(1));
+                }
             }
         } catch (SQLException e) {
             Log.getLogger().error("Fail Execute SQL : " + sql + "   \n " + e.getMessage() + ' ');
@@ -69,8 +76,19 @@ public class SqlExecutor {
                 Log.getLogger().info(paramContent.toString());
             }
         }
-
-        return resultSet;
+        try {
+            return preparedStatementCallback.handlerResultSet(resultSet,resultInfo);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                }
+                catch (SQLException ex) {
+                    Log.getLogger().trace("Could not close JDBC ResultSet", ex);
+                }
+                DataSourceUtils.releaseConnection(connection,dataSource);
+            }
+        }
     }
 
 }

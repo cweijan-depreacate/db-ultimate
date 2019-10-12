@@ -3,7 +3,6 @@ package github.cweijan.ultimate.test.base;
 import github.cweijan.ultimate.core.DbUltimate;
 import github.cweijan.ultimate.core.component.info.ComponentInfo;
 import github.cweijan.ultimate.core.lucene.LuceneQuery;
-import github.cweijan.ultimate.core.tx.TransactionHelper;
 import github.cweijan.ultimate.db.config.DbConfig;
 import github.cweijan.ultimate.db.init.DBInitialer;
 import github.cweijan.ultimate.test.bean.CreateTest;
@@ -15,7 +14,6 @@ public class BaseTest {
 
     protected static DbConfig dbConfig;
     protected static DBInitialer dbInitialer;
-    protected static TransactionHelper transactionHelper;
 
     @BeforeClass
     public static void initConfig() {
@@ -27,9 +25,8 @@ public class BaseTest {
         dbConfig.setDriver("com.mysql.jdbc.Driver");
         dbConfig.setScanPackage("github.cweijan.ultimate");
         DbUltimate ultimate =DbUltimate.init(dbConfig);
-        transactionHelper = ultimate.getTransactionHelper();
         LuceneQuery.init("D:\\temp-index");
-        dbInitialer = new DBInitialer(dbConfig, transactionHelper);
+        dbInitialer = new DBInitialer(dbConfig, ultimate.getDataSource());
     }
 
     @Test

@@ -6,7 +6,6 @@ import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.core.extra.ExtraData
-import github.cweijan.ultimate.core.tx.TransactionHelper
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.generator.TableAutoMode
@@ -17,18 +16,19 @@ import github.cweijan.ultimate.util.Log
 import java.sql.Connection
 import java.sql.SQLException
 import java.util.*
+import javax.sql.DataSource
 
 /**
  * 用于创建实体对应的不存在的数据表
  */
-class DBInitialer(private val dbConfig: DbConfig,private val transactionHelper:TransactionHelper) {
+class DBInitialer(private val dbConfig: DbConfig, private val dataSource: DataSource) {
 
-    private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig,transactionHelper)
-    private var connection: Connection = transactionHelper.getConnection()
+    private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig, dataSource)
+    private var connection: Connection = dataSource.getConnection()
     private var initSqlGenetator: TableInitSqlGenerator = GeneratorAdapter.getInitGenerator(dbConfig.databaseType)
 
     private fun getConnection(): Connection {
-        if (connection.isClosed) connection = transactionHelper.getConnection()
+        if (connection.isClosed) connection = dataSource.getConnection()
         return connection
     }
 
@@ -60,7 +60,7 @@ class DBInitialer(private val dbConfig: DbConfig,private val transactionHelper:T
     fun recreateTable(componentInfo: ComponentInfo?) {
         if (componentInfo == null || tableExists(componentInfo.tableName)) return
         if (tableExists(componentInfo.tableName)) {
-            initSqlGenetator.dropTable(componentInfo.tableName)?.let { sqlExecutor.executeSql(it) }
+            initSqlGenetator.dropTable(componentInfo.tableName)?.let { sqlExecutor.executeSql(it) { _, _ -> } }
         }
         createTable(componentInfo)
     }
@@ -79,7 +79,7 @@ class DBInitialer(private val dbConfig: DbConfig,private val transactionHelper:T
 
         try {
             sql ?: return
-            sqlExecutor.executeSql(sql)
+            sqlExecutor.executeSql(sql){ _, _ -> }
         } catch (e: Exception) {
             Log.error("Create table ${componentInfo.tableName} error!", e)
             return
@@ -161,7 +161,7 @@ class DBInitialer(private val dbConfig: DbConfig,private val transactionHelper:T
         }
 
         try {
-            updateSqlList.forEach { sqlExecutor.executeSql(it) }
+            updateSqlList.forEach { sqlExecutor.executeSql(it){ _, _ -> } }
         } catch (e: Exception) {
             Log.error("Update table ${componentInfo.tableName} error!", e)
             return

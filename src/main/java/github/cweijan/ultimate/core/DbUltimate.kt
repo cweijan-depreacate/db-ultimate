@@ -8,7 +8,7 @@ import github.cweijan.ultimate.core.dialect.DialectAdapter
 import github.cweijan.ultimate.core.dialect.SqlDialect
 import github.cweijan.ultimate.core.extra.ExtraDataService
 import github.cweijan.ultimate.core.extra.GroupFunction
-import github.cweijan.ultimate.core.tx.TransactionHelper
+import github.cweijan.ultimate.core.result.ResultInfo
 import github.cweijan.ultimate.db.HikariDataSourceAdapter
 import github.cweijan.ultimate.db.SqlExecutor
 import github.cweijan.ultimate.db.config.DbConfig
@@ -21,40 +21,37 @@ import javax.sql.DataSource
 /**
  * 核心Api,用于Crud操作
  */
-class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: TransactionHelper) {
+class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSource) {
 
-    private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig, transactionHelper)
+    private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig, dataSource)
     var sqlGenerator: SqlDialect = DialectAdapter.getSqlGenerator(dbConfig.getDatabaseType())
 
     @JvmOverloads
     fun <T> findBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): List<T> {
 
-        val beanList = TypeConvert.resultSetToBeanList(sqlExecutor.executeSql(sql, params)!!, clazz)
-        transactionHelper.tryCloseConnection()
+        val beanList = sqlExecutor.executeSql(sql, params) { resultSet, _ -> TypeConvert.resultSetToBeanList(resultSet, clazz) }!!
         beanList.forEach { bean ->
             handlerRelation(bean)
         }
         return beanList
     }
 
-    fun executeSql(sql: String, vararg params: Any?): ResultSet? {
+    fun <T> executeSql(sql: String, vararg params: Any?, clazz: Class<T>): List<T>? {
 
-        return sqlExecutor.executeSql(sql, params)
+        return sqlExecutor.executeSql(sql, params) { resultset, _ -> TypeConvert.resultSetToBeanList(resultset, clazz) }
 
     }
 
     @JvmOverloads
     fun <T> getBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): T? {
 
-        val resultSet = sqlExecutor.executeSql(sql, params)!!
-        val resultSetToBeanList = TypeConvert.resultSetToBeanList(resultSet, clazz)
+        val resultSetToBeanList = sqlExecutor.executeSql(sql, params) { resultSet, _ -> TypeConvert.resultSetToBeanList(resultSet, clazz) }!!
         if (resultSetToBeanList.isEmpty()) return null;
         if (resultSetToBeanList.size > 1) {
             Log.getLogger().warn("TooManyResultWarn: Get expect 1 result,but fond ${resultSetToBeanList.size}")
         }
         val bean = resultSetToBeanList[0]
 
-        transactionHelper.tryCloseConnection()
         handlerRelation(bean)
         return bean
     }
@@ -105,15 +102,15 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
     /**
      * 根据主键进行删除
      */
-    fun deleteByPrimaryKey(clazz: Class<*>, value: Any) {
-        this.delete(Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value))
+    fun deleteByPrimaryKey(clazz: Class<*>, value: Any): Int? {
+        return this.delete(Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
 
     /**
      * 根据主键数组进行批量删除
      */
-    fun deleteByPrimaryKeyList(clazz: Class<*>, value: Array<Any>) {
-        this.delete(Query.of(clazz).`in`(TableInfo.getComponent(clazz).primaryKey!!, value.toMutableList()))
+    fun deleteByPrimaryKeyList(clazz: Class<*>, value: Array<Any>): Int? {
+        return this.delete(Query.of(clazz).`in`(TableInfo.getComponent(clazz).primaryKey!!, value.toMutableList()))
     }
 
     /**
@@ -151,14 +148,13 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
      *
      * @param component 实体对象e
      */
-    fun insert(component: Any) {
+    fun insert(component: Any): Int? {
 
         val sqlObject = sqlGenerator.generateInsertSql(component)
-        val executeSql = executeSql(sqlObject.sql, *sqlObject.params.toTypedArray())
-        if (executeSql?.next() == true) {
-            TableInfo.getComponent(component.javaClass).setPrimaryValue(component, executeSql.getInt(1))
+        return sqlExecutor.executeSql(sqlObject.sql, sqlObject.params.toTypedArray()) { _: ResultSet?, resultInfo: ResultInfo ->
+            TableInfo.getComponent(component.javaClass).setPrimaryValue(component, resultInfo.generateKey)
+            resultInfo.updateLine
         }
-        transactionHelper.tryCloseConnection()
 
     }
 
@@ -167,33 +163,35 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
      *
      * @param component 实体对象
      */
-    fun ignoreInsert(component: Any) {
+    fun ignoreInsert(component: Any): Int? {
 
         val primaryValue = TableInfo.getComponent(component::class.java).getPrimaryValue(component)
         val byPrimaryKey = getByPrimaryKey(component::class.java, primaryValue)
-        if (byPrimaryKey != null) return
+        if (byPrimaryKey != null) return 0
         val byData = Query.of(component::class.java).read(component).get()
-        if (byData != null) return
-        insert(component)
+        if (byData != null) return 0
+        return insert(component)
     }
 
 
     /**
      * 批量插入
      */
-    fun insertList(componentList: List<Any>) {
+    fun insertList(componentList: List<Any>): Int {
 
+        var updateLine:Int=0
         for (t in componentList) {
-            insert(t)
+            insert(t)?.let { updateLine+=it; }
         }
+        return updateLine;
     }
 
     /**
      * 如果主键为空,则进行insert, 不为空进行update
      */
-    fun insertOfUpdate(component: Any) {
+    fun insertOfUpdate(component: Any): Int? {
         val componentInfo = TableInfo.getComponent(component.javaClass)
-        if (componentInfo.getPrimaryValue(component) == null) {
+        return if (componentInfo.getPrimaryValue(component) == null) {
             insert(component)
         } else {
             update(component)
@@ -203,36 +201,28 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
     /**
      * 使用query对象进行删除
      */
-    fun <T> delete(query: Query<T>) {
+    fun <T> delete(query: Query<T>): Int? {
 
         val sql = sqlGenerator.generateDeleteSql(query)
-        executeSql(sql, query.queryCondition.consumeParams())
-        transactionHelper.tryCloseConnection()
+        return sqlExecutor.executeSql(sql, query.queryCondition.consumeParams()) { _, info -> info.updateLine }
     }
 
-    fun update(component: Any) {
+    fun update(component: Any): Int? {
 
-        updateBy(null, component)
-
+        return updateBy(null, component)
     }
 
-    fun updateBy(columnName: String?, component: Any) {
+    fun updateBy(columnName: String?, component: Any): Int? {
 
-        try {
-            val sqlObject = sqlGenerator.generateUpdateSqlByObject(component, columnName)
-            executeSql(sqlObject.sql, sqlObject.params.toTypedArray())
-            transactionHelper.tryCloseConnection()
-        } catch (e: IllegalAccessException) {
-            Log.error(e.message, e)
-        }
+        val sqlObject = sqlGenerator.generateUpdateSqlByObject(component, columnName)
+        return sqlExecutor.executeSql(sqlObject.sql, sqlObject.params.toTypedArray()) { _, info -> info.updateLine }
 
     }
 
-    fun <T> update(query: Query<T>) {
+    fun <T> update(query: Query<T>): Int? {
 
         val sql = sqlGenerator.generateUpdateSqlByQuery(query)
-        executeSql(sql, query.queryCondition.consumeParams())
-        transactionHelper.tryCloseConnection()
+        return sqlExecutor.executeSql(sql, query.queryCondition.consumeParams()) { _, info -> info.updateLine }
     }
 
     companion object {
@@ -241,12 +231,12 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
          */
         @JvmStatic
         fun init(dbConfig: DbConfig, dataSource: DataSource): DbUltimate {
-            val dbUltimate = DbUltimate(dbConfig, TransactionHelper(dataSource))
+            val dbUltimate = DbUltimate(dbConfig, dataSource)
             Query.db = dbUltimate
             TableInfo.enableDevelopMode(dbConfig.develop)
             ComponentInfo.init(GroupFunction::class.java)
             dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
-            DBInitialer(dbConfig, dbUltimate.transactionHelper).initializeTable()
+            DBInitialer(dbConfig, dbUltimate.dataSource).initializeTable()
             return dbUltimate
         }
 

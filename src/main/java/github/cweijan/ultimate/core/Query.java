@@ -225,6 +225,7 @@ public class Query<T> {
 
     /**
      * 统计接口增加显示Column
+     *
      * @param column 要增加显示的column
      * @return this query
      */
@@ -236,6 +237,7 @@ public class Query<T> {
 
     /**
      * 增加having查询
+     *
      * @param havingSql having语句片段
      * @return this query
      */
@@ -249,7 +251,7 @@ public class Query<T> {
      * 对指定列进行更新,需要调用{@link Query#executeUpdate()}执行更新
      *
      * @param column 要更新的列
-     * @param value 更新后的值
+     * @param value  更新后的值
      * @return this query
      */
     public Query<T> update(String column, Object value) {
@@ -328,7 +330,7 @@ public class Query<T> {
      * =查询
      *
      * @param fieldQuery 指定列,example:Student::getName
-     * @param value  列值
+     * @param value      列值
      * @return this query
      */
     public Query<T> eq(FieldQuery<T> fieldQuery, Object value) {
@@ -581,7 +583,7 @@ public class Query<T> {
      * 偏移查询,返回{@link Pagination}对象
      *
      * @param offset 偏移量
-     * @param limit 最大数量
+     * @param limit  最大数量
      */
     public Pagination<T> offsetList(Integer offset, Integer limit) {
         return this.offset(offset).limit(limit).pageList();
@@ -598,18 +600,21 @@ public class Query<T> {
 
     /**
      * 根据条件执行更新
+     * @return 更新的行数
      */
-    public void executeUpdate() {
+    public Integer executeUpdate() {
         if (db == null) Intrinsics.throwUninitializedPropertyAccessException("db");
-        db.update(this);
+        return db.update(this);
     }
 
     /**
      * 根据条件执行删除操作
+     *
+     * @return 删除的行数
      */
-    public void executeDelete() {
+    public Integer executeDelete() {
         if (db == null) Intrinsics.throwUninitializedPropertyAccessException("db");
-        db.delete(this);
+        return db.delete(this);
     }
 
 
