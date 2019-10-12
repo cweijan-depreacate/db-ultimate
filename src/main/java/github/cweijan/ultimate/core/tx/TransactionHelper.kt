@@ -1,5 +1,6 @@
 package github.cweijan.ultimate.core.tx
 
+import github.cweijan.ultimate.util.Log
 import org.springframework.jdbc.datasource.DataSourceUtils
 import java.sql.Connection
 import javax.sql.DataSource
@@ -8,30 +9,25 @@ import javax.sql.DataSource
  * @author cweijan
  * @version 2019/9/3 18:13
  */
-class TransactionHelper(var dataSource: DataSource) {
+class TransactionHelper(private var dataSource: DataSource) {
 
     private val threadLocal = ThreadLocal<Connection?>()
 
     fun getConnection(): Connection {
 
-        val currentConnection = threadLocal.get()
-        return if (currentConnection == null || currentConnection.isClosed) {
-            threadLocal.set(DataSourceUtils.doGetConnection(dataSource))
-            threadLocal.get()!!
-        } else if (DataSourceUtils.isConnectionTransactional(currentConnection, dataSource)) {
-            DataSourceUtils.doGetConnection(dataSource)
-        } else {
-            DataSourceUtils.doCloseConnection(currentConnection, dataSource)
-            threadLocal.set(DataSourceUtils.doGetConnection(dataSource))
-            threadLocal.get()!!
-        }
-
+        val connection = DataSourceUtils.doGetConnection(dataSource)
+        Log.debug(connection.toString())
+        threadLocal.set(connection)
+        return connection
     }
 
     fun tryCloseConnection() {
         val currentConnection = threadLocal.get()
-        if (currentConnection != null && !currentConnection.isClosed && !DataSourceUtils.isConnectionTransactional(currentConnection, dataSource)) {
-            DataSourceUtils.doCloseConnection(currentConnection, dataSource)
+        if (currentConnection != null) {
+            DataSourceUtils.releaseConnection(currentConnection, dataSource)
+            threadLocal.set(null)
+        }else{
+            Log.getLogger().debug("No connection discovery, close fail!")
         }
     }
 }

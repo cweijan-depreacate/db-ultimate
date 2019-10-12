@@ -4,6 +4,9 @@ import github.cweijan.ultimate.core.lucene.IndexService;
 import github.cweijan.ultimate.core.lucene.LuceneQuery;
 import github.cweijan.ultimate.core.lucene.config.LuceneConfig;
 import github.cweijan.ultimate.util.StringUtils;
+import org.apache.lucene.index.IndexWriter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +17,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @EnableConfigurationProperties(LuceneConfig.class)
+@ConditionalOnClass(IndexWriter.class)
+@ConditionalOnProperty(value = "ultimate.jdbc.enable",havingValue = "true",matchIfMissing = true)
 public class LuceneAutoConfiguration {
 
     private final LuceneConfig luceneConfig;

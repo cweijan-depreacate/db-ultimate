@@ -87,18 +87,14 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
 
         val sql = sqlGenerator.generateCountSql(query)
 
-        val toInt = getBySql(sql, query.queryCondition.consumeParams(), GroupFunction::class.java)!!.count.toInt()
-        transactionHelper.tryCloseConnection()
-        return toInt
+        return getBySql(sql, query.queryCondition.consumeParams(), GroupFunction::class.java)!!.count.toInt()
     }
 
     fun <T> getByQuery(query: Query<T>): T? {
 
         val sql = sqlGenerator.generateSelectSql(query)
 
-        val instance = getBySql(sql, query.queryCondition.consumeParams(), query.componentClass)
-        transactionHelper.tryCloseConnection()
-        return instance
+        return getBySql(sql, query.queryCondition.consumeParams(), query.componentClass)
     }
 
     fun <T> getByPrimaryKey(clazz: Class<T>, value: Any?): T? {
@@ -110,24 +106,21 @@ class DbUltimate private constructor(dbConfig: DbConfig, val transactionHelper: 
      * 根据主键进行删除
      */
     fun deleteByPrimaryKey(clazz: Class<*>, value: Any) {
-        Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value).executeDelete();
-        transactionHelper.tryCloseConnection()
+        this.delete(Query.of(clazz).eq(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
 
     /**
      * 根据主键数组进行批量删除
      */
     fun deleteByPrimaryKeyList(clazz: Class<*>, value: Array<Any>) {
-        Query.of(clazz).`in`(TableInfo.getComponent(clazz).primaryKey!!, value.toMutableList()).executeDelete();
-        transactionHelper.tryCloseConnection()
+        this.delete(Query.of(clazz).`in`(TableInfo.getComponent(clazz).primaryKey!!, value.toMutableList()))
     }
 
     /**
      * 根据主键list进行批量删除
      */
     fun deleteByPrimaryKeyList(clazz: Class<*>, value: List<Any>) {
-        Query.of(clazz).`in`(TableInfo.getComponent(clazz).primaryKey!!, value).executeDelete();
-        transactionHelper.tryCloseConnection()
+        this.delete(Query.of(clazz).`in`(TableInfo.getComponent(clazz).primaryKey!!, value))
     }
 
     /**

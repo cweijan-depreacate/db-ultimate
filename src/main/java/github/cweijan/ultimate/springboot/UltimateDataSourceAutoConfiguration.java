@@ -4,6 +4,7 @@ import github.cweijan.ultimate.db.HikariDataSourceAdapter;
 import github.cweijan.ultimate.db.config.DbConfig;
 import github.cweijan.ultimate.util.Log;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @EnableConfigurationProperties(DbConfig.class)
+@ConditionalOnProperty(value = "ultimate.jdbc.enable",havingValue = "true",matchIfMissing = true)
 public class UltimateDataSourceAutoConfiguration {
 
     private  DbConfig dbConfig;

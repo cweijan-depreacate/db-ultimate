@@ -13,6 +13,7 @@ import github.cweijan.ultimate.util.json.deserializer.LocalTimeDeserializer;
 import github.cweijan.ultimate.util.json.serializer.LocalDateSerializer;
 import github.cweijan.ultimate.util.json.serializer.LocalDateTimeSerializer;
 import github.cweijan.ultimate.util.json.serializer.LocalTimeSerializer;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ import java.util.List;
 public final class Json {
     private static final ObjectMapper mapper;
     private static final ObjectMapper withEmptyMapper;
+    private static final Logger logger = Log.getLogger();
 
     private Json() {
     }
@@ -79,7 +81,7 @@ public final class Json {
         try {
             json = mapper.writeValueAsBytes(originalObject);
         } catch (Exception e) {
-            Log.error("toJson error:", e);
+            logger.error("toJson error:", e);
         }
 
         return json;
@@ -98,7 +100,7 @@ public final class Json {
         try {
             json = withEmptyMapper.writeValueAsString(originalObject);
         } catch (Exception e) {
-            Log.error("toJson error:", e);
+            logger.error("toJson error:", e);
         }
 
         return json;
@@ -116,15 +118,15 @@ public final class Json {
 
         if (StringUtils.isEmpty(json) || StringUtils.isEmpty(key)) return null;
 
-        String var3;
+        String value;
         try {
-            var3 = mapper.readValue(json, JsonNode.class).get(key).textValue();
+            value = mapper.readValue(json, JsonNode.class).get(key).textValue();
         } catch (IOException var5) {
-            Log.info(var5.getMessage());
-            var3 = null;
+            logger.info(var5.getMessage());
+            value = null;
         }
 
-        return var3;
+        return value;
     }
 
     /**
@@ -154,7 +156,7 @@ public final class Json {
         try {
             objectList = mapper.readValue(json, javaType);
         } catch (Exception e) {
-            Log.error("parseList error:" + e.getMessage(), e);
+            logger.error("parseList error:" + e.getMessage(), e);
             objectList = null;
         }
 
@@ -172,7 +174,7 @@ public final class Json {
         try {
             result = mapper.readValue(json, type);
         } catch (Exception e) {
-            Log.error("parse error:" + e.getMessage(), e);
+            logger.error("parse error:" + e.getMessage(), e);
             result = null;
         }
 
