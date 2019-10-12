@@ -16,7 +16,6 @@ class TransactionHelper(private var dataSource: DataSource) {
     fun getConnection(): Connection {
 
         val connection = DataSourceUtils.doGetConnection(dataSource)
-        Log.debug(connection.toString())
         threadLocal.set(connection)
         return connection
     }
