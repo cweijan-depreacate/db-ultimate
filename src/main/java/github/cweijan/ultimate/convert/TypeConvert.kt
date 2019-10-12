@@ -95,7 +95,7 @@ object TypeConvert {
                     (!columns.containsKey(key) && TypeAdapter.isAdapterType(field.type))) {
                 continue
             }
-            val columnName = columns[key]
+            val columnName = columns[key]?:continue
 
             try {
                 if (TypeAdapter.isAdapterType(field.type) || Collection::class.java.isAssignableFrom(field.type) || field.getAnnotation(Blob::class.java) != null) {

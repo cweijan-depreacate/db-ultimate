@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static github.cweijan.ultimate.core.query.QueryType.*;
+
 /**
  * @author cweijan
  * @version 2019/9/2 17:45
@@ -266,7 +268,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> notEq(String column, Object value) {
-        this.queryCondition.notEq(column, value);
+        this.queryCondition.addAndCondition(column, not_equlas, value);
         return this;
     }
 
@@ -277,7 +279,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> orNotEq(String column, Object value) {
-        this.queryCondition.orNotEq(column, value);
+        this.queryCondition.addOrCondition(column, not_equlas, value);
         return this;
     }
 
@@ -288,7 +290,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> like(String column, Object content) {
-        this.queryCondition.like(column, content);
+        this.queryCondition.addAndCondition(column, like, content);
         return this;
     }
 
@@ -299,7 +301,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> search(String column, Object content) {
-        this.queryCondition.like(column, content);
+        this.queryCondition.addAndCondition(column, like, content);
         return this;
     }
 
@@ -310,7 +312,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> ge(String column, Object value) {
-        this.queryCondition.ge(column, value);
+        this.queryCondition.addAndCondition(column,great_equlas, value);
         return this;
     }
 
@@ -321,7 +323,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> le(String column, Object value) {
-        this.queryCondition.le(column, value);
+        this.queryCondition.addAndCondition(column,less_equals, value);
         return this;
     }
 
@@ -334,7 +336,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> eq(FieldQuery<T> fieldQuery, Object value) {
-        this.queryCondition.eq(LambdaUtils.getFieldName(fieldQuery), value);
+        this.queryCondition.addAndCondition(LambdaUtils.getFieldName(fieldQuery), equals, value);
         return this;
     }
 
@@ -346,7 +348,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> eq(String column, Object value) {
-        this.queryCondition.eq(column, value);
+        this.queryCondition.addAndCondition(column, equals, value);
         return this;
     }
 
@@ -374,12 +376,24 @@ public class Query<T> {
     /**
      * 生成查询: or colum=value
      *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @param value  列值
+     * @return this query
+     */
+    public Query<T> orEq(FieldQuery<T> fieldQuery, Object value) {
+        this.queryCondition.addOrCondition(LambdaUtils.getFieldName(fieldQuery),equals, value);
+        return this;
+    }
+
+    /**
+     * 生成查询: or colum=value
+     *
      * @param column 指定列
      * @param value  列值
      * @return this query
      */
     public Query<T> orEq(String column, Object value) {
-        this.queryCondition.orEq(column, value);
+        this.queryCondition.addOrCondition(column,equals, value);
         return this;
     }
 
@@ -432,7 +446,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> isNull(String column) {
-        this.queryCondition.isNull(column);
+        this.queryCondition.addAndCondition(column,isNull,"");
         return this;
     }
 
@@ -443,7 +457,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> isNotNull(String column) {
-        this.queryCondition.isNotNull(column);
+        this.queryCondition.addAndCondition(column,isNotNull,"");
         return this;
     }
 
@@ -600,6 +614,7 @@ public class Query<T> {
 
     /**
      * 根据条件执行更新
+     *
      * @return 更新的行数
      */
     public Integer executeUpdate() {

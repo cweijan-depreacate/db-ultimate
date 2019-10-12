@@ -99,7 +99,9 @@ public class SelectTest extends BaseTest{
     @Test
     public void testGet(){
 
-        Admin admin = Query.of(Admin.class).eq("id", 1).get();
+        Query<Admin> query = Query.of(Admin.class).eq("id", 1);
+        Admin admin = query.get();
+        admin = query.get();
         Log.info(Json.toJson(admin));
 
     }
@@ -179,6 +181,13 @@ public class SelectTest extends BaseTest{
         List<Admin> admins = query.list();
         ComponentInfo component = TableInfo.getComponent(Admin.class);
         Log.info(admins.toString());
+    }
+
+    @Test
+    public void testComplex(){
+
+        Query.of(Admin.class).eq(Admin::getId,"23").orEq(Admin::getId,"24").eq(Admin::getId,"26").list();
+
     }
 
     @Test

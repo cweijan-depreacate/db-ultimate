@@ -13,13 +13,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OneToOne {
     /**
-     要关联的表实体Class,默认关联主键
+     * 要关联的表实体Class,默认关联主键
      */
     Class<?> relationClass();
 
     /**
-     外键名称
+     * 外键名称
      */
-    String relationColumn() default "";
+    String relationColumn();
 
 }

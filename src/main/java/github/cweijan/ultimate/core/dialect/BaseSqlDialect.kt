@@ -6,6 +6,7 @@ import github.cweijan.ultimate.annotation.UpdateDate
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.Query
 import github.cweijan.ultimate.core.component.TableInfo
+import github.cweijan.ultimate.core.query.QueryConjunct
 import github.cweijan.ultimate.exception.PrimaryKeyNotExistsException
 import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.DateUtils
@@ -63,7 +64,7 @@ abstract class BaseSqlDialect : SqlDialect {
 
         for (field in TypeAdapter.getAllField(component.javaClass)) {
             field.isAccessible = true
-            if (componentInfo.isExcludeField(field) || field.name.equals(fieldName)) {
+            if (componentInfo.isExcludeField(field) || field.name == fieldName) {
                 continue
             }
             val fieldValue =ReflectUtils.getFieldValue(component,field)
@@ -123,44 +124,23 @@ abstract class BaseSqlDialect : SqlDialect {
 
     private fun <T> generateOperationSql(query: Query<T>, useAlias: Boolean = false): String {
 
-        val and = "AND"
-        val or = "OR"
         var joinSql = ""
         var sql = ""
 
         if (query.component.joinLazy.isInitialized()) joinSql += generateJoinTablesSql(query.queryCondition.joinTables)
 
-        query.queryCondition.whereSql?.let { sql+="$and $it " }
+        query.queryCondition.whereSql?.let { sql+="${QueryConjunct.AND} $it " }
 
-        if (query.queryCondition.eqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.equalsOperation, "=", and, query)
-        if (query.queryCondition.notEqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.notEqualsOperation, "!=", and, query)
-        if (query.queryCondition.greatEqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.greatEqualsOperation, ">=", and, query)
-        if (query.queryCondition.lessEqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.lessEqualsOperation, "<=", and, query)
-        if (query.queryCondition.searchLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.searchOperation, "LIKE", and, query)
-        if (query.queryCondition.isNullLazy.isInitialized()) query.queryCondition.isNullList.forEach { sql += "$and $it IS NULL " }
-        if (query.queryCondition.isNotNullLazy.isInitialized()) query.queryCondition.isNotNullList.forEach { sql += "$and $it IS NOT NULL " }
+        sql+=query.queryCondition.andCondition.toString()
+        sql+=query.queryCondition.orCondition.toString()
+        sql=sql.trim()
 
-        //生成in查询语句
-        var inSql = StringBuilder()
-        if (query.queryCondition.inLazy.isInitialized()) query.queryCondition.inOperation.forEach { (key, operations) ->
-            inSql.append("$and $key in (")
-            operations.forEach { value ->
-                inSql.append(",?")
-                query.queryCondition.addParam(value)
-            }
-            inSql = StringBuilder(inSql.replaceFirst(",".toRegex(), ""))
-            inSql.append(")")
-        }
-        sql += inSql.toString()
-        if (query.queryCondition.orEqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.orEqualsOperation, "=", or, query)
-        if (query.queryCondition.orNotEqLazy.isInitialized()) sql += generateOperationSql0(query.queryCondition.orNotEqualsOperation, "!=", or, query)
-
-        if (sql.startsWith(and)) {
-            sql = sql.replaceFirst(and.toRegex(), "")
+        if (sql.startsWith(QueryConjunct.AND)) {
+            sql = sql.replaceFirst(QueryConjunct.AND.toRegex(), "")
             sql = " WHERE$sql"
         }
-        if (sql.startsWith(or)) {
-            sql = sql.replaceFirst(or.toRegex(), "")
+        if (sql.startsWith(QueryConjunct.OR)) {
+            sql = sql.replaceFirst(QueryConjunct.OR.toRegex(), "")
             sql = " WHERE$sql"
         }
 

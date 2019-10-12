@@ -1,7 +1,6 @@
 package github.cweijan.ultimate.test.bean
 
 import github.cweijan.ultimate.annotation.Column
-import github.cweijan.ultimate.annotation.OneToOne
 import github.cweijan.ultimate.annotation.Primary
 import github.cweijan.ultimate.annotation.Table
 import github.cweijan.ultimate.annotation.query.Search
@@ -13,7 +12,6 @@ import java.time.LocalDateTime
 open class Admin {
 
     @Primary
-    @OneToOne(relationClass = Lib::class)
     var id: Int = 0
 
     @Column

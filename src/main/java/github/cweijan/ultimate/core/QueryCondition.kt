@@ -10,11 +10,13 @@ import github.cweijan.ultimate.annotation.query.pagination.PageSize
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.core.page.Pagination
+import github.cweijan.ultimate.core.query.QueryConjunct
+import github.cweijan.ultimate.core.query.QueryType
+import github.cweijan.ultimate.core.query.QueryType.*
 import github.cweijan.ultimate.util.Json
 import github.cweijan.ultimate.util.StringUtils
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -22,6 +24,7 @@ import kotlin.collections.set
 internal class QueryCondition(var component: ComponentInfo) {
 
     private var params: MutableList<Any> = ArrayList()
+
     var page: Int? = null
     var pageSize: Int? = null
     var offset: Int? = null
@@ -35,63 +38,20 @@ internal class QueryCondition(var component: ComponentInfo) {
 
     val joinLazy = lazy { return@lazy ArrayList<String>() }
     val joinTables: MutableList<String> by joinLazy
-
     val alias: String = " " + (component.tableAlias ?: "")
     var whereSql: String? = null
+
+    val showColumn: StringBuilder = StringBuilder()
+    val andCondition: StringBuilder = StringBuilder()
+    var andParam: MutableList<Any> = ArrayList()
+    val orCondition: StringBuilder = StringBuilder()
+    var orParam: MutableList<Any> = ArrayList()
 
     val orderByLazy = lazy { return@lazy ArrayList<String>() }
     val orderByList: MutableList<String> by orderByLazy
 
     val updateLazy = lazy { return@lazy HashMap<String, Any>() }
     val updateMap: MutableMap<String, Any> by updateLazy
-
-    val isNullLazy = lazy { return@lazy ArrayList<String>() }
-    val isNullList: MutableList<String> by isNullLazy
-
-    val isNotNullLazy = lazy { return@lazy ArrayList<String>() }
-    val isNotNullList: MutableList<String> by isNotNullLazy
-
-    val greatEqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
-    val greatEqualsOperation: MutableMap<String, MutableList<Any>> by greatEqLazy
-
-    val lessEqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
-    val lessEqualsOperation: MutableMap<String, MutableList<Any>> by lessEqLazy
-
-    val eqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
-    val equalsOperation: MutableMap<String, MutableList<Any>> by eqLazy
-
-    val inLazy = lazy { HashMap<String, MutableList<*>>() }
-    val inOperation: MutableMap<String, MutableList<*>> by inLazy
-
-    val orEqLazy = lazy { HashMap<String, MutableList<Any>>() }
-    val orEqualsOperation: MutableMap<String, MutableList<Any>> by orEqLazy
-
-    val notEqLazy = lazy { LinkedHashMap<String, MutableList<Any>>() }
-    val notEqualsOperation: MutableMap<String, MutableList<Any>> by notEqLazy
-
-    val orNotEqLazy = lazy { HashMap<String, MutableList<Any>>() }
-    val orNotEqualsOperation: MutableMap<String, MutableList<Any>> by orNotEqLazy
-
-    val searchLazy = lazy { HashMap<String, MutableList<Any>>() }
-    val searchOperation: MutableMap<String, MutableList<Any>> by searchLazy
-
-    val sumLazy = lazy { return@lazy HashMap<String, String>() }
-    val sumMap: MutableMap<String, String> by sumLazy
-
-    val countLazy = lazy { return@lazy HashMap<String, String>() }
-    val countMap: MutableMap<String, String> by countLazy
-
-    val avgLazy = lazy { return@lazy HashMap<String, String>() }
-    val avgMap: MutableMap<String, String> by avgLazy
-
-    val maxLazy = lazy { return@lazy HashMap<String, String>() }
-    val maxMap: MutableMap<String, String> by maxLazy
-
-    val minLazy = lazy { return@lazy HashMap<String, String>() }
-    val minMap: MutableMap<String, String> by minLazy
-
-    val showColumnLazy = lazy { return@lazy ArrayList<String>() }
-    val showColumnList: MutableList<String> by showColumnLazy
 
     val groupLazy = lazy { return@lazy ArrayList<String>() }
     val groupByList: MutableList<String> by groupLazy
@@ -131,59 +91,50 @@ internal class QueryCondition(var component: ComponentInfo) {
 
     fun generateColumns(): String? {
 
-        var columnSql = ""
-        if (countLazy.isInitialized()) countMap.forEach { (columnName, showColumnName) -> columnSql += "COUNT(DISTINCT $columnName) $showColumnName," }
-        if (sumLazy.isInitialized()) sumMap.forEach { (columnName, showColumnName) -> columnSql += "SUM($columnName) $showColumnName," }
-        if (avgLazy.isInitialized()) avgMap.forEach { (columnName, showColumnName) -> columnSql += "AVG($columnName) $showColumnName," }
-        if (minLazy.isInitialized()) minMap.forEach { (columnName, showColumnName) -> columnSql += "MIN($columnName) $showColumnName," }
-        if (maxLazy.isInitialized()) maxMap.forEach { (columnName, showColumnName) -> columnSql += "MAX($columnName) $showColumnName," }
-        if (showColumnLazy.isInitialized()) showColumnList.forEach { columnName -> columnSql += "$columnName," }
-        if (columnSql.lastIndexOf(",") != -1) {
-            columnSql = columnSql.substring(0, columnSql.lastIndexOf(","))
+        if (showColumn.lastIndexOf(",") != -1) {
+            return showColumn.substring(0, showColumn.lastIndexOf(","))
         }
 
-        return if (columnSql == "") null else columnSql
-    }
-
-
-    fun getOperationList(map: MutableMap<String, MutableList<Any>>, key: String): MutableList<Any>? {
-
-        map[key] = map[key] ?: ArrayList()
-
-        return map[key]
+        return "*"
     }
 
     fun addParam(param: Any?) {
-
         param?.let { params.add(it) }
-
-    }
-
-    fun getParams(): Array<Any>? {
-        return params.toTypedArray()
     }
 
     fun consumeParams(): Array<Any>? {
-        val array = params.toTypedArray()
-        params = ArrayList()
-        return array
+        val tempParam = ArrayList<Any>()
+        tempParam.addAll(params)
+        tempParam.addAll(andParam)
+        tempParam.addAll(orParam)
+        return tempParam.toTypedArray()
     }
 
     private fun getColumnName(column: String) = component.getColumnNameByFieldName(column)
             ?: TypeAdapter.convertHumpToUnderLine(column)!!
 
-    private fun put(map: MutableMap<String, MutableList<Any>>, column: String, value: Any?) {
-
+    private fun addCondition(column: String, queryType: QueryType, value: Any?,
+                             conditionList: StringBuilder, paramList: MutableList<Any>, conjuct: String) {
         value ?: return
         val tableColumn = getColumnName(column)
-        val operationList = getOperationList(map, tableColumn)
-        operationList!!.add(TypeAdapter.convertAdapter(component.componentClass, column, value))
+        val adapterValue = TypeAdapter.convertAdapter(component.componentClass, column, value)
+        conditionList.append("$conjuct " + when (queryType) {
+            isNull, isNotNull -> "$tableColumn ${queryType.code} "
+            else -> "$tableColumn ${queryType.code} ? "
+        })
+        when (queryType) {
+            isNull, isNotNull -> return
+            like -> paramList.add("%$adapterValue%")
+            else -> paramList.add(adapterValue)
+        }
     }
 
-    private fun mapPut(map: MutableMap<String, String>, column: String?, value: String) {
-        column?.let {
-            val columnName = getColumnName(column)
-            map[columnName] = value
+    fun addAndCondition(column: String, queryType: QueryType, value: Any?) = addCondition(column, queryType, value, andCondition, andParam, QueryConjunct.AND)
+    fun addOrCondition(column: String, queryType: QueryType, value: Any?) = addCondition(column, queryType, value, orCondition, orParam, QueryConjunct.OR)
+
+    private fun addColumn(pattern: String?, vararg value: String?) {
+        pattern?.let {
+            showColumn.append(String.format(pattern,*value))
         }
     }
 
@@ -193,51 +144,40 @@ internal class QueryCondition(var component: ComponentInfo) {
         list.add(getColumnName(column))
     }
 
-    // map->list
-    fun notEq(column: String, value: Any?) = put(notEqualsOperation, column, value)
-
-    fun orNotEq(column: String, value: Any?) = put(orNotEqualsOperation, column, value)
-    fun le(column: String, value: Any?) = put(lessEqualsOperation, column, value)
-    fun eq(column: String, value: Any?) = put(equalsOperation, column, value)
-    fun ge(column: String, value: Any?) = put(greatEqualsOperation, column, value)
-    fun orEq(column: String, value: Any?) = put(orEqualsOperation, column, value)
-
     // statistic
-    fun avg(column: String?, avgColumnName: String? = null) = mapPut(avgMap, column, avgColumnName ?: "${column}Avg")
+    fun avg(column: String?, avgColumnName: String? = null) = addColumn("AVG(%s) %s,", column, avgColumnName ?: "${column}Avg")
 
-    fun min(column: String?, minColumnName: String? = null) = mapPut(minMap, column, minColumnName ?: "${column}Min")
-    fun max(column: String?, maxColumnName: String? = null) = mapPut(maxMap, column, maxColumnName ?: "${column}Max")
-    fun sum(column: String?, sumColumnName: String? = null) = mapPut(sumMap, column, sumColumnName ?: "${column}Sum")
-    fun countDistinct(column: String?, countColumnName: String? = null) = mapPut(countMap, column, countColumnName
+    fun min(column: String?, minColumnName: String? = null) = addColumn("MIN(%s) %s,", column, minColumnName ?: "${column}Min")
+    fun max(column: String?, maxColumnName: String? = null) = addColumn("MAX(%s) %s,", column, maxColumnName ?: "${column}Max")
+    fun sum(column: String?, sumColumnName: String? = null) = addColumn("SUM(%s) %s,", column, sumColumnName ?: "${column}Sum")
+    fun countDistinct(column: String?, countColumnName: String? = null) = addColumn("COUNT(DISTINCT %s) %s,", column, countColumnName
             ?: "${column}CountDistinct")
 
     // list-add
-    fun isNull(column: String?) = listAdd(isNullList, column)
-
-    fun isNotNull(column: String?) = listAdd(isNotNullList, column)
     fun orderBy(column: String?) = listAdd(orderByList, column)
+
     fun groupBy(column: String?) = listAdd(groupByList, column)
-    fun addShowColumn(column: String?) = listAdd(showColumnList, column)
+    fun addShowColumn(column: String?) = addColumn(getColumnName(column!!)+",")
     fun having(havingSql: String?) = listAdd(havingSqlList, havingSql)
-
-
-    fun like(column: String, content: Any?) {
-        content?.let {
-            if (content.javaClass == String::class.java && StringUtils.isEmpty(content as String)) return
-            put(searchOperation, column, "%$it%")
-        }
-    }
 
     /**
      * in查询
      */
-    fun `in`(column: String, value: MutableList<*>?) {
+    fun `in`(column: String, valueList: MutableList<*>?) {
 
-        value?.let {
-            inOperation[getColumnName(column)] = value
+        valueList ?: return
+        val tableColumn = getColumnName(column)
+        andCondition.append("${QueryConjunct.AND} $tableColumn in (")
+        valueList.forEachIndexed { index, value ->
+            if (index == 0)
+                andCondition.append("?")
+            else
+                andCondition.append(",?")
+            andParam.add(TypeAdapter.convertAdapter(component.componentClass, column, value))
         }
-    }
+        andCondition.append(")")
 
+    }
 
     fun orderDescBy(column: String?) {
         column ?: return
@@ -269,7 +209,7 @@ internal class QueryCondition(var component: ComponentInfo) {
                 paramObject is Map<*, *> -> {
                     paramObject.forEach { (key, value) ->
                         value?.let {
-                            this.eq(key!!.toString(), it)
+                            addAndCondition(key!!.toString(), equals, it)
                         }
                     }
                 }
@@ -285,16 +225,16 @@ internal class QueryCondition(var component: ComponentInfo) {
                             var haveCondition = false
                             field.getAnnotation(Page::class.java)?.run { haveCondition = true; page = it.toString().toInt() }
                             field.getAnnotation(PageSize::class.java)?.run { haveCondition = true; pageSize = it.toString().toInt() }
-                            field.getAnnotation(Equals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; eq(fieldName, it) }
-                            field.getAnnotation(OrEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orEq(fieldName, it) }
-                            field.getAnnotation(NotEquals::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; notEq(fieldName, it) }
-                            field.getAnnotation(OrNotEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orNotEq(fieldName, it) }
-                            field.getAnnotation(GreatEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; ge(fieldName, it) }
-                            field.getAnnotation(LessEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; le(fieldName, it) }
-                            field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; like(fieldName, it) }
+                            field.getAnnotation(Equals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; addAndCondition(fieldName, equals, it) }
+                            field.getAnnotation(OrEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; addOrCondition(fieldName, equals, it) }
+                            field.getAnnotation(NotEquals::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; addAndCondition(fieldName, not_equlas, it) }
+                            field.getAnnotation(OrNotEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; addOrCondition(fieldName, not_equlas, it) }
+                            field.getAnnotation(GreatEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; addAndCondition(fieldName, great_equlas, it) }
+                            field.getAnnotation(LessEquals::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; addAndCondition(fieldName, less_equals, it) }
+                            field.getAnnotation(Search::class.java)?.run { if (this.value != "") fieldName = this.value;haveCondition = true; addAndCondition(fieldName, like, it) }
                             field.getAnnotation(OrderBy::class.java)?.run { if (this.value != "") fieldName = this.value; haveCondition = true; orderBy(fieldName) }
                             if (!haveCondition && component.getColumnInfoByFieldName(fieldName) != null)
-                                eq(fieldName, it)
+                                addAndCondition(fieldName, equals, it)
                         }
                     }
 
