@@ -16,6 +16,7 @@ import github.cweijan.ultimate.util.Log
 import java.sql.Connection
 import java.sql.SQLException
 import java.util.*
+import java.util.stream.Collectors
 import javax.sql.DataSource
 
 /**
@@ -44,7 +45,7 @@ class DBInitialer(private val dbConfig: DbConfig, private val dataSource: DataSo
         val excludeList = listOf(MysqlTableStruct::class.java, ExtraData::class.java)
         val component = TableInfo.componentList.stream().filter { componentInfo ->
             !excludeList.contains(componentInfo.componentClass) && componentInfo.componentClass.getAnnotation(Table::class.java) != null
-        }
+        }.collect(Collectors.toList())
         when (dbConfig.tableMode) {
             TableAutoMode.init -> {
                 component.forEach { componentInfo -> recreateTable(componentInfo) }
