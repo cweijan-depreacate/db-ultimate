@@ -64,19 +64,26 @@ object TypeConvert {
      * @param columns   Field对应的列名
      * @return 转换完成的实体类型
      */
+    @Suppress("UNCHECKED_CAST")
     private fun <T> toJavaBean(resultSet: ResultSet, clazz: Class<T>, columns: HashMap<String, String>): T? {
 
         val beanInstance: T
         try {
-            if (Map::class.java.isAssignableFrom(clazz)) {
-                beanInstance = if (clazz.isInterface) BeanUtils.instantiateClass(HashMap::class.java) as T
-                else BeanUtils.instantiateClass(clazz)
-                resultSetToMap(resultSet)?.run {
-                    (beanInstance as MutableMap<Any, Any?>).putAll(this)
+            when {
+                Map::class.java.isAssignableFrom(clazz) -> {
+                    beanInstance = if (clazz.isInterface) BeanUtils.instantiateClass(HashMap::class.java) as T
+                    else BeanUtils.instantiateClass(clazz)
+                    resultSetToMap(resultSet)?.run {
+                        (beanInstance as MutableMap<Any, Any?>).putAll(this)
+                    }
+                    return beanInstance
                 }
-                return beanInstance
-            } else {
-                beanInstance = clazz.newInstance()
+                clazz == Int::class.java||clazz==Integer::class.java -> return resultSet.getInt(1) as T
+                clazz == Long::class.java||clazz==java.lang.Long::class.java -> return resultSet.getLong(1) as T
+                clazz == Double::class.java||clazz==java.lang.Double::class.java->return resultSet.getDouble(1) as T
+                clazz == Float::class.java||clazz==java.lang.Float::class.java->return resultSet.getFloat(1) as T
+                clazz == String::class.java -> return resultSet.getString(1) as T
+                else -> beanInstance = clazz.newInstance()
             }
         } catch (e: Exception) {
             Log.getLogger().error(e.message, e)
@@ -95,11 +102,11 @@ object TypeConvert {
                     (!columns.containsKey(key) && TypeAdapter.isAdapterType(field.type))) {
                 continue
             }
-            val columnName = columns[key]?:continue
+            val columnName = columns[key] ?: continue
 
             try {
                 if (TypeAdapter.isAdapterType(field.type) || Collection::class.java.isAssignableFrom(field.type) || field.getAnnotation(Blob::class.java) != null) {
-                    ReflectUtils.setFieldValue(beanInstance,field,TypeAdapter.convertJavaObject(component.componentClass, field, try {
+                    ReflectUtils.setFieldValue(beanInstance, field, TypeAdapter.convertJavaObject(component.componentClass, field, try {
                         resultSet.getObject(columnName)
                     } catch (e: Exception) {
                         Log.error(e.message);null

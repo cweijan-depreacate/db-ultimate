@@ -1,13 +1,12 @@
 package github.cweijan.ultimate.core
 
+import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.convert.TypeConvert
 import github.cweijan.ultimate.core.component.ComponentScan
 import github.cweijan.ultimate.core.component.TableInfo
-import github.cweijan.ultimate.core.component.info.ComponentInfo
 import github.cweijan.ultimate.core.dialect.DialectAdapter
 import github.cweijan.ultimate.core.dialect.SqlDialect
 import github.cweijan.ultimate.core.extra.ExtraDataService
-import github.cweijan.ultimate.core.extra.GroupFunction
 import github.cweijan.ultimate.core.result.ResultInfo
 import github.cweijan.ultimate.db.HikariDataSourceAdapter
 import github.cweijan.ultimate.db.SqlExecutor
@@ -61,6 +60,7 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
      */
     private fun handlerRelation(bean: Any?) {
         bean ?: return
+        if (TypeAdapter.isAdapterType(bean.javaClass)) return
         val component = TableInfo.getComponent(bean.javaClass)
         //一对多赋值
         if (component.oneToManyLazy.isInitialized()) {
@@ -84,7 +84,7 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
 
         val sql = sqlGenerator.generateCountSql(query)
 
-        return getBySql(sql, query.queryCondition.consumeParams(), GroupFunction::class.java)!!.count.toInt()
+        return getBySql(sql, query.queryCondition.consumeParams(), Int::class.java)!!
     }
 
     fun <T> getByQuery(query: Query<T>): T? {
@@ -179,9 +179,9 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
      */
     fun insertList(componentList: List<Any>): Int {
 
-        var updateLine:Int=0
+        var updateLine: Int = 0
         for (t in componentList) {
-            insert(t)?.let { updateLine+=it; }
+            insert(t)?.let { updateLine += it; }
         }
         return updateLine;
     }
@@ -234,7 +234,6 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
             val dbUltimate = DbUltimate(dbConfig, dataSource)
             Query.db = dbUltimate
             TableInfo.enableDevelopMode(dbConfig.develop)
-            ComponentInfo.init(GroupFunction::class.java)
             dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
             DBInitialer(dbConfig, dbUltimate.dataSource).initializeTable()
             return dbUltimate

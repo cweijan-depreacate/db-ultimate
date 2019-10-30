@@ -101,7 +101,7 @@ public class Pagination<T> implements Serializable {
     }
 
     public Integer getTotalPage() {
-        if (this.pageSize != null) {
+        if (this.pageSize != null && total!=null) {
             this.totalPage = this.total / this.pageSize;
             if (this.total % this.pageSize != 0) {
                 this.totalPage++;

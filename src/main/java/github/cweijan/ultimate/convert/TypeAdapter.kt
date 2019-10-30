@@ -16,7 +16,6 @@ object TypeAdapter {
     val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
     val DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
     private val BIG_TYPE: MutableList<String> = mutableListOf("java.math.BigInteger","java.math.BigDecimal")
-
     @JvmStatic
     fun isAdapterType(type: Class<*>): Boolean {
         val typeName = type.name
@@ -64,6 +63,7 @@ object TypeAdapter {
         return result.toString()
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun convertJavaObject(componentClass: Class<*>?, field: Field, javaObject: Any?): Any? {
 
         val fieldType = field.type

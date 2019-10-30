@@ -18,6 +18,13 @@ import java.util.List;
 public class SelectTest extends BaseTest{
 
     @Test
+    public void testGetCount(){
+        int count = Query.of(Lib.class).count();
+        System.out.println(count);
+
+    }
+
+    @Test
     public void testGetById(){
 
         Lib id = Query.of(Lib.class).eq("id", 8).get();
