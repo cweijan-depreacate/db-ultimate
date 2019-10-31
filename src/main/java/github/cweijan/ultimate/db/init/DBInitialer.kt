@@ -40,7 +40,6 @@ class DBInitialer(private val dbConfig: DbConfig, private val dataSource: DataSo
 
         val extraData = ComponentInfo.init(ExtraData::class.java)
         createTable(extraData)
-        initSqlGenetator.initStruct()
 
         val excludeList = listOf(MysqlTableStruct::class.java, ExtraData::class.java)
         val component = TableInfo.componentList.stream().filter { componentInfo ->
@@ -51,6 +50,7 @@ class DBInitialer(private val dbConfig: DbConfig, private val dataSource: DataSo
                 component.forEach { componentInfo -> recreateTable(componentInfo) }
             }
             TableAutoMode.update -> {
+                initSqlGenetator.initStruct()
                 component.forEach { componentInfo -> updateTable(componentInfo) }
             }
             else -> return

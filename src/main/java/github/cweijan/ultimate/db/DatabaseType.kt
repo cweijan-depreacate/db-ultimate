@@ -13,7 +13,7 @@ enum class DatabaseType {
             return when {
                 url?.indexOf("jdbc:mysql") != -1 -> Mysql
                 url.indexOf("jdbc:oracle") != -1 -> Oracle
-                url.indexOf("jdbc:postgresql") != -1 -> Mysql
+                url.indexOf("jdbc:postgresql") != -1 -> Postgresql
                 url.indexOf("jdbc:sqlite") != -1 -> Sqllite
                 else -> None
             }
