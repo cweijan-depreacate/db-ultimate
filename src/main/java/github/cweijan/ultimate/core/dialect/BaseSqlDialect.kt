@@ -12,6 +12,7 @@ import github.cweijan.ultimate.exception.PrimaryValueNotSetException
 import github.cweijan.ultimate.util.DateUtils
 import github.cweijan.ultimate.util.Json
 import github.cweijan.ultimate.util.ReflectUtils
+import java.lang.reflect.Field
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -30,12 +31,7 @@ abstract class BaseSqlDialect : SqlDialect {
             fieldValue?.run {
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
                 values += "?,"
-                field.getAnnotation(Blob::class.java)?.let { params.add(Json.toJson(this).toByteArray()); return@run }
-                if(field.type==Date::class.java){
-                    params.add(this)
-                    return@run
-                }
-                params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, this))
+                params.add(toAdapterValue(field, this)!!)
             }
             if (fieldValue == null) {
                 field.getAnnotation(CreateDate::class.java)?.run {
@@ -53,6 +49,17 @@ abstract class BaseSqlDialect : SqlDialect {
         }
 
         return SqlObject("INSERT INTO " + componentInfo.tableName + "(" + columns + ") VALUES(" + values + ");", params)
+    }
+
+    private fun toAdapterValue(field: Field, fieldValue: Any): Any? {
+        field.getAnnotation(Blob::class.java)?.let {return Json.toJson(fieldValue).toByteArray() }
+        if (fieldValue is Collection<*>) {
+            return Json.toJson(fieldValue)
+        }
+        if (fieldValue::class.java.isEnum) {
+            return (fieldValue as Enum<*>).name
+        }
+        return fieldValue
     }
 
     @Throws(IllegalAccessException::class)
@@ -74,12 +81,7 @@ abstract class BaseSqlDialect : SqlDialect {
             val fieldValue =ReflectUtils.getFieldValue(component,field)
             fieldValue?.run {
                 sql += "${componentInfo.getColumnNameByFieldName(field.name)}=?,"
-                field.getAnnotation(Blob::class.java)?.let { params.add(Json.toJson(this).toByteArray()); return@run }
-                if(field.type==Date::class.java){
-                    params.add(this)
-                    return@run
-                }
-                params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, this))
+                params.add(toAdapterValue(field, this)!!)
             }
             if (fieldValue == null) {
                 field.getAnnotation(UpdateDate::class.java)?.run {
