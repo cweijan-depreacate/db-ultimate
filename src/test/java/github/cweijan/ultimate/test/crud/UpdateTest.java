@@ -1,14 +1,21 @@
 package github.cweijan.ultimate.test.crud;
 
 import github.cweijan.ultimate.core.Query;
-import github.cweijan.ultimate.test.bean.Admin;
+import github.cweijan.ultimate.core.result.ResultInfo;
 import github.cweijan.ultimate.test.base.BaseTest;
+import github.cweijan.ultimate.test.bean.Admin;
 import github.cweijan.ultimate.test.bean.Lib;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
 
 public class UpdateTest extends BaseTest{
+
+    @Test
+    public void testUpdateBySql(){
+        ResultInfo resultInfo = Query.db.executeSql("update lib set msd='test' where id =1");
+        System.out.println(resultInfo);
+    }
 
     @Test
     public void testUpdateByOperation(){

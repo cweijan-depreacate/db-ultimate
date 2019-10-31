@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -40,6 +41,9 @@ public class InsertTest extends BaseTest{
 //        lib.setList(Collections.singletonList("hello"));
         //        lib.setId(12);
         lib.setMessage("cweijan");
+        lib.setCreateDate(new Date());
+        lib.setCreateTime(new Date());
+        lib.setCreateTime2(LocalDateTime.now());
         Query.db.insert(lib);
         System.out.println(lib.getId());
     }

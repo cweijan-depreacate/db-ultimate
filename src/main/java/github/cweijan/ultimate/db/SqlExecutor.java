@@ -1,7 +1,7 @@
 package github.cweijan.ultimate.db;
 
-import github.cweijan.ultimate.core.result.PreparedStatementCallback;
 import github.cweijan.ultimate.core.result.ResultInfo;
+import github.cweijan.ultimate.core.result.StatementCallback;
 import github.cweijan.ultimate.db.config.DbConfig;
 import github.cweijan.ultimate.jdbc.datasource.DataSourceUtils;
 import github.cweijan.ultimate.util.Log;
@@ -29,22 +29,23 @@ public class SqlExecutor {
     }
 
     @Nullable
-    public final <T> T executeSql(@NotNull String sql, PreparedStatementCallback<T> preparedStatementCallback) throws SQLException {
+    public final <T> T executeSql(@NotNull String sql, StatementCallback<T> statementCallback) throws SQLException {
         Intrinsics.checkParameterIsNotNull(sql, "sql");
-        return this.executeSql(sql, null, preparedStatementCallback);
+        return this.executeSql(sql, null, statementCallback);
     }
 
     @Nullable
-    public final <T> T executeSql(@NotNull String sql, @Nullable Object[] params, PreparedStatementCallback<T> preparedStatementCallback) throws SQLException {
+    public final <T> T executeSql(@NotNull String sql, @Nullable Object[] params, StatementCallback<T> statementCallback) throws SQLException {
         Intrinsics.checkParameterIsNotNull(sql, "sql");
-        return this.executeSql(sql, params, preparedStatementCallback, dataSource.getConnection());
+        return this.executeSql(sql, params, statementCallback, dataSource.getConnection());
     }
 
-    private <T> T executeSql(@NotNull String sql, final Object[] params, PreparedStatementCallback<T> preparedStatementCallback, Connection connection) throws SQLException {
-        ResultSet resultSet;
+    private <T> T executeSql(@NotNull String sql, final Object[] params, StatementCallback<T> statementCallback, Connection connection) throws SQLException {
+        ResultSet resultSet=null;
         long startTime = System.currentTimeMillis();
-        final PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-        if (params != null) {
+        PreparedStatement preparedStatement = null;
+        if (params != null && params.length > 0) {
+            preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             for (int index = 0; index < params.length; index++) {
                 preparedStatement.setObject(index + 1, params[index]);
             }
@@ -52,12 +53,21 @@ public class SqlExecutor {
         ResultInfo resultInfo = new ResultInfo();
         try {
             if (sql.trim().toLowerCase().startsWith("select")) {
-                resultSet = preparedStatement.executeQuery();
+                if (preparedStatement == null) {
+                    resultSet = connection.createStatement().executeQuery(sql);
+                } else {
+                    resultSet = preparedStatement.executeQuery();
+                }
             } else {
-                resultInfo.setUpdateLine(preparedStatement.executeUpdate());
-                resultSet = preparedStatement.getGeneratedKeys();
-                if(resultSet.next()){
-                    resultInfo.setGenerateKey(resultSet.getInt(1));
+                if (preparedStatement == null) {
+                    Statement statement = connection.createStatement();
+                    resultInfo.setUpdateLine(statement.executeUpdate(sql));
+                } else {
+                    resultInfo.setUpdateLine(preparedStatement.executeUpdate());
+                    resultSet = preparedStatement.getGeneratedKeys();
+                    if (resultSet.next()) {
+                        resultInfo.setGenerateKey(resultSet.getInt(1));
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -77,16 +87,15 @@ public class SqlExecutor {
             }
         }
         try {
-            return preparedStatementCallback.handlerResultSet(resultSet,resultInfo);
+            return statementCallback.handlerResultSet(resultSet, resultInfo);
         } finally {
             if (resultSet != null) {
                 try {
                     resultSet.close();
-                }
-                catch (SQLException ex) {
+                } catch (SQLException ex) {
                     Log.getLogger().trace("Could not close JDBC ResultSet", ex);
                 }
-                DataSourceUtils.releaseConnection(connection,dataSource);
+                DataSourceUtils.releaseConnection(connection, dataSource);
             }
         }
     }

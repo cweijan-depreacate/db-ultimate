@@ -31,6 +31,10 @@ abstract class BaseSqlDialect : SqlDialect {
                 columns += "${componentInfo.getColumnNameByFieldName(field.name)},"
                 values += "?,"
                 field.getAnnotation(Blob::class.java)?.let { params.add(Json.toJson(this).toByteArray()); return@run }
+                if(field.type==Date::class.java){
+                    params.add(this)
+                    return@run
+                }
                 params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, this))
             }
             if (fieldValue == null) {
@@ -71,6 +75,10 @@ abstract class BaseSqlDialect : SqlDialect {
             fieldValue?.run {
                 sql += "${componentInfo.getColumnNameByFieldName(field.name)}=?,"
                 field.getAnnotation(Blob::class.java)?.let { params.add(Json.toJson(this).toByteArray()); return@run }
+                if(field.type==Date::class.java){
+                    params.add(this)
+                    return@run
+                }
                 params.add(TypeAdapter.convertAdapter(componentInfo.componentClass, field.name, this))
             }
             if (fieldValue == null) {

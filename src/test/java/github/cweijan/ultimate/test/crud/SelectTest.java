@@ -18,6 +18,13 @@ import java.util.List;
 public class SelectTest extends BaseTest{
 
     @Test
+    public void testAll(){
+        List<Lib> list = Query.of(Lib.class).list();
+        System.out.println(list);
+
+    }
+
+    @Test
     public void testGetCount(){
         int count = Query.of(Lib.class).count();
         System.out.println(count);

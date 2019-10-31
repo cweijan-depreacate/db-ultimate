@@ -41,6 +41,12 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
 
     }
 
+    fun <T> executeSql(sql: String, vararg params: Any?): ResultInfo? {
+
+        return sqlExecutor.executeSql(sql, params) { _, resultInfo -> resultInfo }
+
+    }
+
     @JvmOverloads
     fun <T> getBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): T? {
 

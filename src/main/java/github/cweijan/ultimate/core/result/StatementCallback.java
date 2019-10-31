@@ -7,9 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @FunctionalInterface
-public interface PreparedStatementCallback<T> {
+public interface StatementCallback<T> {
 
 	@Nullable
-	T handlerResultSet(ResultSet resultSet, ResultInfo reusltInfo) throws SQLException, DataAccessException;
+	T handlerResultSet(@Nullable ResultSet resultSet, ResultInfo reusltInfo) throws SQLException, DataAccessException;
 
 }
