@@ -158,7 +158,8 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
 
         val sqlObject = sqlGenerator.generateInsertSql(component)
         return sqlExecutor.executeSql(sqlObject.sql, sqlObject.params.toTypedArray()) { _: ResultSet?, resultInfo: ResultInfo ->
-            TableInfo.getComponent(component.javaClass).setPrimaryValue(component, resultInfo.generateKey)
+            if(resultInfo.generateKey!=null)
+                TableInfo.getComponent(component.javaClass).setPrimaryValue(component, resultInfo.generateKey)
             resultInfo.updateLine
         }
 

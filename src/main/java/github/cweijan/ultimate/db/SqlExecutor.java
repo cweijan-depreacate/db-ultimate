@@ -41,7 +41,7 @@ public class SqlExecutor {
     }
 
     private <T> T executeSql(@NotNull String sql, final Object[] params, StatementCallback<T> statementCallback, Connection connection) throws SQLException {
-        ResultSet resultSet=null;
+        ResultSet resultSet = null;
         long startTime = System.currentTimeMillis();
         PreparedStatement preparedStatement = null;
         if (params != null && params.length > 0) {
@@ -66,7 +66,11 @@ public class SqlExecutor {
                     resultInfo.setUpdateLine(preparedStatement.executeUpdate());
                     resultSet = preparedStatement.getGeneratedKeys();
                     if (resultSet.next()) {
-                        resultInfo.setGenerateKey(resultSet.getInt(1));
+                        Object resultValue = resultSet.getObject(1);
+                        if (resultValue != null && resultValue.getClass() == Integer.class) {
+                            resultInfo.setGenerateKey(resultSet.getInt(1));
+                        }
+
                     }
                 }
             }
