@@ -35,7 +35,7 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
         return beanList
     }
 
-    fun <T> executeSql(sql: String, vararg params: Any?, clazz: Class<T>): List<T>? {
+    fun <T> executeSql(sql: String, clazz: Class<T>, vararg params: Any?): List<T>? {
 
         return sqlExecutor.executeSql(sql, params) { resultset, _ -> TypeConvert.resultSetToBeanList(resultset, clazz) }
 
@@ -158,7 +158,7 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
 
         val sqlObject = sqlGenerator.generateInsertSql(component)
         return sqlExecutor.executeSql(sqlObject.sql, sqlObject.params.toTypedArray()) { _: ResultSet?, resultInfo: ResultInfo ->
-            if(resultInfo.generateKey!=null)
+            if (resultInfo.generateKey != null)
                 TableInfo.getComponent(component.javaClass).setPrimaryValue(component, resultInfo.generateKey)
             resultInfo.updateLine
         }
