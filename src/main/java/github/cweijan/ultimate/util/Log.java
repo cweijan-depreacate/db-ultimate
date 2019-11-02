@@ -34,9 +34,9 @@ public class Log {
     public static void error(Object content, Throwable throwable) {
         if (loggerChecker.isErrorEnabled()) {
             if (content instanceof String) {
-                getLoggerInner().error(content+"");
+                getLoggerInner().error(content+"",throwable);
             } else {
-                getLoggerInner().error(content != null ? Json.toJson(content) : null, "");
+                getLoggerInner().error(content != null ? Json.toJson(content) : null, "",throwable);
             }
         }
 
