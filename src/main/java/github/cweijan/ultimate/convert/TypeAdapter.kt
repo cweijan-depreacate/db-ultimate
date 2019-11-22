@@ -7,6 +7,7 @@ import github.cweijan.ultimate.util.Json
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
+import java.util.concurrent.ConcurrentHashMap
 
 
 object TypeAdapter {
@@ -15,7 +16,7 @@ object TypeAdapter {
     private val BOOLEAN_TYPE = mutableListOf(JavaType.Boolean, "boolean")
     val CHARACTER_TYPE: MutableList<String> = mutableListOf(JavaType.String, "chat", JavaType.Character)
     val DATE_TYPE: MutableList<String> = mutableListOf("java.time.LocalTime", "java.time.LocalDateTime", "java.time.LocalDate", "java.util.Date")
-    private val BIG_TYPE: MutableList<String> = mutableListOf("java.math.BigInteger","java.math.BigDecimal")
+    private val BIG_TYPE: MutableList<String> = mutableListOf("java.math.BigInteger", "java.math.BigDecimal")
     @JvmStatic
     fun isAdapterType(type: Class<*>): Boolean {
         val typeName = type.name
@@ -24,14 +25,18 @@ object TypeAdapter {
                 || BIG_TYPE.contains(typeName)
     }
 
+    private val fieldCache: MutableMap<Class<*>, List<Field>> = ConcurrentHashMap()
+
     fun getAllField(componentClass: Class<*>?): List<Field> {
 
-        val arrayList = ArrayList<Field>()
-        if (componentClass == null) return arrayList
-        arrayList.addAll(componentClass.declaredFields.filter { !Modifier.isStatic(it.modifiers) })
-        arrayList.addAll(getAllField(componentClass.superclass))
+        return fieldCache.computeIfAbsent(componentClass!!) { key->
+            val arrayList = ArrayList<Field>()
+            arrayList.addAll(key.declaredFields.filter { !Modifier.isStatic(it.modifiers) })
+            if(key.superclass!=null && key.superclass!=Object::class.java)
+                arrayList.addAll(getAllField(key.superclass))
+            arrayList
+        }
 
-        return arrayList
     }
 
     /**
@@ -84,9 +89,9 @@ object TypeAdapter {
             }
         }
 
-        if(Collection::class.java.isAssignableFrom(fieldType)){
+        if (Collection::class.java.isAssignableFrom(fieldType)) {
             val valueType = getGenericType(field)
-            return Json.parseCollection(javaObject.toString(),fieldType as Class<Collection<*>>,valueType)
+            return Json.parseCollection(javaObject.toString(), fieldType as Class<Collection<*>>, valueType)
         }
 
         if (fieldType.isEnum && CHARACTER_TYPE.contains(javaObject::class.java.name)) {
@@ -125,15 +130,15 @@ object TypeAdapter {
             return (fieldValue as Enum<*>).name
         }
 
-        if(fieldValue is Collection<*>){
+        if (fieldValue is Collection<*>) {
             return Json.toJson(fieldValue)
         }
 
         if (DATE_TYPE.contains(fieldValue::class.java.name)) {
             val columnInfo = TableInfo.getComponent(componentClass, true)?.getColumnInfoByFieldName(fieldName)
-            val dateFormat=if(columnInfo?.fieldType==fieldValue::class.java){
+            val dateFormat = if (columnInfo?.fieldType == fieldValue::class.java) {
                 columnInfo.dateFormat
-            }else{
+            } else {
                 getDefaultFormat(fieldValue::class.java)
             }
             return DateUtils.toDateString(fieldValue, dateFormat) ?: fieldValue
@@ -143,9 +148,9 @@ object TypeAdapter {
     }
 
     fun getDefaultFormat(type: Class<*>): String {
-        return when(type.name){
-            "java.time.LocalDate"-> "yyyy-MM-dd"
-            "java.time.LocalTime"-> "HH:mm:ss"
+        return when (type.name) {
+            "java.time.LocalDate" -> "yyyy-MM-dd"
+            "java.time.LocalTime" -> "HH:mm:ss"
             else -> "yyyy-MM-dd HH:mm:ss"
         }
     }
