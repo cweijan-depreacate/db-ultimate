@@ -15,6 +15,7 @@ import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.springboot.util.ServiceMap
 import github.cweijan.ultimate.util.Log
 import java.sql.ResultSet
+import java.util.*
 import javax.sql.DataSource
 
 /**
@@ -25,19 +26,28 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig, dataSource)
     var sqlGenerator: SqlDialect = DialectAdapter.getSqlGenerator(dbConfig.getDatabaseType())
 
-    @JvmOverloads
-    fun <T> findBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): List<T> {
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> findBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>, cacheMap: Map<String, Any>?): List<T> {
 
-        val beanList = sqlExecutor.executeSql(sql, params) { resultSet, _ -> TypeConvert.resultSetToBeanList(resultSet, clazz) }!!
+        val cache = cacheMap?.get(getCacheKey(sql, params))
+        if (cache != null)
+            return cache as List<T>
+        val beanList = sqlExecutor.executeSql(sql, params) { resultSet, _ -> TypeConvert.resultSetToBeanList(resultSet!!, clazz) }!!
         beanList.forEach { bean ->
-            handlerRelation(bean)
+            handlerRelation(bean,cacheMap)
         }
         return beanList
     }
 
-    fun <T> executeSql(sql: String, clazz: Class<T>, vararg params: Any?): List<T>? {
+    @JvmOverloads
+    fun <T> findBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): List<T> {
+        return findBySql(sql, params, clazz, null)
+    }
 
-        return sqlExecutor.executeSql(sql, params) { resultset, _ -> TypeConvert.resultSetToBeanList(resultset, clazz) }
+
+    fun <T> executeSql(sql: String, vararg params: Any?, clazz: Class<T>): List<T>? {
+
+        return sqlExecutor.executeSql(sql, params) { resultset, _ -> TypeConvert.resultSetToBeanList(resultset!!, clazz) }
 
     }
 
@@ -49,39 +59,45 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
 
     @JvmOverloads
     fun <T> getBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>): T? {
+        return getBySql(sql, params, clazz, null)
+    }
 
-        val resultSetToBeanList = sqlExecutor.executeSql(sql, params) { resultSet, _ -> TypeConvert.resultSetToBeanList(resultSet, clazz) }!!
+    private fun <T> getBySql(sql: String, params: Array<Any>? = null, clazz: Class<T>, cacheMap: Map<String, Any>?): T? {
+
+        val resultSetToBeanList = findBySql(sql, params, clazz,cacheMap)
         if (resultSetToBeanList.isEmpty()) return null;
         if (resultSetToBeanList.size > 1) {
             Log.getLogger().warn("TooManyResultWarn: Get expect 1 result,but fond ${resultSetToBeanList.size}")
         }
-        val bean = resultSetToBeanList[0]
 
-        handlerRelation(bean)
-        return bean
+        return resultSetToBeanList[0]
     }
 
     /**
      * 一对多赋值
+     * todo:这里的赋值如果数据类型不一致会报错,需要处理
      */
-    private fun handlerRelation(bean: Any?) {
+    private fun handlerRelation(bean: Any?, cacheMap: Map<String, Any>?) {
         bean ?: return
         if (TypeAdapter.isAdapterType(bean.javaClass)) return
         val component = TableInfo.getComponent(bean.javaClass)
         //一对多赋值
         if (component.oneToManyLazy.isInitialized()) {
             component.oneToManyList.forEach { oneToManyInfo ->
-                oneToManyInfo.oneTomanyField.set(bean, ServiceMap.get(oneToManyInfo.relationClass)
-                        .query.eq(oneToManyInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name))
+                val oneToManyQuery = Query.of(oneToManyInfo.relationClass)
+                        .eq(oneToManyInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name))
                         .where(oneToManyInfo.where)
-                        .list())
+                val oneToManySql=sqlGenerator.generateSelectSql(oneToManyQuery)
+                oneToManyInfo.oneTomanyField.set(bean, findBySql(oneToManySql,oneToManyQuery.queryCondition.consumeParams(),oneToManyInfo.relationClass,cacheMap))
             }
         }
         // 一对一赋值
         if (component.oneToOneLazy.isInitialized()) {
             component.oneToOneList.forEach { oneToOneInfo ->
-                oneToOneInfo.oneToOneField.set(bean, ServiceMap.get(oneToOneInfo.relationClass)
-                        .getBy(oneToOneInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name)))
+                val oneToOneQuery = Query.of(oneToOneInfo.relationClass)
+                        .eq(oneToOneInfo.relationColumn, component.getValueByFieldName(bean, component.primaryField!!.name))
+                val oneToOneSql=sqlGenerator.generateSelectSql(oneToOneQuery)
+                oneToOneInfo.oneToOneField.set(bean, getBySql(oneToOneSql,oneToOneQuery.queryCondition.consumeParams(),oneToOneInfo.relationClass,cacheMap))
             }
         }
     }
@@ -230,6 +246,10 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
 
         val sql = sqlGenerator.generateUpdateSqlByQuery(query)
         return sqlExecutor.executeSql(sql, query.queryCondition.consumeParams()) { _, info -> info.updateLine }
+    }
+
+    private fun getCacheKey(sql:String,params:Array<Any>?):String{
+        return sql+Arrays.toString(params);
     }
 
     companion object {
