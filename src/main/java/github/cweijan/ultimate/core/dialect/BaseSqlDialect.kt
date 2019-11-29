@@ -95,7 +95,7 @@ abstract class BaseSqlDialect : SqlDialect {
         }
 
         if (sql.lastIndexOf(",") == -1) {
-            throw RuntimeException("Cannot find any update relationClass!")
+            throw RuntimeException("not found any update column!")
         } else {
             sql = sql.substring(0, sql.lastIndexOf(","))
         }
