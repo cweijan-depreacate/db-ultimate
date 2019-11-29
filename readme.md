@@ -2,8 +2,28 @@
 目前Java有很多操作数据库的框架, 但是都不和我的心意, 需要重复的代码太多, 于是, 我开发了db-ultimate, 一个极速的ORM框架, 最大力度的减少重复代码
 
 ## QuickStart
-1. [下载](https://github.com/cweijan/db-ultimate/releases)jar包, 加入项目依赖,对DbUltimate进行集成配置
-2. 使用**Table**注解对数据库对象和实体进行映射
+
+第一步, 为SpringBoot项目配置依赖
+
+```
+<dependency>
+    <groupId>io.github.cweijan</groupId>
+    <artifactId>db-ultimate</artifactId>
+    <version>1.4.5</version>
+</dependency>
+```
+
+第二步, 配置数据库连接池(**如果工程内已配置数据库连接池可跳过此步**)
+
+在application.properties加上配置信息, 内置[HikariCp](https://github.com/brettwooldridge/HikariCP)数据库连接池, [点击](#SpringBoot配置详解)查看更多配置详情
+``` 
+ultimate.jdbc.driver=com.mysql.jdbc.Driver
+ultimate.jdbc.username=root
+ultimate.jdbc.password=root
+ultimate.jdbc.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8
+#配置需要扫描的TableCommponent包名
+ultimate.jdbc.scanPackage=gitbhu.cweijan
+```
 
 ## ORM映射
 **定义TableComponent**
@@ -14,7 +34,7 @@ import github.cweijan.ultimate.annotation.Primary;
 import github.cweijan.ultimate.annotation.Table;
 
 //值为表名,默认表名为类名
-@Table(value = "t_booklist")
+@Table("t_booklist")
 public class Book{
 
     //表明主键
@@ -27,38 +47,20 @@ public class Book{
 
     private String isbn;
 
-    //需要排除ORM映射的字段
-    @Exclude
-    private String mark;
-
     public Integer getId(){
 
         return id;
     }
     //...
-    //省略了其他getter和setter方法    
 }
-```
-
-
-## 集成Spring-Boot
-在application.properties加上配置信息, 内置[HikariCp](https://github.com/brettwooldridge/HikariCP)数据库连接池, [点击](#SpringBoot配置详解)查看更多配置详情
-``` 
-ultimate.jdbc.driver=com.mysql.jdbc.Driver
-ultimate.jdbc.username=root
-ultimate.jdbc.password=root
-ultimate.jdbc.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8
-#配置需要扫描的TableCommponent包名
-ultimate.jdbc.scanPackage=gitbhu.cweijan
 ```
 
 **进行查询**
 ``` java
-@Autowired
-private DbUltimate ultimate;
 
+@Test
 public void testSelect(){
-    List<Book> books = ultimate.find(Book.class);
+    List<Book> books = Query.of(Book.class).list();
     System.out.println(books);
 }
 
@@ -101,6 +103,9 @@ ultimate.jdbc.createNonexistsTable=true
 
 #需要扫描TableComponent的包名,多个包使用逗号,分割
 ultimate.jdbc.scanPackage=github.cweijan
+
+#是否启用DbUltimate,默认为true
+ultimate.jdbc.enable=true
 
 #是否启用开发模式,开发模式支持热加载TableComponent
 ultimate.jdbc.develop=false
