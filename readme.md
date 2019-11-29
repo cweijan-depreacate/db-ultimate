@@ -53,9 +53,77 @@ public void testSelect(){
 }
 
 ```
-至此, 第一个DbUltimate程序运行完成, [更多操作Api](#Api)
+至此, 第一个DbUltimate程序运行完成
 
-## SpringBoot配置详解
+# Api
+
+## 插入
+直接插入Java对象即可
+``` java
+Admin admin = new Admin();
+admin.setMessage("hello");
+admin.setTest("test");
+admin.setDate(new Date());
+Query.db.insert(admin);
+```
+
+## Query对象
+更新删除查询主要围绕Query对象进行
+``` java
+Query<Admin> query = Query.of(Admin.class);
+query.eq("test", "test2"); // ==查询
+query.ne("test", "test2"); // !=查询
+query.search("test", "t"); //like查询
+query.join(Lib.class, "ad.id=l.id"); //连表查询,建议在TableComponent配置表别名
+List<Admin> adminList=quert.list();
+```
+
+## 更新
+``` java
+//直接对对象进行更新,此方法只支持根据主键更新
+Admin admin = new Admin();
+admin.setId(2);
+admin.setMessage("cweijain");
+dbUltimate.update(admin);
+
+//使用operation模式
+Query<Admin> query = Query.of(Admin.class);
+query.update("test","test2").executeUpdate();
+```
+
+
+## 查询
+``` java
+//使用查询Admin
+List<Admin> admins = Query.of(Admin.class).list();
+```
+
+## 删除
+``` java
+//删除id为1的admin
+Query<Admin> query = Query.of(Admin.class);
+query.eq("id", "1");
+query.executeDelete();
+```
+
+## ServiceInject
+
+DbUltimate内置了一个方便的Service基类ServiceInject, 只需继承就可让Service拥有增删改查的功能
+
+
+``` java
+
+import github.cweijan.ultimate.springboot.util.ServiceInject;
+
+@Service
+public class StudentService extends ServiceInject<StudentService>{
+
+}
+
+
+```
+
+## SpringBoot相关配置
 ```
 #是否启用dbultimate
 ultimate.jdbc.enable=true
@@ -123,59 +191,7 @@ public class Student{
 }
 ```
 
-# Api
-
-## 插入
-直接插入Java对象即可
-``` java
-Admin admin = new Admin();
-admin.setMessage("hello");
-admin.setTest("test");
-admin.setDate(new Date());
-Query.db.insert(admin);
-```
-
-## Query对象
-更新删除查询主要围绕Query对象进行
-``` java
-Query<Admin> query = Query.of(Admin.class);
-query.eq("test", "test2"); // ==查询
-query.ne("test", "test2"); // !=查询
-query.search("test", "t"); //like查询
-query.join(Lib.class, "ad.id=l.id"); //连表查询,建议在TableComponent配置表别名
-List<Admin> adminList=quert.list();
-```
-
-## 更新
-``` java
-//直接对对象进行更新,此方法只支持根据主键更新
-Admin admin = new Admin();
-admin.setId(2);
-admin.setMessage("cweijain");
-dbUltimate.update(admin);
-
-//使用operation模式
-Query<Admin> query = Query.of(Admin.class);
-query.update("test","test2");
-query.executeUpdate();
-```
-
-
-## 查询
-``` java
-//使用查询Admin
-List<Admin> admins = Query.of(Admin.class).list();
-```
-
-## 删除
-``` java
-//删除id为1的admin
-Query<Admin> query = Query.of(Admin.class);
-query.eq("id", "1");
-query.executeDelete();
-```
-
-## 不使用SpringBoot使用DbUltimate
+## 普通java工程使用DbUltimate
 ``` java
 //如果使用Spring则是在spring配置文件中配置DbConfig,并在配置文件中将DbConfig注入DbUltimate
 
