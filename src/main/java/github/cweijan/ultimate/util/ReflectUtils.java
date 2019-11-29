@@ -6,8 +6,8 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,6 +18,15 @@ import java.util.stream.Stream;
  */
 public class ReflectUtils {
 
+    private static HashMap<Class<?>, Field[]> fieldCache = new HashMap<>();
+    private static boolean cacheField;
+
+    /**
+     * 是否对Field进行缓存,默认不缓存,生产环境建议开启
+     */
+    public static void enableCache(boolean cacheField) {
+        ReflectUtils.cacheField = cacheField;
+    }
 
     /**
      * 将列表转换为另一个列表
@@ -37,8 +46,10 @@ public class ReflectUtils {
      */
     public static <T> T convert(Object source, Class<T> targetClass) {
         if (source == null || targetClass == null) return null;
+        if (source.getClass() == targetClass && (targetClass.getPackage().getName().startsWith("java.lang") || targetClass.isPrimitive()))
+            return (T) source;
         T instance = BeanUtils.instantiateClass(targetClass);
-        for (Field targetFiled : getFieldArray(targetClass)) {
+        for (Field targetFiled : cacheField ? fieldCache.computeIfAbsent(targetClass, ReflectUtils::getFieldArray) : getFieldArray(targetClass)) {
             Object sourceValue = getFieldValue(source, targetFiled.getName());
             if (sourceValue != null) {
                 if (Collection.class.isAssignableFrom(targetFiled.getType())) {
@@ -56,18 +67,25 @@ public class ReflectUtils {
      */
     public static Field[] getFieldArray(Class<?> clazz) {
         if (clazz == null) return new Field[]{};
-        List<Field> fields = new ArrayList<>();
+        Field[] fields = clazz.getDeclaredFields();
+        clazz = clazz.getSuperclass();
         while (clazz != null && clazz != Object.class) {
-            for (Field field : clazz.getDeclaredFields()) {
-                field.setAccessible(true);
-                fields.add(field);
-            }
-            clazz = clazz.getSuperclass(); //得到父类,然后赋给自己
+            Field[] tempFields = clazz.getDeclaredFields();
+            Field[] newFields = new Field[fields.length + tempFields.length];
+            System.arraycopy(fields, 0, newFields, 0, fields.length);
+            System.arraycopy(tempFields, 0, newFields, fields.length, tempFields.length);
+            fields = newFields;
+            clazz = clazz.getSuperclass();
         }
-
-        return fields.toArray(new Field[]{});
+        return fields;
     }
 
+    /**
+     * 获取类的field,包括父类的
+     */
+    public static Field[] getFieldArrayIfCache(Class<?> clazz) {
+        return cacheField ? fieldCache.computeIfAbsent(clazz, ReflectUtils::getFieldArray) : getFieldArray(clazz);
+    }
 
     /**
      * 为对象的field进行赋值
@@ -103,7 +121,7 @@ public class ReflectUtils {
             }
             field.setAccessible(true);
             field.set(instance, targetValue);
-        } catch (IllegalAccessException | IntrospectionException | InvocationTargetException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -157,9 +175,10 @@ public class ReflectUtils {
     public static Field getField(Class<?> clazz, String fieldName) {
         if (clazz == null || StringUtils.isEmpty(fieldName)) return null;
 
-        for (Field declaredField : clazz.getDeclaredFields()) {
-            declaredField.setAccessible(true);
-            if (declaredField.getName().equalsIgnoreCase(fieldName)) return declaredField;
+        Field[] fields = cacheField ? fieldCache.computeIfAbsent(clazz, ReflectUtils::getFieldArray) : getFieldArray(clazz);
+        for (Field field : fields) {
+            field.setAccessible(true);
+            if (field.getName().equalsIgnoreCase(fieldName)) return field;
         }
 
         return null;

@@ -4,10 +4,9 @@ import github.cweijan.ultimate.annotation.Blob
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.util.DateUtils
 import github.cweijan.ultimate.util.Json
+import github.cweijan.ultimate.util.ReflectUtils
 import java.lang.reflect.Field
-import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
-import java.util.concurrent.ConcurrentHashMap
 
 
 object TypeAdapter {
@@ -25,18 +24,8 @@ object TypeAdapter {
                 || BIG_TYPE.contains(typeName)
     }
 
-    private val fieldCache: MutableMap<Class<*>, List<Field>> = ConcurrentHashMap()
-
-    fun getAllField(componentClass: Class<*>?): List<Field> {
-
-        return fieldCache.computeIfAbsent(componentClass!!) { key->
-            val arrayList = ArrayList<Field>()
-            arrayList.addAll(key.declaredFields.filter { !Modifier.isStatic(it.modifiers) })
-            if(key.superclass!=null && key.superclass!=Object::class.java)
-                arrayList.addAll(getAllField(key.superclass))
-            arrayList
-        }
-
+    fun getAllField(componentClass: Class<*>?): Array<out Field> {
+        return ReflectUtils.getFieldArrayIfCache(componentClass)
     }
 
     /**

@@ -14,6 +14,7 @@ import github.cweijan.ultimate.db.config.DbConfig
 import github.cweijan.ultimate.db.init.DBInitialer
 import github.cweijan.ultimate.springboot.util.ServiceMap
 import github.cweijan.ultimate.util.Log
+import github.cweijan.ultimate.util.ReflectUtils
 import java.sql.ResultSet
 import java.util.*
 import javax.sql.DataSource
@@ -261,6 +262,7 @@ class DbUltimate private constructor(dbConfig: DbConfig, val dataSource: DataSou
             val dbUltimate = DbUltimate(dbConfig, dataSource)
             Query.db = dbUltimate
             TableInfo.enableDevelopMode(dbConfig.develop)
+            ReflectUtils.enableCache(!dbConfig.develop)
             dbConfig.scanPackage?.run { ComponentScan.scan(this.split(",")) }
             DBInitialer(dbConfig, dbUltimate.dataSource).initializeTable()
             return dbUltimate
