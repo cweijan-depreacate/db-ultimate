@@ -9,7 +9,7 @@
 <dependency>
     <groupId>io.github.cweijan</groupId>
     <artifactId>db-ultimate</artifactId>
-    <version>1.4.5</version>
+    <version>1.4.6</version>
 </dependency>
 ```
 
@@ -25,67 +25,35 @@ ultimate.jdbc.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEnco
 ultimate.jdbc.scanPackage=gitbhu.cweijan
 ```
 
-## ORM映射
-**定义TableComponent**
+第三步, 假设你有student表
+
 ``` java
-import github.cweijan.ultimate.annotation.Table;
-import github.cweijan.ultimate.annotation.Exclude;
 import github.cweijan.ultimate.annotation.Primary;
-import github.cweijan.ultimate.annotation.Table;
 
-//值为表名,默认表名为类名
-@Table("t_booklist")
-public class Book{
+public class Student{
 
-    //表明主键
-    @Primary
+    //必须有名为id的主键
     private Integer id;
 
-    //列名映射,如果不添加注解,则为字段名(默认会将驼峰转为下划线模式)
-    @Column("book_title")
-    private String booktitle;
+    private String name;
 
-    private String isbn;
-
-    public Integer getId(){
-
-        return id;
-    }
-    //...
+    // getter and setter..
 }
 ```
+
+[ORM映射参考](#orm%e6%98%a0%e5%b0%84)
 
 **进行查询**
 ``` java
 
 @Test
 public void testSelect(){
-    List<Book> books = Query.of(Book.class).list();
-    System.out.println(books);
+    List<Student> StudentList = Query.of(Student.class).list();
+    System.out.println(StudentList);
 }
 
 ```
 至此, 第一个DbUltimate程序运行完成, [更多操作Api](#Api)
-
-## 不使用SpringBoot使用DbUltimate
-``` java
-//如果使用Spring则是在spring配置文件中配置DbConfig,并在配置文件中将DbConfig注入DbUltimate
-
-DbConfig dbConfig = new DbConfig();
-dbConfig.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8");
-dbConfig.setDriver("com.mysql.jdbc.Driver");
-dbConfig.setUsername("root");
-dbConfig.setPassword("root");
-dbConfig.setScanPackage("github.cweijan");
-dbConfig.setCreateNonexistsTable(true);
-
-//调用init方法成功后即启动完成
-Query.init(dbConfig);
-
-List<Admin> admins = Query.of(Admin.class).list();
-System.out.println(admins);
-
-```
 
 ## SpringBoot配置详解
 ```
@@ -118,6 +86,41 @@ ultimate.jdbc.driver=com.mysql.jdbc.Driver
 ultimate.jdbc.username=root
 ultimate.jdbc.password=root
 ultimate.jdbc.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8
+```
+
+## ORM映射
+
+``` java
+import github.cweijan.ultimate.annotation.Table;
+import github.cweijan.ultimate.annotation.Exclude;
+import github.cweijan.ultimate.annotation.Primary;
+import github.cweijan.ultimate.annotation.Table;
+
+//可通过Table注解配置表名
+@Table("s_student")
+public class Student{
+
+    //配置主键
+    //不配置默认查找名为id的Field
+    @Primary
+    private Integer id;
+
+    //列名映射
+    //如果不添加注解,则将字段名从驼峰命名转为下划线映射为列名
+    @Column("s_name")
+    private String name;
+
+    //排除, 不进行映射
+    @Exclude
+    private String mark;
+
+
+    public Integer getId(){
+
+        return id;
+    }
+    //...
+}
 ```
 
 # Api
@@ -170,4 +173,24 @@ List<Admin> admins = Query.of(Admin.class).list();
 Query<Admin> query = Query.of(Admin.class);
 query.eq("id", "1");
 query.executeDelete();
+```
+
+## 不使用SpringBoot使用DbUltimate
+``` java
+//如果使用Spring则是在spring配置文件中配置DbConfig,并在配置文件中将DbConfig注入DbUltimate
+
+DbConfig dbConfig = new DbConfig();
+dbConfig.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8");
+dbConfig.setDriver("com.mysql.jdbc.Driver");
+dbConfig.setUsername("root");
+dbConfig.setPassword("root");
+dbConfig.setScanPackage("github.cweijan");
+dbConfig.setCreateNonexistsTable(true);
+
+//调用init方法成功后即启动完成
+Query.init(dbConfig);
+
+List<Admin> admins = Query.of(Admin.class).list();
+System.out.println(admins);
+
 ```
