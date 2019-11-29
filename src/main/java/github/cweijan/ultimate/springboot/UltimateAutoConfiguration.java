@@ -7,6 +7,7 @@ import github.cweijan.ultimate.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +21,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @AutoConfigureAfter(UltimateDataSourceAutoConfiguration.class)
-@ConditionalOnBean({DataSource.class})
+@ConditionalOnSingleCandidate(DataSource.class)
 @EnableConfigurationProperties({DbConfig.class})
 @ConditionalOnProperty(value = "ultimate.jdbc.enable",havingValue = "true",matchIfMissing = true)
 public class UltimateAutoConfiguration {
