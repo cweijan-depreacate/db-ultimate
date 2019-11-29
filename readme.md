@@ -1,5 +1,5 @@
 # db-ultimate
-目前Java有很多操作数据库的框架, 但是都不和我的心意, 需要重复的代码太多, 于是, 我开发了db-ultimate, 一个极速的ORM框架, 最大力度的减少重复代码
+目前Java有很多操作数据库的框架, 对于单表的操作代码冗余率都太高, 于是, 我开发了db-ultimate, 用于极速开发的ORM框架, 最大力度的减少重复代码
 
 ## QuickStart
 
@@ -21,8 +21,6 @@ ultimate.jdbc.driver=com.mysql.jdbc.Driver
 ultimate.jdbc.username=root
 ultimate.jdbc.password=root
 ultimate.jdbc.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8
-#配置需要扫描的TableCommponent包名
-ultimate.jdbc.scanPackage=gitbhu.cweijan
 ```
 
 第三步, 假设你有student表
@@ -132,32 +130,25 @@ public class StudentService extends ServiceInject<StudentService>{
 #是否启用dbultimate
 ultimate.jdbc.enable=true
 
-#数据库连接池最小空闲连接数量
-ultimate.jdbc.minimumIdle=5
+#是否将实体和数据包进行双向更新, 可选值有none、update(只更新表)、init(重新创建表)
+ultimate.jdbc.table-mode=none
 
-#数据库连接池数量
-ultimate.jdbc.maximumPoolSize=20
-
-#是否自动创建TableComponent的表,目前只支持mysql
-ultimate.jdbc.createNonexistsTable=true
-
-#需要扫描TableComponent的包名,多个包使用逗号,分割
+#配置扫描实体的包名, 多个包使用逗号分割, 不配置扫描包则启用懒加载
 ultimate.jdbc.scanPackage=github.cweijan
 
-#是否启用DbUltimate,默认为true
-ultimate.jdbc.enable=true
-
-#是否启用开发模式,开发模式支持热加载TableComponent
+#开发环境启用可支持对实体进行热加载, 生产环境请设置为false
 ultimate.jdbc.develop=false
 
 #是否显示sql语句
 ultimate.jdbc.showSql=true
 
-#数据库连接
+#数据库连接池配置(如果工程内已配置了数据库连接池则以下配置无效)
 ultimate.jdbc.driver=com.mysql.jdbc.Driver
 ultimate.jdbc.username=root
 ultimate.jdbc.password=root
 ultimate.jdbc.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8
+ultimate.jdbc.minimumIdle=5
+ultimate.jdbc.maximumPoolSize=20
 ```
 
 ## ORM映射
@@ -197,20 +188,16 @@ public class Student{
 
 ## 普通java工程使用DbUltimate
 ``` java
-//如果使用Spring则是在spring配置文件中配置DbConfig,并在配置文件中将DbConfig注入DbUltimate
-
 DbConfig dbConfig = new DbConfig();
 dbConfig.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8");
 dbConfig.setDriver("com.mysql.jdbc.Driver");
 dbConfig.setUsername("root");
 dbConfig.setPassword("root");
-dbConfig.setScanPackage("github.cweijan");
-dbConfig.setCreateNonexistsTable(true);
 
 //调用init方法成功后即启动完成
 Query.init(dbConfig);
 
-List<Admin> admins = Query.of(Admin.class).list();
-System.out.println(admins);
+List<Student> studentList = Query.of(Student.class).list();
+System.out.println(studentList);
 
 ```
