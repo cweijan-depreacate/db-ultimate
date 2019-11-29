@@ -45,65 +45,72 @@ public class Student{
 
 **进行查询**
 ``` java
-
 @Test
 public void testSelect(){
     List<Student> StudentList = Query.of(Student.class).list();
     System.out.println(StudentList);
 }
-
 ```
 至此, 第一个DbUltimate程序运行完成
 
 # Api
 
-## 插入
-直接插入Java对象即可
-``` java
-Admin admin = new Admin();
-admin.setMessage("hello");
-admin.setTest("test");
-admin.setDate(new Date());
-Query.db.insert(admin);
-```
-
 ## Query对象
-更新删除查询主要围绕Query对象进行
+DbUltimate的核心操作类, 通过该对象的方法进行各种条件筛选
 ``` java
-Query<Admin> query = Query.of(Admin.class);
+Query<Student> query = Query.of(Student.class);
 query.eq("test", "test2"); // ==查询
-query.ne("test", "test2"); // !=查询
-query.search("test", "t"); //like查询
-query.join(Lib.class, "ad.id=l.id"); //连表查询,建议在TableComponent配置表别名
-List<Admin> adminList=quert.list();
-```
-
-## 更新
-``` java
-//直接对对象进行更新,此方法只支持根据主键更新
-Admin admin = new Admin();
-admin.setId(2);
-admin.setMessage("cweijain");
-dbUltimate.update(admin);
-
-//使用operation模式
-Query<Admin> query = Query.of(Admin.class);
-query.update("test","test2").executeUpdate();
+      .ne("test", "test2"); // !=查询
+      .like("test", "t"); //like查询
 ```
 
 
 ## 查询
+1. list查询, 调用**list**方法
 ``` java
-//使用查询Admin
-List<Admin> admins = Query.of(Admin.class).list();
+List<Student> studentList = Query.of(Student.class).list();
 ```
 
-## 删除
+2. get查询, 调用**get**方法
+
 ``` java
-//删除id为1的admin
-Query<Admin> query = Query.of(Admin.class);
-query.eq("id", "1");
-query.executeDelete();
+Student student = Query.of(Student.class).eq("id",1).get();
+```
+
+3. 分页查询, 调用**pageList**方法 ,自动进行count查询
+``` java
+Pagination<Student> pagination = Query.of(Student.class)
+            .pageList(1,20); // 参数为页码和每页大小
+```
+
+## 插入
+调用**Query.db.insert**即可持久化至数据库
+``` java
+Student student = new Student();
+student.setName("小明");
+Query.db.insert(student);
+```
+
+## 更新
+1. 调用**Query.db.update**即可直接对数据进行更新, 调用此方法对象**主键必须赋值**
+``` java
+Student student = new Student();
+student.setId(1);
+student.setName("小白");
+Query.db.update(student);
+```
+2. 使用Query对象
+```java
+Query.of(Student.class).eq("id",1).update("name","小白").executeUpdate();
+```
+
+
+
+## 删除
+使用Query对象
+``` java
+//删除id为1的Student
+Query.of(Student.class).eq("id", "1").executeDelete();
 ```
 
 ## ServiceInject
@@ -112,15 +119,12 @@ DbUltimate内置了一个方便的Service基类ServiceInject, 只需继承就可
 
 
 ``` java
-
 import github.cweijan.ultimate.springboot.util.ServiceInject;
 
 @Service
 public class StudentService extends ServiceInject<StudentService>{
 
 }
-
-
 ```
 
 ## SpringBoot相关配置
