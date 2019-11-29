@@ -1,9 +1,11 @@
 package github.cweijan.ultimate.springboot.util;
 
+import github.cweijan.ultimate.core.FieldQuery;
 import github.cweijan.ultimate.core.Query;
 import github.cweijan.ultimate.core.extra.ExtraDataService;
 import github.cweijan.ultimate.core.lucene.LuceneQuery;
 import github.cweijan.ultimate.core.page.Pagination;
+import github.cweijan.ultimate.util.LambdaUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +14,7 @@ import java.util.List;
 
 /**
  * Service工具类,对Query操作进行封装,提供单表的常用操作
+ *
  * @param <T> 表实体类,不可为空
  */
 public abstract class ServiceInject<T> implements InitializingBean {
@@ -72,9 +75,9 @@ public abstract class ServiceInject<T> implements InitializingBean {
     /**
      * 对指定列进行查询,并可进行分页
      *
-     * @param column 列名
-     * @param value  列值
-     * @param page 页码
+     * @param column   列名
+     * @param value    列值
+     * @param page     页码
      * @param pageSize 每页大小
      */
     @Transactional(readOnly = true)
@@ -100,7 +103,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
      */
     @Transactional(readOnly = true)
     public Pagination<T> findByPage(Integer page, Integer pageSize, Object... objects) {
-        return getQuery().read(objects).pageList(page,pageSize);
+        return getQuery().read(objects).pageList(page, pageSize);
     }
 
     /**
@@ -157,6 +160,19 @@ public abstract class ServiceInject<T> implements InitializingBean {
     public T getBy(String column, Object value) {
 
         return getQuery().eq(column, value).get();
+    }
+
+    /**
+     * 根据指定列进行get查询
+     *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @param value       列值
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public T getBy(FieldQuery<T> fieldQuery, Object value) {
+
+        return getQuery().eq(LambdaUtils.getFieldName(fieldQuery), value).get();
     }
 
     /**
@@ -243,6 +259,7 @@ public abstract class ServiceInject<T> implements InitializingBean {
 
     /**
      * 使用查询查询进行批量删除
+     *
      * @param param 实体查询对象为任意JavaBean,以FieldName作为column,FieldValue作为Value
      */
     @Transactional

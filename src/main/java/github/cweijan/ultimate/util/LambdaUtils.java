@@ -1,6 +1,7 @@
 package github.cweijan.ultimate.util;
 
 import github.cweijan.ultimate.core.FieldQuery;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
@@ -14,26 +15,26 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LambdaUtils {
 
-    private static Map<Class, SerializedLambda> CLASS_LAMDBA_CACHE = new ConcurrentHashMap<>();
+    private static Map<Class<?>, SerializedLambda> CLASS_LAMDBA_CACHE = new ConcurrentHashMap<>();
 
     public static String getFieldName(FieldQuery<?> fieldQuery) {
-        SerializedLambda serializedLambda = getSerializedLambda(fieldQuery);
-        return resolveFieldName(serializedLambda.getImplMethodName());
+        return resolveFieldName(getSerializedLambda(fieldQuery).getImplMethodName());
     }
 
     private static SerializedLambda getSerializedLambda(Serializable fn) {
-        SerializedLambda lambda = CLASS_LAMDBA_CACHE.get(fn.getClass());
-        if (lambda == null) {
+        return CLASS_LAMDBA_CACHE.computeIfAbsent(fn.getClass(), fnClass -> {
             try {
-                Method method = fn.getClass().getDeclaredMethod("writeReplace");
-                method.setAccessible(Boolean.TRUE);
-                lambda = (SerializedLambda) method.invoke(fn);
-                CLASS_LAMDBA_CACHE.put(fn.getClass(), lambda);
+                for (Method method : fnClass.getDeclaredMethods()) {
+                    if (method.getName().equals("writeReplace")) {
+                        method.setAccessible(true);
+                        return (SerializedLambda) method.invoke(fn);
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        return lambda;
+            return null;
+        });
     }
 
     private static String resolveFieldName(String getMethodName) {

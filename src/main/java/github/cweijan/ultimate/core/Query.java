@@ -15,10 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static github.cweijan.ultimate.core.query.QueryType.*;
 
@@ -261,6 +258,18 @@ public class Query<T> {
         return this;
     }
 
+    /**
+     * 对指定列进行更新,需要调用{@link Query#executeUpdate()}执行更新
+     *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @param value      更新后的值
+     * @return this query
+     */
+    public Query<T> update(FieldQuery<T> fieldQuery, Object value) {
+        this.queryCondition.update(LambdaUtils.getFieldName(fieldQuery), value);
+        return this;
+    }
+
 
     /**
      * !=查询
@@ -272,6 +281,15 @@ public class Query<T> {
         return this;
     }
 
+    /**
+     * !=查询
+     *
+     * @return this query
+     */
+    public Query<T> notEq(FieldQuery<T> fieldQuery, Object value) {
+        this.queryCondition.addAndCondition(LambdaUtils.getFieldName(fieldQuery), not_equlas, value);
+        return this;
+    }
 
     /**
      * or !=查询
@@ -283,6 +301,17 @@ public class Query<T> {
         return this;
     }
 
+    /**
+     * or !=查询
+     *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @return this query
+     */
+    public Query<T> orNotEq(FieldQuery<T> fieldQuery, Object value) {
+        this.queryCondition.addOrCondition(LambdaUtils.getFieldName(fieldQuery), not_equlas, value);
+        return this;
+    }
+
 
     /**
      * like查询
@@ -291,6 +320,17 @@ public class Query<T> {
      */
     public Query<T> like(String column, Object content) {
         this.queryCondition.addAndCondition(column, like, content);
+        return this;
+    }
+
+    /**
+     * like查询
+     *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @return this query
+     */
+    public Query<T> like(FieldQuery<T> fieldQuery, Object content) {
+        this.queryCondition.addAndCondition(LambdaUtils.getFieldName(fieldQuery), like, content);
         return this;
     }
 
@@ -307,12 +347,23 @@ public class Query<T> {
 
 
     /**
+     * like查询
+     *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @return this query
+     */
+    public Query<T> search(FieldQuery<T> fieldQuery, Object content) {
+        this.queryCondition.addAndCondition(LambdaUtils.getFieldName(fieldQuery), like, content);
+        return this;
+    }
+
+    /**
      * great equals then
      *
      * @return this query
      */
     public Query<T> ge(String column, Object value) {
-        this.queryCondition.addAndCondition(column,great_equlas, value);
+        this.queryCondition.addAndCondition(column, great_equlas, value);
         return this;
     }
 
@@ -323,7 +374,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> le(String column, Object value) {
-        this.queryCondition.addAndCondition(column,less_equals, value);
+        this.queryCondition.addAndCondition(column, less_equals, value);
         return this;
     }
 
@@ -366,6 +417,17 @@ public class Query<T> {
     /**
      * in查询
      *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @return this query
+     */
+    public Query<T> in(FieldQuery<T> fieldQuery, List<?> value) {
+        this.queryCondition.in(LambdaUtils.getFieldName(fieldQuery), value);
+        return this;
+    }
+
+    /**
+     * in查询
+     *
      * @return this query
      */
     public Query<T> in(String column, Object[] value) {
@@ -374,14 +436,25 @@ public class Query<T> {
     }
 
     /**
+     * in查询
+     *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @return this query
+     */
+    public Query<T> in(FieldQuery<T> fieldQuery, Object[] value) {
+        this.queryCondition.in(LambdaUtils.getFieldName(fieldQuery), Arrays.asList(value));
+        return this;
+    }
+
+    /**
      * 生成查询: or colum=value
      *
      * @param fieldQuery 指定列,example:Student::getName
-     * @param value  列值
+     * @param value      列值
      * @return this query
      */
     public Query<T> orEq(FieldQuery<T> fieldQuery, Object value) {
-        this.queryCondition.addOrCondition(LambdaUtils.getFieldName(fieldQuery),equals, value);
+        this.queryCondition.addOrCondition(LambdaUtils.getFieldName(fieldQuery), equals, value);
         return this;
     }
 
@@ -393,7 +466,7 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> orEq(String column, Object value) {
-        this.queryCondition.addOrCondition(column,equals, value);
+        this.queryCondition.addOrCondition(column, equals, value);
         return this;
     }
 
@@ -446,7 +519,18 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> isNull(String column) {
-        this.queryCondition.addAndCondition(column,isNull,"");
+        this.queryCondition.addAndCondition(column, isNull, "");
+        return this;
+    }
+
+    /**
+     * 列为空查询，该查询直接拼接sql，需要防止sql注入
+     *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @return this query
+     */
+    public Query<T> isNull(FieldQuery<T> fieldQuery) {
+        this.queryCondition.addAndCondition(LambdaUtils.getFieldName(fieldQuery), isNull, "");
         return this;
     }
 
@@ -457,7 +541,18 @@ public class Query<T> {
      * @return this query
      */
     public Query<T> isNotNull(String column) {
-        this.queryCondition.addAndCondition(column,isNotNull,"");
+        this.queryCondition.addAndCondition(column, isNotNull, "");
+        return this;
+    }
+
+    /**
+     * 列不为空查询，该查询直接拼接sql，需要防止sql注入
+     *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @return this query
+     */
+    public Query<T> isNotNull(FieldQuery<T> fieldQuery) {
+        this.queryCondition.addAndCondition(LambdaUtils.getFieldName(fieldQuery), isNotNull, "");
         return this;
     }
 
@@ -473,6 +568,17 @@ public class Query<T> {
         return this;
     }
 
+    /**
+     * 根据指定列进行排序
+     *
+     * @param fieldQuery 指定列,example:Student::getName
+     * @return this query
+     */
+    public Query<T> orderBy(FieldQuery<T> fieldQuery) {
+        this.queryCondition.orderBy(LambdaUtils.getFieldName(fieldQuery));
+        return this;
+    }
+
 
     /**
      * 根据指定列进行倒序排序
@@ -482,6 +588,17 @@ public class Query<T> {
      */
     public Query<T> orderDescBy(String column) {
         this.queryCondition.orderDescBy(column);
+        return this;
+    }
+
+    /**
+     * 根据指定列进行倒序排序
+     *
+     * @param fieldQuery 指定列
+     * @return this query
+     */
+    public Query<T> orderDescBy(FieldQuery<T> fieldQuery) {
+        this.queryCondition.orderDescBy(LambdaUtils.getFieldName(fieldQuery));
         return this;
     }
 
@@ -639,7 +756,6 @@ public class Query<T> {
      * @param mark 标注名
      */
     public Query<T> mark(String mark) {
-        Log.debug("set method is " + mark);
         return this;
     }
 
@@ -651,7 +767,6 @@ public class Query<T> {
         this.queryCondition.setOffset(offset);
         return this;
     }
-
 
     public Class<T> getComponentClass() {
         return this.componentClass;
