@@ -44,10 +44,11 @@ public class SqlExecutor {
         ResultSet resultSet = null;
         sql = sql.trim();
         String sqlLowerCase = sql.toLowerCase();
+        boolean isInsert = sqlLowerCase.startsWith("insert");
         long startTime = System.currentTimeMillis();
         PreparedStatement preparedStatement = null;
         if (params != null && params.length > 0) {
-            if (sqlLowerCase.startsWith("insert")) {
+            if (isInsert) {
                 preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             } else {
                 preparedStatement = connection.prepareStatement(sql);
@@ -70,12 +71,14 @@ public class SqlExecutor {
                     resultInfo.setUpdateLine(statement.executeUpdate(sql));
                 } else {
                     resultInfo.setUpdateLine(preparedStatement.executeUpdate());
-                    resultSet = preparedStatement.getGeneratedKeys();
-                    if (resultSet.next()) {
-                        try {
-                            resultInfo.setGenerateKey(resultSet.getLong(1));
-                        } catch (SQLException e) {
-                            Log.getLogger().error(e.getMessage());
+                    if(isInsert){
+                        resultSet = preparedStatement.getGeneratedKeys();
+                        if (resultSet.next()) {
+                            try {
+                                resultInfo.setGenerateKey(resultSet.getLong(1));
+                            } catch (SQLException e) {
+                                Log.getLogger().error(e.getMessage());
+                            }
                         }
                     }
                 }

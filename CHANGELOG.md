@@ -1,4 +1,4 @@
-## 1.4.7 (2019/12/3)
+## 1.4.8 (2019/12/3)
 - Primary type supoort Long and BigInteger.
 
 ## 1.4.3 (2019/9/2)
