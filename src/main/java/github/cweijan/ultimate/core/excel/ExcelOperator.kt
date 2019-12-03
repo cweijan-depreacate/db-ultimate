@@ -139,7 +139,7 @@ object ExcelOperator {
 
         //判断数据的类型
         return when (cell.cellTypeEnum) {
-            CellType.NUMERIC -> cell.stringCellValue.toString()
+            CellType.NUMERIC -> cell.numericCellValue.toString()
             CellType.STRING -> cell.stringCellValue.toString()
             CellType.BOOLEAN -> cell.booleanCellValue.toString()
             CellType.FORMULA -> cell.cellFormula.toString()

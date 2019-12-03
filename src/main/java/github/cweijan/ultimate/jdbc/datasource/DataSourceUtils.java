@@ -1,8 +1,8 @@
 package github.cweijan.ultimate.jdbc.datasource;
 
 import github.cweijan.ultimate.jdbc.CannotGetJdbcConnectionException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import github.cweijan.ultimate.util.Log;
+import org.slf4j.Logger;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -38,7 +38,7 @@ public abstract class DataSourceUtils {
      */
     public static final int CONNECTION_SYNCHRONIZATION_ORDER = 1000;
 
-    private static final Log logger = LogFactory.getLog(DataSourceUtils.class);
+    private static final Logger logger = Log.getLogger();
 
 
     /**
