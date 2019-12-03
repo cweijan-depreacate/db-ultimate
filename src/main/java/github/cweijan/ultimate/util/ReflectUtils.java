@@ -9,6 +9,7 @@ import java.lang.reflect.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,8 +47,10 @@ public class ReflectUtils {
      */
     public static <T> T convert(Object source, Class<T> targetClass) {
         if (source == null || targetClass == null) return null;
-        if (source.getClass() == targetClass && (targetClass.getPackage().getName().startsWith("java.lang") || targetClass.isPrimitive()))
-            return (T) source;
+        if (source.getClass() == targetClass) return (T) source;
+        if (Number.class.isAssignableFrom(targetClass) || targetClass.isPrimitive()) {
+            return convertPrimitiveValue(source, targetClass);
+        }
         T instance = BeanUtils.instantiateClass(targetClass);
         for (Field targetFiled : cacheField ? fieldCache.computeIfAbsent(targetClass, ReflectUtils::getFieldArray) : getFieldArray(targetClass)) {
             Object sourceValue = getFieldValue(source, targetFiled.getName());
@@ -229,6 +232,60 @@ public class ReflectUtils {
                 }
             }).collect(Collectors.toList());
         }
+        return null;
+    }
+
+    private static Pattern numberPattern = Pattern.compile("^[+-]?\\d+$");
+    private static Pattern floatPattern = Pattern.compile("^[+-]?\\d+\\.?\\d+$");
+
+    /**
+     * 对基础类型进行转换
+     *
+     * @param source      原始数据
+     * @param targetClass 目标类型
+     * @return 转换后的类型
+     */
+    @SuppressWarnings({"unchecked","ConstantConditions"})
+    private static <T> T convertPrimitiveValue(Object source, Class<T> targetClass) {
+        if (source == null || targetClass == null) return null;
+        if (source.getClass() == targetClass) return (T) source;
+        String originText = String.valueOf(source);
+        String name = targetClass.getName();
+        if (name.equals("java.lang.String")) return (T) originText;
+
+        boolean isNumber = numberPattern.matcher(originText).find();
+        boolean isFloat = floatPattern.matcher(originText).find();
+        if (!isNumber && !isFloat) return null;
+
+        switch (name) {
+            case "int":
+            case "java.lang.Integer":
+                if (isNumber) return (T) Integer.valueOf(originText);
+                if (isFloat) return (T) Integer.valueOf(Double.valueOf(originText).intValue());
+                break;
+            case "long":
+            case "java.lang.Long":
+                if (isNumber) return (T) Long.valueOf(originText);
+                if (isFloat) return (T) Long.valueOf(Double.valueOf(originText).intValue());
+                break;
+            case "double":
+            case "java.lang.Double":
+                return (T) Double.valueOf(originText);
+            case "float":
+            case "java.lang.Float":
+                return (T) Float.valueOf(originText);
+            case "byte":
+            case "java.lang.Byte":
+                if (isNumber) return (T) Byte.valueOf(originText);
+                if (isFloat) return (T) Byte.valueOf((byte) Double.valueOf(originText).intValue());
+                break;
+            case "short":
+            case "java.lang.Short":
+                if (isNumber) return (T) Short.valueOf(originText);
+                if (isFloat) return (T) Short.valueOf((short) Double.valueOf(originText).intValue());
+                break;
+        }
+
         return null;
     }
 

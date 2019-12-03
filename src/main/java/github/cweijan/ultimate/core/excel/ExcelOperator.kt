@@ -3,6 +3,7 @@ package github.cweijan.ultimate.core.excel
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.util.Json
 import github.cweijan.ultimate.util.Log
+import github.cweijan.ultimate.util.ReflectUtils
 import org.apache.poi.hssf.usermodel.HSSFCell
 import org.apache.poi.hssf.usermodel.HSSFRow
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
@@ -10,6 +11,7 @@ import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.ss.usermodel.VerticalAlignment
+import org.springframework.beans.BeanUtils
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -105,28 +107,33 @@ object ExcelOperator {
      */
     @Throws(IOException::class)
     @JvmStatic
-    fun <T> inputExcel(inputStream: InputStream, componentClass: Class<T>): List<T> {
+    @JvmOverloads
+    fun <T> inputExcel(inputStream: InputStream, componentClass: Class<T>, skipRow: Int = 0): List<T> {
         checkPoiEnable()
         val workbook = HSSFWorkbook(inputStream)
         val list = ArrayList<T>()
 
         for (sheetNum in 0 until workbook.numberOfSheets) {
             val sheet = workbook.getSheetAt(sheetNum) ?: continue
-            val headerRow = sheet.getRow(0) ?: return list
-            IntRange(sheet.firstRowNum + 1, sheet.lastRowNum + 1).forEach { rowNum ->
-                val tempDataMap = HashMap<String, Any>()
+            val headerRow = sheet.getRow(skipRow) ?: return list
+            IntRange(sheet.firstRowNum + 1 + skipRow, sheet.lastRowNum + 1).forEach { rowNum ->
+                //row
+                val instance: T = BeanUtils.instantiateClass(componentClass)
                 val row = sheet.getRow(rowNum) ?: return@forEach
-                IntRange(row.firstCellNum.toInt(), row.physicalNumberOfCells).forEach { cellNum ->
+                IntRange(row.firstCellNum.toInt(), row.lastCellNum.toInt()).forEach { cellNum ->
                     val header = getCellValue(headerRow.getCell(cellNum))
                     TableInfo.getComponent(componentClass).excelHeaderFieldMap[header]?.run {
-                        getCellValue(row.getCell(cellNum)).let { if (it != "") tempDataMap[this.name] = it }
+                        getCellValue(row.getCell(cellNum)).let {
+                            if (it != "") {
+                                val field = ReflectUtils.getField(componentClass, this.name)
+                                if (field != null) {
+                                    ReflectUtils.setFieldValue(instance, field, ReflectUtils.convert(it, field.type))
+                                }
+                            }
+                        }
                     }
                 }
-
-                if (tempDataMap.keys.size > 0) {
-                    val toObject = Json.parse(Json.toJson(tempDataMap)!!, componentClass)!!
-                    list.add(toObject)
-                }
+                list.add(instance)
             }
         }
         workbook.close()
@@ -139,7 +146,7 @@ object ExcelOperator {
 
         //判断数据的类型
         return when (cell.cellTypeEnum) {
-            CellType.NUMERIC -> cell.numericCellValue.toString()
+            CellType.NUMERIC -> cell.numericCellValue.toLong().toString()
             CellType.STRING -> cell.stringCellValue.toString()
             CellType.BOOLEAN -> cell.booleanCellValue.toString()
             CellType.FORMULA -> cell.cellFormula.toString()

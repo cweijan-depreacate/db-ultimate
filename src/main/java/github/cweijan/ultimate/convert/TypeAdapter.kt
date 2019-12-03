@@ -71,7 +71,7 @@ object TypeAdapter {
         field.getAnnotation(Blob::class.java)?.run {
             val valueType = getGenericType(field)
             javaObject as ByteArray
-            return if (field.type.isAssignableFrom(List::class.java)) {
+            return if (List::class.java.isAssignableFrom(field.type)) {
                 Json.parseList(String(javaObject), valueType)
             } else {
                 Json.parse(String(javaObject), field.type)
