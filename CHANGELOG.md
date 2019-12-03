@@ -1,6 +1,7 @@
-## 1.4.8 (2019/12/3)
+## 1.4.9 (2019/12/3)
 - Primary type supoort Long and BigInteger.
 - Correctly closed the Database Connection.
+- Enhance excel output 
 
 ## 1.4.3 (2019/9/2)
 - Convert kotlin source of Query to java Source. 

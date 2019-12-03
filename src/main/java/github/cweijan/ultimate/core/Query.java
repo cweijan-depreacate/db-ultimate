@@ -634,6 +634,18 @@ public class Query<T> {
         return this.inputExcel(new FileInputStream(new File(inputPath)));
     }
 
+    /**
+     * 读取excel并将其转为java列表
+     *
+     * @param inputPath excel文件绝对路径
+     * @param skipRaw 跳过n行
+     * @return 实体列表
+     */
+    public List<T> inputExcel(String inputPath,Integer skipRaw) throws IOException {
+        Intrinsics.checkParameterIsNotNull(inputPath, "inputPath");
+        return this.inputExcel(new FileInputStream(new File(inputPath)),skipRaw);
+    }
+
 
     /**
      * 读取excel并将其转为java列表
@@ -646,6 +658,18 @@ public class Query<T> {
         return ExcelOperator.inputExcel(inputStream, this.componentClass);
     }
 
+
+    /**
+     * 读取excel并将其转为java列表
+     *
+     * @param inputStream excel输入流
+     * @return 实体列表
+     */
+    public List<T> inputExcel(InputStream inputStream,Integer skipRaw) throws IOException {
+        Intrinsics.checkParameterIsNotNull(inputStream, "inputStream");
+        return ExcelOperator.inputExcel(inputStream, this.componentClass,skipRaw);
+    }
+    
     /**
      * 执行list查询并将其导出为Excel
      *
