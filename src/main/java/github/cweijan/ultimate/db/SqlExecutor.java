@@ -37,7 +37,7 @@ public class SqlExecutor {
     @Nullable
     public final <T> T executeSql(@NotNull String sql, @Nullable Object[] params, StatementCallback<T> statementCallback) throws SQLException {
         Intrinsics.checkParameterIsNotNull(sql, "sql");
-        return this.executeSql(sql, params, statementCallback, dataSource.getConnection());
+        return this.executeSql(sql, params, statementCallback, DataSourceUtils.getConnection(dataSource));
     }
 
     private <T> T executeSql(@NotNull String sql, final Object[] params, StatementCallback<T> statementCallback, Connection connection) throws SQLException {

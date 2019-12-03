@@ -12,6 +12,7 @@ import github.cweijan.ultimate.db.init.generator.TableAutoMode
 import github.cweijan.ultimate.db.init.generator.TableInitSqlGenerator
 import github.cweijan.ultimate.db.init.generator.TableStruct
 import github.cweijan.ultimate.db.init.generator.impl.mysql.MysqlTableStruct
+import github.cweijan.ultimate.jdbc.datasource.DataSourceUtils
 import github.cweijan.ultimate.util.Log
 import java.sql.Connection
 import java.sql.SQLException
@@ -25,11 +26,11 @@ import javax.sql.DataSource
 class DBInitialer(private val dbConfig: DbConfig, private val dataSource: DataSource) {
 
     private val sqlExecutor: SqlExecutor = SqlExecutor(dbConfig, dataSource)
-    private var connection: Connection = dataSource.getConnection()
+    private var connection: Connection = DataSourceUtils.getConnection(dataSource)
     private var initSqlGenetator: TableInitSqlGenerator = GeneratorAdapter.getInitGenerator(dbConfig.databaseType)
 
     private fun getConnection(): Connection {
-        if (connection.isClosed) connection = dataSource.getConnection()
+        if (connection.isClosed) connection = DataSourceUtils.getConnection(dataSource)
         return connection
     }
 
