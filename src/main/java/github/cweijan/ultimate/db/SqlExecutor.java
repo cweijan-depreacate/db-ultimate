@@ -42,17 +42,23 @@ public class SqlExecutor {
 
     private <T> T executeSql(@NotNull String sql, final Object[] params, StatementCallback<T> statementCallback, Connection connection) throws SQLException {
         ResultSet resultSet = null;
+        sql = sql.trim();
+        String sqlLowerCase = sql.toLowerCase();
         long startTime = System.currentTimeMillis();
         PreparedStatement preparedStatement = null;
         if (params != null && params.length > 0) {
-            preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            if (sqlLowerCase.startsWith("insert")) {
+                preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            } else {
+                preparedStatement = connection.prepareStatement(sql);
+            }
             for (int index = 0; index < params.length; index++) {
                 preparedStatement.setObject(index + 1, params[index]);
             }
         }
         ResultInfo resultInfo = new ResultInfo();
         try {
-            if (sql.trim().toLowerCase().startsWith("select")) {
+            if (sqlLowerCase.startsWith("select")) {
                 if (preparedStatement == null) {
                     resultSet = connection.createStatement().executeQuery(sql);
                 } else {
@@ -66,11 +72,11 @@ public class SqlExecutor {
                     resultInfo.setUpdateLine(preparedStatement.executeUpdate());
                     resultSet = preparedStatement.getGeneratedKeys();
                     if (resultSet.next()) {
-                        Object resultValue = resultSet.getObject(1);
-                        if (resultValue != null && resultValue.getClass() == Integer.class) {
-                            resultInfo.setGenerateKey(resultSet.getInt(1));
+                        try {
+                            resultInfo.setGenerateKey(resultSet.getLong(1));
+                        } catch (SQLException e) {
+                            Log.getLogger().error(e.getMessage());
                         }
-
                     }
                 }
             }

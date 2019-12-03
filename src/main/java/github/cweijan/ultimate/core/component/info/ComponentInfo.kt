@@ -1,11 +1,13 @@
 package github.cweijan.ultimate.core.component.info
 
 import github.cweijan.ultimate.annotation.Table
+import github.cweijan.ultimate.convert.JavaType
 import github.cweijan.ultimate.convert.TypeAdapter
 import github.cweijan.ultimate.core.component.TableInfo
 import github.cweijan.ultimate.core.excel.ExcludeExcel
 import github.cweijan.ultimate.util.Log
 import java.lang.reflect.Field
+import java.math.BigInteger
 
 class ComponentInfo(var componentClass: Class<*>) {
 
@@ -107,15 +109,26 @@ class ComponentInfo(var componentClass: Class<*>) {
     }
 
     @Throws(IllegalAccessException::class)
-    fun setPrimaryValue(component: Any, primaryValue: Any) {
+    fun setPrimaryValue(component: Any, callbackValue: Long) {
 
         if (getPrimaryValue(component) == null) {
-            primaryField?.set(component, primaryValue)
+            primaryField?.run {
+                val name = this.type.name
+                val primaryValue:Any = if (name == JavaType.Integer || name == "int") {
+                    callbackValue.toInt()
+                } else if (name == BigInteger::class.java.name) {
+                    BigInteger.valueOf(callbackValue)
+                } else {
+                    callbackValue
+                }
+                this.set(component, primaryValue)
+            }
+
         }
 
     }
 
-    fun<T> getExcelHeaderAndValues(dataList: List<T>): Pair<Array<ArrayList<Any?>>, List<String>> {
+    fun <T> getExcelHeaderAndValues(dataList: List<T>): Pair<Array<ArrayList<Any?>>, List<String>> {
         val values = Array(dataList.size) { ArrayList<Any?>() }
         val headers = fieldColumnInfoMap.keys.filter { key ->
             val field = componentClass.getDeclaredField(key)
@@ -129,7 +142,7 @@ class ComponentInfo(var componentClass: Class<*>) {
         return Pair(values, headers)
     }
 
-    fun getExcelHeaders():List<String>{
+    fun getExcelHeaders(): List<String> {
         return fieldColumnInfoMap.keys.filter { key ->
             val field = componentClass.getDeclaredField(key)
             field.getAnnotation(ExcludeExcel::class.java)?.run { return@filter false }
@@ -164,7 +177,7 @@ class ComponentInfo(var componentClass: Class<*>) {
 
             val componentInfo = ComponentInfo(componentClass)
             componentInfo.tableName = tableName
-            componentInfo.selectColumns ="*"
+            componentInfo.selectColumns = "*"
             componentInfo.tableAlias = table?.alias
             //生成列信息
             for (field in TypeAdapter.getAllField(componentInfo.componentClass)) {

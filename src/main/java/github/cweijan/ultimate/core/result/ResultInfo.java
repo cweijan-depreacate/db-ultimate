@@ -7,13 +7,13 @@ package github.cweijan.ultimate.core.result;
 public class ResultInfo {
 
     private Integer updateLine;
-    private Integer generateKey;
+    private Long generateKey;
 
-    public Integer getGenerateKey() {
+    public Long getGenerateKey() {
         return generateKey;
     }
 
-    public void setGenerateKey(Integer generateKey) {
+    public void setGenerateKey(Long generateKey) {
         this.generateKey = generateKey;
     }
 
