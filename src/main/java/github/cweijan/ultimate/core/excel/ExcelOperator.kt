@@ -118,36 +118,33 @@ object ExcelOperator {
         for (sheetNum in 0 until workbook.numberOfSheets) {
             val sheet = workbook.getSheetAt(sheetNum) ?: continue
             val headerRow = sheet.getRow(skipRow) ?: return list
-            IntRange(sheet.firstRowNum + 1 + skipRow, sheet.lastRowNum + 1).forEach { rowNum ->
-                //row
+            sheet.forEachIndexed { index, row ->
+                if (index < skipRow) return@forEachIndexed
                 val instance: T = BeanUtils.instantiateClass(componentClass)
-                val row = sheet.getRow(rowNum) ?: return@forEach
-                var haveValue=false
-                IntRange(row.firstCellNum.toInt(), row.lastCellNum.toInt()).forEach { cellNum ->
+                var haveValue = false
+                row.forEachIndexed { cellNum, cell ->
                     val header = getCellValue(headerRow.getCell(cellNum))
                     TableInfo.getComponent(componentClass).excelHeaderFieldMap[header]?.run {
-                        getCellValue(row.getCell(cellNum)).let {
-                            haveValue=true
-                            if (it != "") {
-                                val field = ReflectUtils.getField(componentClass, this.name)
-                                if (field != null) {
-                                    ReflectUtils.setFieldValue(instance, field, ReflectUtils.convert(it, field.type))
-                                }
+                        val cellValue = getCellValue(cell)
+                        if(cellValue!=null){
+                            haveValue = true
+                            val field = ReflectUtils.getField(componentClass, this.name)
+                            if (field != null) {
+                                ReflectUtils.setFieldValue(instance, this.name, ReflectUtils.convert(cellValue, field.type))
                             }
                         }
                     }
                 }
-                if(haveValue)
-                    list.add(instance)
+                if (haveValue) list.add(instance)
             }
         }
         workbook.close()
         return list
     }
 
-    private fun getCellValue(cell: Cell?): String {
+    private fun getCellValue(cell: Cell?): String? {
 
-        cell ?: return ""
+        cell ?: return null
 
         //判断数据的类型
         return when (cell.cellTypeEnum) {
@@ -155,7 +152,7 @@ object ExcelOperator {
             CellType.STRING -> cell.stringCellValue.toString()
             CellType.BOOLEAN -> cell.booleanCellValue.toString()
             CellType.FORMULA -> cell.cellFormula.toString()
-            CellType.BLANK -> ""
+            CellType.BLANK -> null
             CellType.ERROR -> "非法字符"
             else -> "未知类型"
         }

@@ -57,6 +57,7 @@ public final class Json {
     public static String toJson(Object originalObject) {
 
         if (originalObject == null) return null;
+        if (originalObject instanceof String) return String.valueOf(originalObject);
 
         String json = null;
         try {
@@ -166,9 +167,11 @@ public final class Json {
     /**
      * 将json转成指定的类对象
      */
+    @SuppressWarnings("unchecked")
     public static <T> T parse(String json, Class<T> type) {
 
         if (StringUtils.isEmpty(json) || type == null) return null;
+        if (type == String.class) return (T) json;
 
         T result;
         try {

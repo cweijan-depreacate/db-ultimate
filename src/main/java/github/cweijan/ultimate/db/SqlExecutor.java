@@ -71,7 +71,7 @@ public class SqlExecutor {
                     resultInfo.setUpdateLine(statement.executeUpdate(sql));
                 } else {
                     resultInfo.setUpdateLine(preparedStatement.executeUpdate());
-                    if(isInsert){
+                    if (isInsert) {
                         resultSet = preparedStatement.getGeneratedKeys();
                         if (resultSet.next()) {
                             try {
@@ -108,8 +108,8 @@ public class SqlExecutor {
                 } catch (SQLException ex) {
                     Log.getLogger().trace("Could not close JDBC ResultSet", ex);
                 }
-                DataSourceUtils.releaseConnection(connection, dataSource);
             }
+            DataSourceUtils.releaseConnection(connection, dataSource);
         }
     }
 
