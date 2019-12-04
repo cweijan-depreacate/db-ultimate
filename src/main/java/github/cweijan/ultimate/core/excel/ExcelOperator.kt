@@ -11,8 +11,11 @@ import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.ss.usermodel.VerticalAlignment
+import org.apache.poi.xssf.usermodel.XSSFCell
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.springframework.beans.BeanUtils
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.*
@@ -37,18 +40,17 @@ object ExcelOperator {
 
         checkPoiEnable()
 
-        val wb = HSSFWorkbook()
+        val wb = XSSFWorkbook()
         val sheet = wb.createSheet("sheet1")
-        var row: HSSFRow
 
         val style = wb.createCellStyle()
         style.setAlignment(HorizontalAlignment.CENTER)
         style.setVerticalAlignment(VerticalAlignment.CENTER)
-        var cell: HSSFCell?
+
         values.forEachIndexed { i, rowData ->
-            row = sheet.createRow(i + 1)
+            val dataRow = sheet.createRow(i + 1)
             rowData.forEachIndexed { j, data ->
-                val valueCell = row.createCell(j)
+                val valueCell = dataRow.createCell(j)
 
                 val contextstyle = wb.createCellStyle()
                 contextstyle.setAlignment(HorizontalAlignment.CENTER)
@@ -61,26 +63,26 @@ object ExcelOperator {
                     } else {
                         contextstyle.dataFormat = df.getFormat("#,##0.00")//保留两位小数点
                     }
-                    valueCell.setCellStyle(contextstyle)
+                    valueCell.cellStyle = contextstyle
                     valueCell.setCellValue(cellValue.toDouble())
                 } else {
-                    valueCell.setCellStyle(contextstyle)
+                    valueCell.cellStyle = contextstyle
                     valueCell.setCellValue(cellValue)
                 }
             }
-
         }
 
-        row = sheet.createRow(0)
+        var cell: XSSFCell?
+        val headerRow = sheet.createRow(0)
         headers.forEachIndexed { i, header ->
-            cell = row.createCell(i)
+            cell = headerRow.createCell(i)
             cell!!.setCellValue(header)
-            cell!!.setCellStyle(style)
+            cell!!.cellStyle = style
             sheet.autoSizeColumn(i)
         }
 
         try {
-            wb.write(File(exportPath))
+            wb.write(FileOutputStream(File(exportPath)))
         } catch (e: Exception) {
             Log.error(e.message, e)
             return false
@@ -110,7 +112,7 @@ object ExcelOperator {
     @JvmOverloads
     fun <T> inputExcel(inputStream: InputStream, componentClass: Class<T>, skipRow: Int = 0): List<T> {
         checkPoiEnable()
-        val workbook = HSSFWorkbook(inputStream)
+        val workbook = XSSFWorkbook(inputStream)
         val list = ArrayList<T>()
 
         for (sheetNum in 0 until workbook.numberOfSheets) {
@@ -120,10 +122,12 @@ object ExcelOperator {
                 //row
                 val instance: T = BeanUtils.instantiateClass(componentClass)
                 val row = sheet.getRow(rowNum) ?: return@forEach
+                var haveValue=false
                 IntRange(row.firstCellNum.toInt(), row.lastCellNum.toInt()).forEach { cellNum ->
                     val header = getCellValue(headerRow.getCell(cellNum))
                     TableInfo.getComponent(componentClass).excelHeaderFieldMap[header]?.run {
                         getCellValue(row.getCell(cellNum)).let {
+                            haveValue=true
                             if (it != "") {
                                 val field = ReflectUtils.getField(componentClass, this.name)
                                 if (field != null) {
@@ -133,7 +137,8 @@ object ExcelOperator {
                         }
                     }
                 }
-                list.add(instance)
+                if(haveValue)
+                    list.add(instance)
             }
         }
         workbook.close()

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'io.github.cweijan'
-version '1.4.9'
+version '1.4.91'
 def springBootVersion="2.1.4.RELEASE"
 
 sourceCompatibility = 1.8
@@ -51,6 +51,7 @@ dependencies {
     compile group: 'com.zaxxer', name: 'HikariCP', version: '3.4.0'
     compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.38'
     compile group: 'org.apache.poi', name: 'poi', version: '3.17'
+    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.17'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
     implementation group: 'org.apache.lucene', name: 'lucene-core', version: '8.1.1'
     implementation group: 'org.apache.lucene', name: 'lucene-queryparser', version: '8.1.1'
@@ -68,7 +69,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId 'io.github.cweijan'
             artifactId 'db-ultimate'
-            version '1.4.9'
+            version '1.4.91'
             from components.java
             artifact sourcesJar
             artifact javadocJar
