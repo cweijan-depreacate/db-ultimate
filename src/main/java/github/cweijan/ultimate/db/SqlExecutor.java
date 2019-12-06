@@ -3,7 +3,7 @@ package github.cweijan.ultimate.db;
 import github.cweijan.ultimate.core.result.ResultInfo;
 import github.cweijan.ultimate.core.result.StatementCallback;
 import github.cweijan.ultimate.db.config.DbConfig;
-import github.cweijan.ultimate.jdbc.datasource.DataSourceUtils;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import github.cweijan.ultimate.util.Log;
 import kotlin.jvm.internal.Intrinsics;
 import org.jetbrains.annotations.NotNull;

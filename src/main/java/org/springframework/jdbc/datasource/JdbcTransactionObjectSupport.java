@@ -1,4 +1,4 @@
-package github.cweijan.ultimate.jdbc.datasource;
+package org.springframework.jdbc.datasource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

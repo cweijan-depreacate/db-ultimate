@@ -1,4 +1,4 @@
-package github.cweijan.ultimate.jdbc.datasource;
+package org.springframework.jdbc.datasource;
 
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.support.ResourceHolderSupport;

@@ -1,4 +1,4 @@
-package github.cweijan.ultimate.jdbc;
+package org.springframework.jdbc;
 
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.lang.Nullable;

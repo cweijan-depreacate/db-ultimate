@@ -12,7 +12,7 @@ import github.cweijan.ultimate.db.init.generator.TableAutoMode
 import github.cweijan.ultimate.db.init.generator.TableInitSqlGenerator
 import github.cweijan.ultimate.db.init.generator.TableStruct
 import github.cweijan.ultimate.db.init.generator.impl.mysql.MysqlTableStruct
-import github.cweijan.ultimate.jdbc.datasource.DataSourceUtils
+import org.springframework.jdbc.datasource.DataSourceUtils
 import github.cweijan.ultimate.util.Log
 import java.sql.Connection
 import java.sql.SQLException

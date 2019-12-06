@@ -3,9 +3,8 @@ package github.cweijan.ultimate.springboot;
 
 import github.cweijan.ultimate.core.DbUltimate;
 import github.cweijan.ultimate.db.config.DbConfig;
-import github.cweijan.ultimate.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

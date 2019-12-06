@@ -1,6 +1,6 @@
-package github.cweijan.ultimate.jdbc.datasource;
+package org.springframework.jdbc.datasource;
 
-import github.cweijan.ultimate.jdbc.CannotGetJdbcConnectionException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import github.cweijan.ultimate.util.Log;
 import org.slf4j.Logger;
 import org.springframework.lang.Nullable;
