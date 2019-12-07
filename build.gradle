@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'io.github.cweijan'
-version '1.4.92'
+version '1.4.93'
 def springBootVersion="2.1.4.RELEASE"
 
 sourceCompatibility = 1.8
@@ -69,7 +69,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId 'io.github.cweijan'
             artifactId 'db-ultimate'
-            version '1.4.92'
+            version '1.4.93'
             from components.java
             artifact sourcesJar
             artifact javadocJar

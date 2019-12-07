@@ -60,7 +60,7 @@ abstract class BaseSqlDialect : SqlDialect {
             return (fieldValue as Enum<*>).name
         }
         if(fieldValue.javaClass==Date::class.java){
-            return java.sql.Date((fieldValue as Date).time)
+            return java.sql.Timestamp((fieldValue as Date).time)
         }
         return fieldValue
     }
